@@ -7,7 +7,16 @@ import { HexColorPicker } from "react-colorful"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { hexToRgb, rgbToHex, hexToHsl, hslToHex, hexToOklab } from "@/lib/color-utils"
+import {
+  hexToRgb,
+  rgbToHex,
+  hexToHsl,
+  hslToHex,
+  hexToOklab,
+  calculateContrastRatio,
+  getWCAGLevel,
+  getBetterContrastColor,
+} from "@/lib/color-utils"
 
 interface ColorPickerProps {
   index: number
@@ -71,6 +80,25 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
     onColorChange(newColor)
   }
 
+  const getContrastInfo = (bgColor: string) => {
+    // 白と黒のコントラスト比を計算
+    const whiteContrast = calculateContrastRatio(bgColor, "#FFFFFF")
+    const blackContrast = calculateContrastRatio(bgColor, "#000000")
+
+    // 最適なコントラスト比を選択
+    const bestContrast = Math.max(whiteContrast, blackContrast)
+    const bestContrastColor = getBetterContrastColor(bgColor)
+
+    // WCAGレベルを判定
+    const wcagLevel = getWCAGLevel(bestContrast)
+
+    return {
+      contrast: bestContrast,
+      level: wcagLevel.level,
+      textColor: bestContrastColor,
+    }
+  }
+
   const handleRgbChange = (channel: "r" | "g" | "b", value: string) => {
     const numValue = Number.parseInt(value)
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 255) {
@@ -130,6 +158,36 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
         </div>
 
         <HexColorPicker color={color} onChange={handlePickerChange} className="w-full" />
+
+        <div className="flex justify-between items-center mt-1 mb-1">
+          {(() => {
+            const { contrast, level } = getContrastInfo(color)
+
+            // レベルに応じたバッジの色を設定
+            const levelColor =
+              level === "AAA"
+                ? "bg-green-100 text-green-800"
+                : level === "AA"
+                  ? "bg-blue-100 text-blue-800"
+                  : level === "A"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+
+            return (
+              <>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${levelColor}`} title="アクセシビリティレベル">
+                  {level}
+                </span>
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800"
+                  title="コントラスト比"
+                >
+                  {contrast.toFixed(1)}:1
+                </span>
+              </>
+            )
+          })()}
+        </div>
 
         <Tabs defaultValue="rgb" className="w-full">
           <TabsList className="w-full grid grid-cols-3">

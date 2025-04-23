@@ -184,3 +184,73 @@ export function generateColorVariations(baseColor: string): Record<string, strin
     lighter: adjustColor(baseColor, 80),
   }
 }
+
+// コントラスト比の計算
+export function calculateContrastRatio(color1: string, color2: string): number {
+  // 相対輝度を計算
+  const luminance1 = calculateRelativeLuminance(color1)
+  const luminance2 = calculateRelativeLuminance(color2)
+
+  // コントラスト比の計算: (L1 + 0.05) / (L2 + 0.05) ただしL1 >= L2
+  const lighter = Math.max(luminance1, luminance2)
+  const darker = Math.min(luminance1, luminance2)
+
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+// 相対輝度の計算 (WCAG 2.0)
+function calculateRelativeLuminance(hexColor: string): number {
+  const rgb = hexToRgb(hexColor)
+  if (!rgb) return 0
+
+  // sRGBからリニアRGBへの変換
+  const r = normalizeChannel(rgb.r)
+  const g = normalizeChannel(rgb.g)
+  const b = normalizeChannel(rgb.b)
+
+  // 相対輝度の計算
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+// チャンネル値の正規化
+function normalizeChannel(channel: number): number {
+  const sRGB = channel / 255
+  return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4)
+}
+
+// WCAGレベルの判定
+export function getWCAGLevel(contrastRatio: number): {
+  level: "AAA" | "AA" | "A" | "Fail"
+  normalText: boolean
+  largeText: boolean
+} {
+  // 大きいテキスト（18pt以上または14pt以上の太字）と通常テキストの判定
+  const largeTextAAA = contrastRatio >= 4.5
+  const largeTextAA = contrastRatio >= 3.0
+  const normalTextAAA = contrastRatio >= 7.0
+  const normalTextAA = contrastRatio >= 4.5
+
+  let level: "AAA" | "AA" | "A" | "Fail" = "Fail"
+
+  if (normalTextAAA && largeTextAAA) {
+    level = "AAA"
+  } else if (normalTextAA && largeTextAAA) {
+    level = "AA"
+  } else if (largeTextAA) {
+    level = "A"
+  }
+
+  return {
+    level,
+    normalText: normalTextAA,
+    largeText: largeTextAA,
+  }
+}
+
+// 白と黒のどちらがより良いコントラストを持つか判定
+export function getBetterContrastColor(bgColor: string): string {
+  const whiteContrast = calculateContrastRatio(bgColor, "#FFFFFF")
+  const blackContrast = calculateContrastRatio(bgColor, "#000000")
+
+  return whiteContrast > blackContrast ? "#FFFFFF" : "#000000"
+}

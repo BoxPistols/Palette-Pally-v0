@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { isLightColor } from "@/lib/color-utils"
+import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
+import { AlertTriangle } from "lucide-react"
 
 interface ColorDisplayProps {
   colorKey: string
   variations: Record<string, string>
+  forceWhiteText?: boolean
 }
 
-export function ColorDisplay({ colorKey, variations }: ColorDisplayProps) {
+export function ColorDisplay({ colorKey, variations, forceWhiteText = false }: ColorDisplayProps) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2 px-3 pt-3">
@@ -14,16 +16,60 @@ export function ColorDisplay({ colorKey, variations }: ColorDisplayProps) {
       </CardHeader>
       <CardContent className="p-0">
         {Object.entries(variations).map(([name, color]) => {
+          // 通常の自動テキスト色判定
           const isLight = isLightColor(color)
+
+          // 強制白文字モードの場合、main/dark/lightは白文字を使用
+          // lighterは常に自動判定（明るすぎるため）
+          const useWhiteText = forceWhiteText && name !== "lighter"
+
+          // 最終的なテキスト色の決定
+          const textColor = useWhiteText ? "#FFFFFF" : isLight ? "#000000" : "#FFFFFF"
+
+          // コントラスト比の計算
+          const contrast = calculateContrastRatio(color, textColor)
+          const wcagLevel = getWCAGLevel(contrast)
+
+          // 警告表示の条件：強制白文字モードがオンで、AAレベルに達していない場合
+          const showWarning = useWhiteText && wcagLevel.level !== "AAA" && wcagLevel.level !== "AA"
+
+          // レベルに応じたバッジの色を設定
+          const levelColor =
+            wcagLevel.level === "AAA"
+              ? "bg-green-100 text-green-800"
+              : wcagLevel.level === "AA"
+                ? "bg-blue-100 text-blue-800"
+                : wcagLevel.level === "A"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
 
           return (
             <div
               key={name}
-              className="flex items-center p-2 border-t first:border-t-0"
+              className="flex items-center justify-between p-2 border-t first:border-t-0"
               style={{ backgroundColor: color }}
             >
-              <div className={`text-xs font-medium ${isLight ? "text-gray-800" : "text-white"}`}>
-                {name}: {color}
+              <div className="flex items-center gap-1">
+                <div style={{ color: textColor }} className="text-xs font-medium">
+                  {name}: {color}
+                </div>
+                {showWarning && (
+                  <AlertTriangle size={14} className="text-red-500" title="コントラスト比が低すぎます（AA未満）" />
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${levelColor} opacity-80`}
+                  title={`コントラスト比: ${contrast.toFixed(2)}:1`}
+                >
+                  {wcagLevel.level}
+                </span>
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800 opacity-80"
+                  title={`コントラスト比: ${contrast.toFixed(2)}:1`}
+                >
+                  {contrast.toFixed(1)}:1
+                </span>
               </div>
             </div>
           )
