@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,35 +14,24 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HelpCircle, Palette, Sliders, Save, FileJson, Contrast, Type } from "lucide-react"
 
-const HELP_VIEWED_KEY = "palette-pally-help-viewed"
-
 export function HelpModal() {
   const [isOpen, setIsOpen] = useState(false)
-  const [hasViewedHelp, setHasViewedHelp] = useState(true) // デフォルトはtrueにして、useEffectで判定
-
-  useEffect(() => {
-    // 初回訪問かどうかをLocalStorageで判定
-    const hasViewed = localStorage.getItem(HELP_VIEWED_KEY) === "true"
-    setHasViewedHelp(hasViewed)
-
-    // 初回訪問の場合、モーダルを自動的に表示
-    if (!hasViewed) {
-      setIsOpen(true)
-    }
-  }, [])
 
   const handleClose = () => {
     setIsOpen(false)
-    // ヘルプを表示したことをLocalStorageに記録
-    localStorage.setItem(HELP_VIEWED_KEY, "true")
-    setHasViewedHelp(true)
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" title="ヘルプ">
-          <HelpCircle className="h-5 w-5" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100"
+          title="ヘルプ"
+        >
+          <HelpCircle className="h-4 w-4 text-blue-500" />
+          <span className="text-blue-600">ヘルプ</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -113,10 +102,13 @@ export function HelpModal() {
               <div className="flex items-start gap-2">
                 <Type className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">Text to Whiteモード</h3>
+                  <h3 className="text-sm font-semibold">テキストカラー設定</h3>
                   <p className="text-sm text-gray-500">
-                    「Text to
-                    White」スイッチをオンにすると、背景色の明るさに関わらず、main、dark、lightのテキストが白色になります。
+                    各カラーバリエーション（main、dark、light、lighter）ごとにテキストカラーを設定できます。
+                    <br />• Default: 背景色に応じて自動的にテキスト色を調整
+                    <br />• White: 強制的に白色のテキストを使用
+                    <br />• Black: 強制的に黒色のテキストを使用
+                    <br />
                     コントラスト比がAA未満の場合は警告アイコンが表示されます。
                   </p>
                 </div>

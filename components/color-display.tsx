@@ -1,14 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
 import { AlertTriangle } from "lucide-react"
+import type { TextColorSettings } from "@/types/palette"
 
 interface ColorDisplayProps {
   colorKey: string
   variations: Record<string, string>
-  forceWhiteText?: boolean
+  textColorSettings: TextColorSettings
 }
 
-export function ColorDisplay({ colorKey, variations, forceWhiteText = false }: ColorDisplayProps) {
+export function ColorDisplay({ colorKey, variations, textColorSettings }: ColorDisplayProps) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2 px-3 pt-3">
@@ -19,19 +20,28 @@ export function ColorDisplay({ colorKey, variations, forceWhiteText = false }: C
           // 通常の自動テキスト色判定
           const isLight = isLightColor(color)
 
-          // 強制白文字モードの場合、main/dark/lightは白文字を使用
-          // lighterは常に自動判定（明るすぎるため）
-          const useWhiteText = forceWhiteText && name !== "lighter"
+          // テキストカラー設定に基づいてテキスト色を決定
+          const textColorMode = textColorSettings[name as keyof TextColorSettings]
+          let textColor: string
 
-          // 最終的なテキスト色の決定
-          const textColor = useWhiteText ? "#FFFFFF" : isLight ? "#000000" : "#FFFFFF"
+          switch (textColorMode) {
+            case "white":
+              textColor = "#FFFFFF"
+              break
+            case "black":
+              textColor = "#000000"
+              break
+            default: // "default"
+              textColor = isLight ? "#000000" : "#FFFFFF"
+              break
+          }
 
           // コントラスト比の計算
           const contrast = calculateContrastRatio(color, textColor)
           const wcagLevel = getWCAGLevel(contrast)
 
-          // 警告表示の条件：強制白文字モードがオンで、AAレベルに達していない場合
-          const showWarning = useWhiteText && wcagLevel.level !== "AAA" && wcagLevel.level !== "AA"
+          // 警告表示の条件：強制カラーモード（defaultでない）かつAAレベルに達していない場合
+          const showWarning = textColorMode !== "default" && wcagLevel.level !== "AAA" && wcagLevel.level !== "AA"
 
           // レベルに応じたバッジの色を設定
           const levelColor =
