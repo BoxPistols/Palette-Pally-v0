@@ -18,8 +18,8 @@ import { toast } from "@/components/ui/use-toast"
 import type { PaletteType } from "@/types/palette"
 
 interface ExportImportPanelProps {
-  data: PaletteType
-  onImport: (data: PaletteType) => void
+  data: PaletteType & { primaryColorIndex?: number }
+  onImport: (data: PaletteType & { primaryColorIndex?: number }) => void
 }
 
 export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
@@ -76,7 +76,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
           throw new Error("ファイルの読み込みに失敗しました")
         }
 
-        const json = JSON.parse(event.target.result) as PaletteType
+        const json = JSON.parse(event.target.result) as PaletteType & { primaryColorIndex?: number }
         onImport(json)
         setError(null)
 

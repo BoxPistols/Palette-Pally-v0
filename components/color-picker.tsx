@@ -7,6 +7,7 @@ import { HexColorPicker } from "react-colorful"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { GripVertical } from "lucide-react"
 import {
   hexToRgb,
   rgbToHex,
@@ -177,17 +178,20 @@ export function ColorPicker({
   return (
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
-        <Input
-          value={nameValue}
-          onChange={handleNameChange}
-          className="font-medium text-sm h-8"
-          placeholder={`color${index + 1}`}
-        />
+        <div className="flex items-center gap-2">
+          <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
+          <Input
+            value={nameValue}
+            onChange={handleNameChange}
+            className="font-medium text-sm h-8"
+            placeholder={`color${index + 1}`}
+          />
+        </div>
         {isPrimary ? (
           <Badge variant="outline" className="ml-2 text-xs bg-gray-50 text-gray-500">
             Primary
           </Badge>
-        ) : onSetAsPrimary ? (
+        ) : onSetAsPrimary && index !== 0 ? (
           <Badge
             variant="outline"
             className="ml-2 cursor-pointer hover:bg-gray-100 text-xs px-1.5 py-0.5"

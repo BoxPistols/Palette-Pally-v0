@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
 import { ColorPicker } from "@/components/color-picker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -121,6 +122,10 @@ export default function Home() {
       title: "Primaryカラー設定",
       description: `${colorData[index].name}をPrimaryカラーに設定しました`,
     })
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
   }
 
   const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,6 +270,45 @@ export default function Home() {
     }, 100)
   }
 
+  // ドラッグ＆ドロップの処理
+  const handleDragEnd = (result: any) => {
+    // ドロップ先がない場合は何もしない
+    if (!result.destination) return
+
+    // 移動元と移動先が同じ場合も何もしない
+    if (result.destination.index === result.source.index) return
+
+    // カラーデータの並び替え
+    const newColorData = [...colorData]
+    const [movedItem] = newColorData.splice(result.source.index, 1)
+    newColorData.splice(result.destination.index, 0, movedItem)
+    setColorData(newColorData)
+
+    // Primaryカラーのインデックスも更新
+    let newPrimaryIndex = primaryColorIndex
+    if (primaryColorIndex === result.source.index) {
+      // Primaryカラー自体が移動した場合
+      newPrimaryIndex = result.destination.index
+    } else if (primaryColorIndex > result.source.index && primaryColorIndex <= result.destination.index) {
+      // Primaryカラーの前にあるカラーが後ろに移動した場合
+      newPrimaryIndex--
+    } else if (primaryColorIndex < result.source.index && primaryColorIndex >= result.destination.index) {
+      // Primaryカラーの後ろにあるカラーが前に移動した場合
+      newPrimaryIndex++
+    }
+    setPrimaryColorIndex(newPrimaryIndex)
+
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+
+    toast({
+      title: "並び替え完了",
+      description: "カラーの順序を変更しました",
+    })
+  }
+
   return (
     <main className="container mx-auto px-4 py-6">
       <Card className="mb-6">
@@ -313,38 +357,63 @@ export default function Home() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Color Pickers Section */}
+        {/* Color Pickers Section with Drag & Drop */}
         <div>
           <h2 className="text-lg font-semibold mb-3">カラーピッカー</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {colorData.map((color, index) => (
-              <ColorPicker
-                key={index}
-                index={index}
-                name={color.name}
-                color={color.value}
-                isPrimary={index === primaryColorIndex}
-                onColorChange={(value) => handleColorChange(index, value)}
-                onNameChange={(name) => handleNameChange(index, name)}
-                onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
-              />
-            ))}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="color-pickers" direction="horizontal">
+              {(provided) => (
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
+                  {colorData.map((color, index) => (
+                    <Draggable key={`color-${index}`} draggableId={`color-${index}`} index={index}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className="relative"
+                        >
+                          <ColorPicker
+                            index={index}
+                            name={color.name}
+                            color={color.value}
+                            isPrimary={index === primaryColorIndex}
+                            onColorChange={(value) => handleColorChange(index, value)}
+                            onNameChange={(name) => handleNameChange(index, name)}
+                            onSetAsPrimary={index !== 0 ? () => handleSetAsPrimary(index) : undefined}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
 
         {/* Color Palette Section */}
         <div>
           <h2 className="text-lg font-semibold mb-3">カラーパレット</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {Object.entries(colorVariations).map(([key, variations], index) => (
-              <ColorDisplay
-                key={key}
-                colorKey={key}
-                variations={variations}
-                textColorSettings={textColorSettings}
-                isPrimary={colorData.findIndex((c) => c.name === key) === primaryColorIndex}
-              />
-            ))}
+            {Object.entries(colorVariations).map(([key, variations], index) => {
+              // カラー名からcolorDataの中での位置を特定
+              const colorIndex = colorData.findIndex((c) => c.name === key)
+              return (
+                <ColorDisplay
+                  key={key}
+                  colorKey={key}
+                  variations={variations}
+                  textColorSettings={textColorSettings}
+                  isPrimary={colorIndex === primaryColorIndex}
+                />
+              )
+            })}
           </div>
         </div>
       </div>
