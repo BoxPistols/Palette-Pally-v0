@@ -175,7 +175,7 @@ export function ColorPicker({
   }
 
   return (
-    <Card className={`overflow-hidden ${isPrimary ? "ring-2 ring-primary" : ""}`}>
+    <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
         <Input
           value={nameValue}
@@ -184,12 +184,16 @@ export function ColorPicker({
           placeholder={`color${index + 1}`}
         />
         {isPrimary ? (
-          <Badge variant="default" className="ml-2">
+          <Badge variant="outline" className="ml-2 text-xs bg-gray-50 text-gray-500">
             Primary
           </Badge>
         ) : onSetAsPrimary ? (
-          <Badge variant="outline" className="ml-2 cursor-pointer hover:bg-primary/10" onClick={onSetAsPrimary}>
-            Set as Primary
+          <Badge
+            variant="outline"
+            className="ml-2 cursor-pointer hover:bg-gray-100 text-xs px-1.5 py-0.5"
+            onClick={onSetAsPrimary}
+          >
+            To Primary
           </Badge>
         ) : null}
       </CardHeader>
