@@ -13,20 +13,33 @@ import {
   hexToHsl,
   hslToHex,
   hexToOklab,
+  oklabToHex,
   calculateContrastRatio,
   getWCAGLevel,
   getBetterContrastColor,
 } from "@/lib/color-utils"
+import { ColorSuggestions } from "@/components/color-suggestions"
+import { Badge } from "@/components/ui/badge"
 
 interface ColorPickerProps {
   index: number
   name: string
   color: string
+  isPrimary?: boolean
   onColorChange: (color: string) => void
   onNameChange: (name: string) => void
+  onSetAsPrimary?: () => void
 }
 
-export function ColorPicker({ index, name, color, onColorChange, onNameChange }: ColorPickerProps) {
+export function ColorPicker({
+  index,
+  name,
+  color,
+  isPrimary = false,
+  onColorChange,
+  onNameChange,
+  onSetAsPrimary,
+}: ColorPickerProps) {
   const [inputValue, setInputValue] = useState(color)
   const [nameValue, setNameValue] = useState(name)
   const [rgbValues, setRgbValues] = useState({ r: 0, g: 0, b: 0 })
@@ -129,6 +142,31 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
     }
   }
 
+  const handleOklabChange = (channel: "l" | "a" | "b", value: string) => {
+    const numValue = Number.parseFloat(value)
+    if (!isNaN(numValue)) {
+      // Apply appropriate limits based on the channel
+      let validValue = numValue
+      if (channel === "l") {
+        // Lightness in Oklab is typically between 0 and 1
+        validValue = Math.max(0, Math.min(1, numValue))
+      } else if (channel === "a" || channel === "b") {
+        // a and b channels can be negative or positive, typically between -0.4 and 0.4
+        validValue = Math.max(-0.4, Math.min(0.4, numValue))
+      }
+
+      const newOklab = { ...oklabValues, [channel]: validValue }
+      try {
+        const newHex = oklabToHex(newOklab.l, newOklab.a, newOklab.b)
+        setOklabValues(newOklab)
+        setInputValue(newHex)
+        onColorChange(newHex)
+      } catch (error) {
+        console.error("Error converting Oklab to hex:", error)
+      }
+    }
+  }
+
   const handleBlur = () => {
     // Ensure color is valid on blur
     if (!/^#[0-9A-F]{6}$/i.test(inputValue)) {
@@ -137,14 +175,23 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2 px-3 pt-3">
+    <Card className={`overflow-hidden ${isPrimary ? "ring-2 ring-primary" : ""}`}>
+      <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
         <Input
           value={nameValue}
           onChange={handleNameChange}
           className="font-medium text-sm h-8"
           placeholder={`color${index + 1}`}
         />
+        {isPrimary ? (
+          <Badge variant="default" className="ml-2">
+            Primary
+          </Badge>
+        ) : onSetAsPrimary ? (
+          <Badge variant="outline" className="ml-2 cursor-pointer hover:bg-primary/10" onClick={onSetAsPrimary}>
+            Set as Primary
+          </Badge>
+        ) : null}
       </CardHeader>
       <CardContent className="p-3 space-y-2">
         <div className="flex gap-2">
@@ -160,6 +207,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
         <HexColorPicker color={color} onChange={handlePickerChange} className="w-full" />
 
         <div className="flex justify-between items-center mt-1 mb-1">
+          <ColorSuggestions baseColor={color} onSelectColor={onColorChange} />
           {(() => {
             const { contrast, level } = getContrastInfo(color)
 
@@ -276,15 +324,39 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
             <div className="grid grid-cols-3 gap-1">
               <div>
                 <label className="text-xs text-gray-500 block">L</label>
-                <Input type="text" value={oklabValues.l.toFixed(2)} readOnly className="text-xs h-7" />
+                <Input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={oklabValues.l.toFixed(2)}
+                  onChange={(e) => handleOklabChange("l", e.target.value)}
+                  className="text-xs h-7"
+                />
               </div>
               <div>
                 <label className="text-xs text-gray-500 block">a</label>
-                <Input type="text" value={oklabValues.a.toFixed(2)} readOnly className="text-xs h-7" />
+                <Input
+                  type="number"
+                  min="-0.4"
+                  max="0.4"
+                  step="0.01"
+                  value={oklabValues.a.toFixed(2)}
+                  onChange={(e) => handleOklabChange("a", e.target.value)}
+                  className="text-xs h-7"
+                />
               </div>
               <div>
                 <label className="text-xs text-gray-500 block">b</label>
-                <Input type="text" value={oklabValues.b.toFixed(2)} readOnly className="text-xs h-7" />
+                <Input
+                  type="number"
+                  min="-0.4"
+                  max="0.4"
+                  step="0.01"
+                  value={oklabValues.b.toFixed(2)}
+                  onChange={(e) => handleOklabChange("b", e.target.value)}
+                  className="text-xs h-7"
+                />
               </div>
             </div>
           </TabsContent>

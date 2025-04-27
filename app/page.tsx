@@ -16,6 +16,7 @@ import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { TextColorSettings } from "@/components/text-color-settings"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
+import { PaletteOptimizer } from "@/components/palette-optimizer"
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
@@ -35,13 +36,14 @@ export default function Home() {
     light: "default",
     lighter: "default",
   })
+  const [primaryColorIndex, setPrimaryColorIndex] = useState<number>(0) // デフォルトでcolor1をPrimaryに
 
   // Load data from localStorage on initial render
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
-        const parsedData = JSON.parse(savedData) as PaletteType
+        const parsedData = JSON.parse(savedData) as PaletteType & { primaryColorIndex?: number }
         if (parsedData.colors && Array.isArray(parsedData.colors)) {
           setColorData(parsedData.colors)
           setColorCount(parsedData.colors.length)
@@ -50,6 +52,15 @@ export default function Home() {
         // Load text color settings if available
         if (parsedData.textColorSettings) {
           setTextColorSettings(parsedData.textColorSettings)
+        }
+
+        // Load primary color index if available
+        if (
+          typeof parsedData.primaryColorIndex === "number" &&
+          parsedData.primaryColorIndex >= 0 &&
+          parsedData.primaryColorIndex < parsedData.colors.length
+        ) {
+          setPrimaryColorIndex(parsedData.primaryColorIndex)
         }
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
@@ -71,10 +82,11 @@ export default function Home() {
   // Save to localStorage function
   const saveToLocalStorage = () => {
     try {
-      const dataToSave: PaletteType = {
+      const dataToSave = {
         colors: colorData,
         variations: colorVariations,
         textColorSettings: textColorSettings,
+        primaryColorIndex: primaryColorIndex,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -103,6 +115,14 @@ export default function Home() {
     setColorData(newColorData)
   }
 
+  const handleSetAsPrimary = (index: number) => {
+    setPrimaryColorIndex(index)
+    toast({
+      title: "Primaryカラー設定",
+      description: `${colorData[index].name}をPrimaryカラーに設定しました`,
+    })
+  }
+
   const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const count = Number.parseInt(e.target.value)
     if (count > 0 && count <= MAX_COLORS) {
@@ -123,6 +143,11 @@ export default function Home() {
       } else if (count < colorData.length) {
         // Remove excess colors
         setColorData(colorData.slice(0, count))
+
+        // Adjust primaryColorIndex if needed
+        if (primaryColorIndex >= count) {
+          setPrimaryColorIndex(0)
+        }
       }
     }
   }
@@ -158,19 +183,23 @@ export default function Home() {
       lighter: "default",
     })
 
+    // Reset primary color index
+    setPrimaryColorIndex(0)
+
     toast({
       title: "リセット完了",
       description: "パレットデータをリセットしました",
     })
   }
 
-  const exportData: PaletteType = {
+  const exportData = {
     colors: colorData,
     variations: colorVariations,
     textColorSettings: textColorSettings,
+    primaryColorIndex: primaryColorIndex,
   }
 
-  const handleImport = (importedData: PaletteType) => {
+  const handleImport = (importedData: PaletteType & { primaryColorIndex?: number }) => {
     try {
       if (importedData.colors && Array.isArray(importedData.colors)) {
         // Validate each color entry
@@ -192,6 +221,17 @@ export default function Home() {
           // Import text color settings if available
           if (importedData.textColorSettings) {
             setTextColorSettings(importedData.textColorSettings)
+          }
+
+          // Import primary color index if available
+          if (
+            typeof importedData.primaryColorIndex === "number" &&
+            importedData.primaryColorIndex >= 0 &&
+            importedData.primaryColorIndex < validColors.length
+          ) {
+            setPrimaryColorIndex(importedData.primaryColorIndex)
+          } else {
+            setPrimaryColorIndex(0) // デフォルト値にリセット
           }
 
           toast({
@@ -258,7 +298,16 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
             <ExportImportPanel data={exportData} onImport={handleImport} />
 
-            <TextColorSettings settings={textColorSettings} onChange={handleTextColorSettingsChange} />
+            <div className="flex items-center gap-2">
+              <PaletteOptimizer
+                colors={colorData}
+                textColorSettings={textColorSettings}
+                primaryColorIndex={primaryColorIndex}
+                onOptimize={setColorData}
+                onUpdateTextSettings={handleTextColorSettingsChange}
+              />
+              <TextColorSettings settings={textColorSettings} onChange={handleTextColorSettingsChange} />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -274,8 +323,10 @@ export default function Home() {
                 index={index}
                 name={color.name}
                 color={color.value}
+                isPrimary={index === primaryColorIndex}
                 onColorChange={(value) => handleColorChange(index, value)}
                 onNameChange={(name) => handleNameChange(index, name)}
+                onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
               />
             ))}
           </div>
@@ -286,7 +337,13 @@ export default function Home() {
           <h2 className="text-lg font-semibold mb-3">カラーパレット</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {Object.entries(colorVariations).map(([key, variations], index) => (
-              <ColorDisplay key={key} colorKey={key} variations={variations} textColorSettings={textColorSettings} />
+              <ColorDisplay
+                key={key}
+                colorKey={key}
+                variations={variations}
+                textColorSettings={textColorSettings}
+                isPrimary={colorData.findIndex((c) => c.name === key) === primaryColorIndex}
+              />
             ))}
           </div>
         </div>

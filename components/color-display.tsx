@@ -1,19 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
 import { AlertTriangle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import type { TextColorSettings } from "@/types/palette"
 
 interface ColorDisplayProps {
   colorKey: string
   variations: Record<string, string>
   textColorSettings: TextColorSettings
+  isPrimary?: boolean
 }
 
-export function ColorDisplay({ colorKey, variations, textColorSettings }: ColorDisplayProps) {
+export function ColorDisplay({ colorKey, variations, textColorSettings, isPrimary = false }: ColorDisplayProps) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2 px-3 pt-3">
+    <Card className={`overflow-hidden ${isPrimary ? "ring-2 ring-primary" : ""}`}>
+      <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
         <CardTitle className="text-sm">{colorKey}</CardTitle>
+        {isPrimary && (
+          <Badge variant="default" className="ml-2">
+            Primary
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="p-0">
         {Object.entries(variations).map(([name, color]) => {

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HelpCircle, Palette, Sliders, Save, FileJson, Contrast, Type } from "lucide-react"
+import { HelpCircle, Palette, Sliders, Save, FileJson, Contrast, Type, Lightbulb, Wand2 } from "lucide-react"
 
 export function HelpModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -43,10 +43,11 @@ export function HelpModal() {
         </DialogHeader>
 
         <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="basic">基本機能</TabsTrigger>
             <TabsTrigger value="accessibility">アクセシビリティ</TabsTrigger>
             <TabsTrigger value="advanced">高度な機能</TabsTrigger>
+            <TabsTrigger value="color-theory">色彩理論</TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">
@@ -136,6 +137,50 @@ export function HelpModal() {
                   <p className="text-sm text-gray-500">
                     右側のパネルには、各カラーの4つのバリエーション（main、dark、light、lighter）が表示されます。
                     これらは自動的に生成され、コントラスト比とアクセシビリティレベルも確認できます。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="color-theory" className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                <div>
+                  <h3 className="text-sm font-semibold">Oklabカラースペース</h3>
+                  <p className="text-sm text-gray-500">
+                    Oklabは知覚的に均一なカラースペースで、人間の視覚に合わせて設計されています。従来のRGBやHSLと異なり、色の明るさや彩度の変化が人間の知覚に合わせて均一になるため、より直感的なカラーデザインが可能です。
+                    <br />• L: 明度（Lightness）- 色の明るさを表します
+                    <br />• a: 緑-赤の軸 - 負の値が緑、正の値が赤を表します
+                    <br />• b: 青-黄の軸 - 負の値が青、正の値が黄を表します
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Lightbulb className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                <div>
+                  <h3 className="text-sm font-semibold">カラーハーモニー</h3>
+                  <p className="text-sm text-gray-500">
+                    効果的なカラーパレットを作成するためのガイドライン：
+                    <br />• 60-30-10ルール：主要色60%、補助色30%、アクセント色10%の割合で使用
+                    <br />• コントラスト：テキストと背景のコントラスト比は最低4.5:1を目指す
+                    <br />• 色相の一貫性：同じ色相内でバリエーションを作成すると統一感が生まれる
+                    <br />• 彩度の調整：重要な要素ほど彩度を高く、背景などは彩度を低く設定
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Wand2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                <div>
+                  <h3 className="text-sm font-semibold">カラーパレット最適化</h3>
+                  <p className="text-sm text-gray-500">
+                    Palette Pallyでは、アクセシビリティを考慮したカラーパレットの自動最適化機能を提供しています。
+                    <br />• アクセシビリティ修正：コントラスト比が基準を満たすよう自動調整
+                    <br />• カラーハーモニー生成：選択した主要色から調和のとれたパレットを自動生成
+                    <br />• バリエーション最適化：明度や彩度を均一に調整し、一貫性のあるバリエーションを作成
                   </p>
                 </div>
               </div>
