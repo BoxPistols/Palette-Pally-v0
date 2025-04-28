@@ -30,6 +30,13 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void
   onNameChange: (name: string) => void
   onSetAsPrimary?: () => void
+  dragHandleProps?: any // ドラッグハンドルのプロップスを追加
+}
+
+// HexColorPickerコンポーネントをラップして、マウスイベントの伝播を停止させる部分を追加
+const handlePickerMouseDown = (e: React.MouseEvent) => {
+  // カラーピッカー操作中はドラッグイベントが親に伝播しないようにする
+  e.stopPropagation()
 }
 
 export function ColorPicker({
@@ -40,6 +47,7 @@ export function ColorPicker({
   onColorChange,
   onNameChange,
   onSetAsPrimary,
+  dragHandleProps,
 }: ColorPickerProps) {
   const [inputValue, setInputValue] = useState(color)
   const [nameValue, setNameValue] = useState(name)
@@ -179,7 +187,9 @@ export function ColorPicker({
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
-          <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
+          <div className="cursor-move" {...dragHandleProps}>
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
           <Input
             value={nameValue}
             onChange={handleNameChange}
@@ -190,14 +200,6 @@ export function ColorPicker({
         {isPrimary ? (
           <Badge variant="outline" className="ml-2 text-xs bg-gray-50 text-gray-500">
             Primary
-          </Badge>
-        ) : onSetAsPrimary && index !== 0 ? (
-          <Badge
-            variant="outline"
-            className="ml-2 cursor-pointer hover:bg-gray-100 text-xs px-1.5 py-0.5"
-            onClick={onSetAsPrimary}
-          >
-            To Primary
           </Badge>
         ) : null}
       </CardHeader>
@@ -212,7 +214,9 @@ export function ColorPicker({
           />
         </div>
 
-        <HexColorPicker color={color} onChange={handlePickerChange} className="w-full" />
+        <div onMouseDown={handlePickerMouseDown}>
+          <HexColorPicker color={color} onChange={handlePickerChange} className="w-full" />
+        </div>
 
         <div className="flex justify-between items-center mt-1 mb-1">
           <ColorSuggestions baseColor={color} onSelectColor={onColorChange} />

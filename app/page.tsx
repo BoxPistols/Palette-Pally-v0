@@ -16,8 +16,14 @@ import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { TextColorSettings } from "@/components/text-color-settings"
-import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
+import { ColorModeSettings } from "@/components/color-mode-settings"
 import { PaletteOptimizer } from "@/components/palette-optimizer"
+import { MaterialPaletteOptimizer } from "@/components/material-palette-optimizer"
+import { TailwindPaletteOptimizer } from "@/components/tailwind-palette-optimizer"
+import { CodeExportPanel } from "@/components/code-export-panel"
+import { ColorBlindSimulator } from "@/components/color-blind-simulator"
+import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
+import type { ColorMode } from "@/lib/color-systems"
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
@@ -38,13 +44,21 @@ export default function Home() {
     lighter: "default",
   })
   const [primaryColorIndex, setPrimaryColorIndex] = useState<number>(0) // デフォルトでcolor1をPrimaryに
+  const [colorMode, setColorMode] = useState<ColorMode>("standard") // デフォルトは標準モード
+  const [showTailwindClasses, setShowTailwindClasses] = useState<boolean>(false)
+  const [showMaterialNames, setShowMaterialNames] = useState<boolean>(false)
 
   // Load data from localStorage on initial render
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
-        const parsedData = JSON.parse(savedData) as PaletteType & { primaryColorIndex?: number }
+        const parsedData = JSON.parse(savedData) as PaletteType & {
+          primaryColorIndex?: number
+          colorMode?: ColorMode
+          showTailwindClasses?: boolean
+          showMaterialNames?: boolean
+        }
         if (parsedData.colors && Array.isArray(parsedData.colors)) {
           setColorData(parsedData.colors)
           setColorCount(parsedData.colors.length)
@@ -62,6 +76,19 @@ export default function Home() {
           parsedData.primaryColorIndex < parsedData.colors.length
         ) {
           setPrimaryColorIndex(parsedData.primaryColorIndex)
+        }
+
+        // Load color mode settings if available
+        if (parsedData.colorMode) {
+          setColorMode(parsedData.colorMode)
+        }
+
+        if (typeof parsedData.showTailwindClasses === "boolean") {
+          setShowTailwindClasses(parsedData.showTailwindClasses)
+        }
+
+        if (typeof parsedData.showMaterialNames === "boolean") {
+          setShowMaterialNames(parsedData.showMaterialNames)
         }
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
@@ -88,6 +115,9 @@ export default function Home() {
         variations: colorVariations,
         textColorSettings: textColorSettings,
         primaryColorIndex: primaryColorIndex,
+        colorMode: colorMode,
+        showTailwindClasses: showTailwindClasses,
+        showMaterialNames: showMaterialNames,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -191,6 +221,11 @@ export default function Home() {
     // Reset primary color index
     setPrimaryColorIndex(0)
 
+    // Reset color mode settings
+    setColorMode("standard")
+    setShowTailwindClasses(false)
+    setShowMaterialNames(false)
+
     toast({
       title: "リセット完了",
       description: "パレットデータをリセットしました",
@@ -202,9 +237,19 @@ export default function Home() {
     variations: colorVariations,
     textColorSettings: textColorSettings,
     primaryColorIndex: primaryColorIndex,
+    colorMode: colorMode,
+    showTailwindClasses: showTailwindClasses,
+    showMaterialNames: showMaterialNames,
   }
 
-  const handleImport = (importedData: PaletteType & { primaryColorIndex?: number }) => {
+  const handleImport = (
+    importedData: PaletteType & {
+      primaryColorIndex?: number
+      colorMode?: ColorMode
+      showTailwindClasses?: boolean
+      showMaterialNames?: boolean
+    },
+  ) => {
     try {
       if (importedData.colors && Array.isArray(importedData.colors)) {
         // Validate each color entry
@@ -239,6 +284,19 @@ export default function Home() {
             setPrimaryColorIndex(0) // デフォルト値にリセット
           }
 
+          // Import color mode settings if available
+          if (importedData.colorMode) {
+            setColorMode(importedData.colorMode)
+          }
+
+          if (typeof importedData.showTailwindClasses === "boolean") {
+            setShowTailwindClasses(importedData.showTailwindClasses)
+          }
+
+          if (typeof importedData.showMaterialNames === "boolean") {
+            setShowMaterialNames(importedData.showMaterialNames)
+          }
+
           toast({
             title: "インポート完了",
             description: `${validColors.length}色のパレットをインポートしました`,
@@ -264,6 +322,30 @@ export default function Home() {
 
   const handleTextColorSettingsChange = (newSettings: TextColorSettingsType) => {
     setTextColorSettings(newSettings)
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+  }
+
+  const handleColorModeChange = (mode: ColorMode) => {
+    setColorMode(mode)
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+  }
+
+  const handleToggleTailwindClasses = (show: boolean) => {
+    setShowTailwindClasses(show)
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+  }
+
+  const handleToggleMaterialNames = (show: boolean) => {
+    setShowMaterialNames(show)
     // 変更後に自動保存
     setTimeout(() => {
       saveToLocalStorage()
@@ -340,9 +422,38 @@ export default function Home() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-            <ExportImportPanel data={exportData} onImport={handleImport} />
-
             <div className="flex items-center gap-2">
+              <ExportImportPanel data={exportData} onImport={handleImport} />
+              <CodeExportPanel colors={colorData} variations={colorVariations} primaryColorIndex={primaryColorIndex} />
+              <ColorBlindSimulator colors={colorData} variations={colorVariations} />
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <ColorModeSettings
+                colorMode={colorMode}
+                showTailwindClasses={showTailwindClasses}
+                showMaterialNames={showMaterialNames}
+                onChangeColorMode={handleColorModeChange}
+                onToggleTailwindClasses={handleToggleTailwindClasses}
+                onToggleMaterialNames={handleToggleMaterialNames}
+              />
+
+              {colorMode === "material" && (
+                <MaterialPaletteOptimizer
+                  colors={colorData}
+                  primaryColorIndex={primaryColorIndex}
+                  onOptimize={setColorData}
+                />
+              )}
+
+              {colorMode === "tailwind" && (
+                <TailwindPaletteOptimizer
+                  colors={colorData}
+                  primaryColorIndex={primaryColorIndex}
+                  onOptimize={setColorData}
+                />
+              )}
+
               <PaletteOptimizer
                 colors={colorData}
                 textColorSettings={textColorSettings}
@@ -350,6 +461,7 @@ export default function Home() {
                 onOptimize={setColorData}
                 onUpdateTextSettings={handleTextColorSettingsChange}
               />
+
               <TextColorSettings settings={textColorSettings} onChange={handleTextColorSettingsChange} />
             </div>
           </div>
@@ -374,7 +486,7 @@ export default function Home() {
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          {...provided.dragHandleProps}
+                          // ドラッグハンドルのプロップスを削除し、後でハンドル要素に適用する
                           className="relative"
                         >
                           <ColorPicker
@@ -384,7 +496,8 @@ export default function Home() {
                             isPrimary={index === primaryColorIndex}
                             onColorChange={(value) => handleColorChange(index, value)}
                             onNameChange={(name) => handleNameChange(index, name)}
-                            onSetAsPrimary={index !== 0 ? () => handleSetAsPrimary(index) : undefined}
+                            onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
+                            dragHandleProps={provided.dragHandleProps} // ドラッグハンドルのプロップスを渡す
                           />
                         </div>
                       )}
@@ -411,6 +524,9 @@ export default function Home() {
                   variations={variations}
                   textColorSettings={textColorSettings}
                   isPrimary={colorIndex === primaryColorIndex}
+                  colorMode={colorMode}
+                  showTailwindClasses={showTailwindClasses}
+                  showMaterialNames={showMaterialNames}
                 />
               )
             })}
