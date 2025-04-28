@@ -3,7 +3,7 @@ import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-
 import { AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { findClosestTailwindColor, findClosestMaterialColor } from "@/lib/color-systems"
-import type { TextColorSettings } from "@/types/palette"
+import type { TextColorSettings, ColorRole } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
 interface ColorDisplayProps {
@@ -14,6 +14,7 @@ interface ColorDisplayProps {
   colorMode: ColorMode
   showTailwindClasses: boolean
   showMaterialNames: boolean
+  colorRole?: ColorRole
 }
 
 export function ColorDisplay({
@@ -24,16 +25,62 @@ export function ColorDisplay({
   colorMode,
   showTailwindClasses,
   showMaterialNames,
+  colorRole,
 }: ColorDisplayProps) {
+  // カラーロールに基づいたバッジの色を設定
+  const getRoleBadgeClass = (role?: ColorRole): string => {
+    if (!role) return "bg-gray-50 text-gray-500"
+
+    switch (role) {
+      case "primary":
+        return "bg-blue-50 text-blue-700"
+      case "secondary":
+        return "bg-purple-50 text-purple-700"
+      case "success":
+        return "bg-green-50 text-green-700"
+      case "danger":
+        return "bg-red-50 text-red-700"
+      case "warning":
+        return "bg-amber-50 text-amber-700"
+      case "info":
+        return "bg-sky-50 text-sky-700"
+      case "text":
+        return "bg-gray-50 text-gray-700"
+      case "background":
+        return "bg-slate-50 text-slate-700"
+      case "border":
+        return "bg-zinc-50 text-zinc-700"
+      case "accent":
+        return "bg-pink-50 text-pink-700"
+      case "neutral":
+        return "bg-stone-50 text-stone-700"
+      default:
+        return "bg-gray-50 text-gray-500"
+    }
+  }
+
+  // カラーロールの表示名を取得
+  const getRoleDisplayName = (role?: ColorRole): string => {
+    if (!role) return ""
+    return role.charAt(0).toUpperCase() + role.slice(1)
+  }
+
   return (
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">{colorKey}</CardTitle>
-        {isPrimary && (
-          <Badge variant="outline" className="ml-2 bg-gray-50 text-gray-500">
-            Primary
-          </Badge>
-        )}
+        <CardTitle className="text-sm">{colorRole ? getRoleDisplayName(colorRole) : colorKey}</CardTitle>
+        <div className="flex gap-1">
+          {isPrimary && (
+            <Badge variant="outline" className="ml-2 bg-gray-50 text-gray-500">
+              Primary
+            </Badge>
+          )}
+          {colorRole && colorRole !== "primary" && (
+            <Badge variant="outline" className={`ml-2 ${getRoleBadgeClass(colorRole)}`}>
+              {getRoleDisplayName(colorRole)}
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {Object.entries(variations).map(([name, color]) => {

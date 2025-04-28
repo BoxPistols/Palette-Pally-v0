@@ -14,6 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/use-toast"
 import { calculateContrastRatio, hexToHsl, hslToHex, getBetterContrastColor } from "@/lib/color-utils"
 import type { ColorData, TextColorSettings } from "@/types/palette"
@@ -40,7 +41,9 @@ export function PaletteOptimizer({
     balanceVariations: true,
   })
   const [accessibilityLevel, setAccessibilityLevel] = useState<number>(4.5) // デフォルトはAA（4.5:1）
+  const [accessibilityPreset, setAccessibilityPreset] = useState<string>("aa") // デフォルトはAA
   const [harmonizationStrength, setHarmonizationStrength] = useState<number>(50) // 調和の強さ（0-100）
+  const [useCustomAccessibility, setUseCustomAccessibility] = useState<boolean>(false) // カスタム値を使用するかどうか
 
   // アクセシビリティの問題を検出
   const detectAccessibilityIssues = () => {
@@ -143,7 +146,7 @@ export function PaletteOptimizer({
       const currentHsl = hexToHsl(color.value)
       if (!currentHsl) return color
 
-      // 明度と彩度の差を計算
+      // 明度と彩度の差を計算（色相は維持）
       const saturationDiff = primaryHsl.s - currentHsl.s
       const lightnessDiff = primaryHsl.l - currentHsl.l
 
@@ -230,12 +233,40 @@ export function PaletteOptimizer({
     })
   }
 
-  // アクセシビリティレベルのラベルを取得
-  const getAccessibilityLevelLabel = (value: number): string => {
-    if (value >= 7.0) return "AAA (7.0:1)"
-    if (value >= 4.5) return "AA (4.5:1)"
-    if (value >= 3.0) return "A (3.0:1)"
-    return "最小 (3.0:1未満)"
+  // アクセシビリティレベルのプリセット変更
+  const handleAccessibilityPresetChange = (value: string) => {
+    setAccessibilityPreset(value)
+    setUseCustomAccessibility(false)
+
+    // プリセットに基づいてアクセシビリティレベルを設定
+    switch (value) {
+      case "a":
+        setAccessibilityLevel(3.0)
+        break
+      case "aa":
+        setAccessibilityLevel(4.5)
+        break
+      case "aaa":
+        setAccessibilityLevel(7.0)
+        break
+      default:
+        setAccessibilityLevel(4.5)
+    }
+  }
+
+  // カスタムアクセシビリティレベルの変更
+  const handleCustomAccessibilityChange = (value: number[]) => {
+    setAccessibilityLevel(value[0])
+    setUseCustomAccessibility(true)
+
+    // 現在の値に最も近いプリセットを選択
+    if (value[0] < 3.5) {
+      setAccessibilityPreset("a")
+    } else if (value[0] < 5.5) {
+      setAccessibilityPreset("aa")
+    } else {
+      setAccessibilityPreset("aaa")
+    }
   }
 
   return (
@@ -251,13 +282,13 @@ export function PaletteOptimizer({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
+        <DialogContent className="max-w-[600px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
             <DialogTitle>パレット最適化</DialogTitle>
             <DialogDescription>カラーパレットの一貫性とアクセシビリティを向上させるためのオプション</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4">
+          <div className="py-4 space-y-4 overflow-auto flex-1">
             {accessibilityIssues > 0 && (
               <div className="flex p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 gap-2 items-start">
                 <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
@@ -288,21 +319,60 @@ export function PaletteOptimizer({
 
               {optimizationOptions.fixAccessibility && (
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                  <Label htmlFor="accessibility-level" className="text-xs">
-                    アクセシビリティレベル: {getAccessibilityLevelLabel(accessibilityLevel)}
-                  </Label>
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs text-gray-500">A</span>
-                    <Slider
-                      id="accessibility-level"
-                      min={3.0}
-                      max={7.0}
-                      step={0.1}
-                      value={[accessibilityLevel]}
-                      onValueChange={(value) => setAccessibilityLevel(value[0])}
-                      className="flex-1"
-                    />
-                    <span className="text-xs text-gray-500">AAA</span>
+                  <Label className="text-xs">アクセシビリティレベル</Label>
+
+                  <RadioGroup
+                    value={accessibilityPreset}
+                    onValueChange={handleAccessibilityPresetChange}
+                    className="flex space-x-4 mb-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="a" id="a-level" />
+                      <Label htmlFor="a-level" className="text-xs">
+                        A (3.0:1)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="aa" id="aa-level" />
+                      <Label htmlFor="aa-level" className="text-xs">
+                        AA (4.5:1)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="aaa" id="aaa-level" />
+                      <Label htmlFor="aaa-level" className="text-xs">
+                        AAA (7.0:1)
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <Label htmlFor="custom-level" className="text-xs">
+                        カスタム値: {accessibilityLevel.toFixed(1)}:1
+                      </Label>
+                      <Switch
+                        id="use-custom"
+                        checked={useCustomAccessibility}
+                        onCheckedChange={(checked) => setUseCustomAccessibility(checked)}
+                        size="sm"
+                        className="h-4 w-8"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-gray-500">1.0</span>
+                      <Slider
+                        id="custom-level"
+                        min={1.0}
+                        max={21.0}
+                        step={0.1}
+                        value={[accessibilityLevel]}
+                        onValueChange={handleCustomAccessibilityChange}
+                        className="flex-1"
+                        disabled={!useCustomAccessibility}
+                      />
+                      <span className="text-xs text-gray-500">21.0</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -339,6 +409,9 @@ export function PaletteOptimizer({
                     />
                     <span className="text-xs text-gray-500">強</span>
                   </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    注意: この機能は色相を変更せず、明度と彩度のみを調整します
+                  </p>
                 </div>
               )}
 
@@ -358,7 +431,7 @@ export function PaletteOptimizer({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-white z-10 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               キャンセル
             </Button>

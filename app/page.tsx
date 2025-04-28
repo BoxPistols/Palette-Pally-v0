@@ -22,6 +22,8 @@ import { MaterialPaletteOptimizer } from "@/components/material-palette-optimize
 import { TailwindPaletteOptimizer } from "@/components/tailwind-palette-optimizer"
 import { CodeExportPanel } from "@/components/code-export-panel"
 import { ColorBlindSimulator } from "@/components/color-blind-simulator"
+import { ColorRoleSettings } from "@/components/color-role-settings"
+import { TextColorPreview } from "@/components/text-color-preview"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
@@ -31,10 +33,10 @@ const STORAGE_KEY = "palette-pally-data"
 export default function Home() {
   const [colorCount, setColorCount] = useState<number>(4)
   const [colorData, setColorData] = useState<ColorData[]>([
-    { name: "color1", value: "#e61919" },
-    { name: "color2", value: "#80e619" },
-    { name: "color3", value: "#19e5e6" },
-    { name: "color4", value: "#7f19e6" },
+    { name: "primary", value: "#e61919", role: "primary" },
+    { name: "secondary", value: "#80e619", role: "secondary" },
+    { name: "info", value: "#19e5e6", role: "info" },
+    { name: "accent", value: "#7f19e6", role: "accent" },
   ])
   const [colorVariations, setColorVariations] = useState<Record<string, Record<string, string>>>({})
   const [textColorSettings, setTextColorSettings] = useState<TextColorSettingsType>({
@@ -147,11 +149,32 @@ export default function Home() {
   }
 
   const handleSetAsPrimary = (index: number) => {
+    // 以前のプライマリカラーのロールを更新
+    const newColorData = [...colorData]
+    if (primaryColorIndex !== index) {
+      // 以前のプライマリカラーがあれば、そのロールを更新
+      if (newColorData[primaryColorIndex] && newColorData[primaryColorIndex].role === "primary") {
+        newColorData[primaryColorIndex] = {
+          ...newColorData[primaryColorIndex],
+          role: undefined,
+        }
+      }
+
+      // 新しいプライマリカラーのロールを設定
+      newColorData[index] = {
+        ...newColorData[index],
+        role: "primary",
+      }
+
+      setColorData(newColorData)
+    }
+
     setPrimaryColorIndex(index)
     toast({
-      title: "Primaryカラー設定",
-      description: `${colorData[index].name}をPrimaryカラーに設定しました`,
+      title: "Primary Color Set",
+      description: `${colorData[index].name} has been set as the primary color`,
     })
+
     // 変更後に自動保存
     setTimeout(() => {
       saveToLocalStorage()
@@ -192,16 +215,18 @@ export default function Home() {
     localStorage.removeItem(STORAGE_KEY)
 
     const defaultColors = [
-      { name: "color1", value: "#e61919" },
-      { name: "color2", value: "#80e619" },
-      { name: "color3", value: "#19e5e6" },
-      { name: "color4", value: "#7f19e6" },
+      { name: "primary", value: "#e61919", role: "primary" },
+      { name: "secondary", value: "#80e619", role: "secondary" },
+      { name: "success", value: "#19e619", role: "success" },
+      { name: "danger", value: "#e61919", role: "danger" },
+      { name: "warning", value: "#e6e619", role: "warning" },
+      { name: "info", value: "#19e5e6", role: "info" },
     ]
 
     setColorData(defaultColors.slice(0, colorCount))
-    if (colorCount > 4) {
+    if (colorCount > 6) {
       const newColorData = [...defaultColors]
-      for (let i = 4; i < colorCount; i++) {
+      for (let i = 6; i < colorCount; i++) {
         const randomColor = `#${Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0")}`
@@ -227,8 +252,8 @@ export default function Home() {
     setShowMaterialNames(false)
 
     toast({
-      title: "リセット完了",
-      description: "パレットデータをリセットしました",
+      title: "Reset Complete",
+      description: "Palette data has been reset",
     })
   }
 
@@ -298,23 +323,23 @@ export default function Home() {
           }
 
           toast({
-            title: "インポート完了",
-            description: `${validColors.length}色のパレットをインポートしました`,
+            title: "Import Complete",
+            description: `Imported palette with ${validColors.length} colors`,
           })
 
           // Save to localStorage immediately after import
           setTimeout(saveToLocalStorage, 100)
         } else {
-          throw new Error("有効なカラーデータがありません")
+          throw new Error("No valid color data found")
         }
       } else {
-        throw new Error("カラーデータが見つかりません")
+        throw new Error("No color data found")
       }
     } catch (error) {
       console.error("Import error:", error)
       toast({
-        title: "インポートエラー",
-        description: error instanceof Error ? error.message : "不明なエラーが発生しました",
+        title: "Import Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       })
     }
@@ -330,6 +355,16 @@ export default function Home() {
 
   const handleColorModeChange = (mode: ColorMode) => {
     setColorMode(mode)
+
+    // カラーモードに応じて表示設定を自動調整
+    if (mode === "material") {
+      setShowMaterialNames(true)
+      setShowTailwindClasses(false)
+    } else if (mode === "tailwind") {
+      setShowTailwindClasses(true)
+      setShowMaterialNames(false)
+    }
+
     // 変更後に自動保存
     setTimeout(() => {
       saveToLocalStorage()
@@ -346,6 +381,22 @@ export default function Home() {
 
   const handleToggleMaterialNames = (show: boolean) => {
     setShowMaterialNames(show)
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+  }
+
+  // カラーロールの更新
+  const handleUpdateColors = (newColors: ColorData[]) => {
+    setColorData(newColors)
+
+    // プライマリカラーのインデックスを更新
+    const primaryIndex = newColors.findIndex((color) => color.role === "primary")
+    if (primaryIndex !== -1) {
+      setPrimaryColorIndex(primaryIndex)
+    }
+
     // 変更後に自動保存
     setTimeout(() => {
       saveToLocalStorage()
@@ -386,10 +437,17 @@ export default function Home() {
     }, 100)
 
     toast({
-      title: "並び替え完了",
-      description: "カラーの順序を変更しました",
+      title: "Reordering Complete",
+      description: "Color order has been updated",
     })
   }
+
+  // カラーパレットの表示順をカラーピッカーと同じにする
+  const sortedColorVariations = Object.entries(colorVariations).sort((a, b) => {
+    const indexA = colorData.findIndex((color) => color.name === a[0])
+    const indexB = colorData.findIndex((color) => color.name === b[0])
+    return indexA - indexB
+  })
 
   return (
     <main className="container mx-auto px-4 py-6">
@@ -401,7 +459,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
-              カラー数:
+              Colors:
             </label>
             <Input
               id="colorCount"
@@ -413,19 +471,20 @@ export default function Home() {
               className="w-16"
             />
             <Button onClick={resetColors} variant="secondary" size="sm">
-              リセット
+              Reset
             </Button>
             <Button onClick={saveToLocalStorage} variant="outline" size="sm">
-              保存
+              Save
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <ExportImportPanel data={exportData} onImport={handleImport} />
               <CodeExportPanel colors={colorData} variations={colorVariations} primaryColorIndex={primaryColorIndex} />
               <ColorBlindSimulator colors={colorData} variations={colorVariations} />
+              <TextColorPreview colors={colorData} />
             </div>
 
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -438,11 +497,13 @@ export default function Home() {
                 onToggleMaterialNames={handleToggleMaterialNames}
               />
 
+              <ColorRoleSettings colors={colorData} onUpdateColors={handleUpdateColors} />
+
               {colorMode === "material" && (
                 <MaterialPaletteOptimizer
                   colors={colorData}
                   primaryColorIndex={primaryColorIndex}
-                  onOptimize={setColorData}
+                  onOptimize={handleUpdateColors}
                 />
               )}
 
@@ -450,7 +511,7 @@ export default function Home() {
                 <TailwindPaletteOptimizer
                   colors={colorData}
                   primaryColorIndex={primaryColorIndex}
-                  onOptimize={setColorData}
+                  onOptimize={handleUpdateColors}
                 />
               )}
 
@@ -471,7 +532,7 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Color Pickers Section with Drag & Drop */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">カラーピッカー</h2>
+          <h2 className="text-lg font-semibold mb-3">Color Picker</h2>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="color-pickers" direction="horizontal">
               {(provided) => (
@@ -483,12 +544,7 @@ export default function Home() {
                   {colorData.map((color, index) => (
                     <Draggable key={`color-${index}`} draggableId={`color-${index}`} index={index}>
                       {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          // ドラッグハンドルのプロップスを削除し、後でハンドル要素に適用する
-                          className="relative"
-                        >
+                        <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
                           <ColorPicker
                             index={index}
                             name={color.name}
@@ -497,7 +553,8 @@ export default function Home() {
                             onColorChange={(value) => handleColorChange(index, value)}
                             onNameChange={(name) => handleNameChange(index, name)}
                             onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
-                            dragHandleProps={provided.dragHandleProps} // ドラッグハンドルのプロップスを渡す
+                            dragHandleProps={provided.dragHandleProps}
+                            colorRole={color.role}
                           />
                         </div>
                       )}
@@ -512,11 +569,12 @@ export default function Home() {
 
         {/* Color Palette Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">カラーパレット</h2>
+          <h2 className="text-lg font-semibold mb-3">Color Palette</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {Object.entries(colorVariations).map(([key, variations], index) => {
+            {sortedColorVariations.map(([key, variations]) => {
               // カラー名からcolorDataの中での位置を特定
               const colorIndex = colorData.findIndex((c) => c.name === key)
+              const color = colorData[colorIndex]
               return (
                 <ColorDisplay
                   key={key}
@@ -527,6 +585,7 @@ export default function Home() {
                   colorMode={colorMode}
                   showTailwindClasses={showTailwindClasses}
                   showMaterialNames={showMaterialNames}
+                  colorRole={color?.role}
                 />
               )
             })}

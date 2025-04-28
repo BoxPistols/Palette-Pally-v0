@@ -26,52 +26,113 @@ interface MaterialPaletteOptimizerProps {
 export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize }: MaterialPaletteOptimizerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [primaryColor, setPrimaryColor] = useState<string>("blue")
+  const [primaryShade, setPrimaryShade] = useState<string>("500")
   const [secondaryColor, setSecondaryColor] = useState<string>("purple")
+  const [secondaryShade, setSecondaryShade] = useState<string>("500")
   const [errorColor, setErrorColor] = useState<string>("red")
+  const [errorShade, setErrorShade] = useState<string>("500")
+  const [successColor, setSuccessColor] = useState<string>("green")
+  const [successShade, setSuccessShade] = useState<string>("500")
+  const [warningColor, setWarningColor] = useState<string>("amber")
+  const [warningShade, setWarningShade] = useState<string>("500")
+  const [infoColor, setInfoColor] = useState<string>("lightBlue")
+  const [infoShade, setInfoShade] = useState<string>("500")
 
   const handleOptimize = () => {
-    // 現在のプライマリカラーを取得
-    const currentPrimaryColor = colors[primaryColorIndex].value
-
     // 新しいカラーパレットを生成
     const newColors = [...colors]
 
-    // プライマリカラーを設定（現在のプライマリカラーに最も近い選択されたマテリアルカラーの500シェード）
-    const primaryHex = materialColors[primaryColor][500]
-    newColors[primaryColorIndex] = { ...newColors[primaryColorIndex], value: primaryHex }
+    // 色の役割を追跡するマップ
+    const roleMap: Record<string, number> = {}
 
-    // セカンダリカラーを設定（2番目のカラーまたは新しいカラー）
-    const secondaryIndex = primaryColorIndex === 0 ? 1 : 0
+    // 既存の色の役割を確認
+    colors.forEach((color, index) => {
+      if (color.role) {
+        roleMap[color.role] = index
+      }
+    })
+
+    // プライマリカラーを設定
+    const primaryHex = materialColors[primaryColor][primaryShade]
+    const primaryIndex = roleMap.primary !== undefined ? roleMap.primary : primaryColorIndex
+    newColors[primaryIndex] = {
+      ...newColors[primaryIndex],
+      value: primaryHex,
+      name: "primary",
+      role: "primary",
+    }
+
+    // セカンダリカラーを設定
+    const secondaryHex = materialColors[secondaryColor][secondaryShade]
+    const secondaryIndex = roleMap.secondary !== undefined ? roleMap.secondary : primaryIndex === 0 ? 1 : 0
     if (secondaryIndex < newColors.length) {
-      const secondaryHex = materialColors[secondaryColor][500]
-      newColors[secondaryIndex] = { ...newColors[secondaryIndex], value: secondaryHex }
+      newColors[secondaryIndex] = {
+        ...newColors[secondaryIndex],
+        value: secondaryHex,
+        name: "secondary",
+        role: "secondary",
+      }
     }
 
-    // エラーカラーを設定（3番目のカラーまたは新しいカラー）
+    // エラー/デンジャーカラーを設定
+    const errorHex = materialColors[errorColor][errorShade]
     const errorIndex =
-      primaryColorIndex !== 2 && secondaryIndex !== 2 ? 2 : primaryColorIndex !== 3 && secondaryIndex !== 3 ? 3 : -1
+      roleMap.danger !== undefined
+        ? roleMap.danger
+        : newColors.findIndex((c) => c.role === "error") !== -1
+          ? newColors.findIndex((c) => c.role === "error")
+          : findAvailableIndex(newColors, [primaryIndex, secondaryIndex])
     if (errorIndex >= 0 && errorIndex < newColors.length) {
-      const errorHex = materialColors[errorColor][500]
-      newColors[errorIndex] = { ...newColors[errorIndex], value: errorHex }
+      newColors[errorIndex] = {
+        ...newColors[errorIndex],
+        value: errorHex,
+        name: "danger",
+        role: "danger",
+      }
     }
 
-    // 残りのカラーをMaterial Designパレットから選択
-    const usedColors = new Set([primaryColor, secondaryColor, errorColor])
-    let colorIndex = 0
+    // サクセスカラーを設定
+    const successHex = materialColors[successColor][successShade]
+    const successIndex =
+      roleMap.success !== undefined
+        ? roleMap.success
+        : findAvailableIndex(newColors, [primaryIndex, secondaryIndex, errorIndex])
+    if (successIndex >= 0 && successIndex < newColors.length) {
+      newColors[successIndex] = {
+        ...newColors[successIndex],
+        value: successHex,
+        name: "success",
+        role: "success",
+      }
+    }
 
-    for (let i = 0; i < newColors.length; i++) {
-      if (i !== primaryColorIndex && i !== secondaryIndex && i !== errorIndex) {
-        // 使用されていないマテリアルカラーを見つける
-        const availableColors = Object.keys(materialColors).filter((color) => !usedColors.has(color))
+    // ワーニングカラーを設定
+    const warningHex = materialColors[warningColor][warningShade]
+    const warningIndex =
+      roleMap.warning !== undefined
+        ? roleMap.warning
+        : findAvailableIndex(newColors, [primaryIndex, secondaryIndex, errorIndex, successIndex])
+    if (warningIndex >= 0 && warningIndex < newColors.length) {
+      newColors[warningIndex] = {
+        ...newColors[warningIndex],
+        value: warningHex,
+        name: "warning",
+        role: "warning",
+      }
+    }
 
-        if (availableColors.length > 0) {
-          const nextColor = availableColors[colorIndex % availableColors.length]
-          usedColors.add(nextColor)
-          colorIndex++
-
-          const colorHex = materialColors[nextColor][500]
-          newColors[i] = { ...newColors[i], value: colorHex }
-        }
+    // インフォカラーを設定
+    const infoHex = materialColors[infoColor][infoShade]
+    const infoIndex =
+      roleMap.info !== undefined
+        ? roleMap.info
+        : findAvailableIndex(newColors, [primaryIndex, secondaryIndex, errorIndex, successIndex, warningIndex])
+    if (infoIndex >= 0 && infoIndex < newColors.length) {
+      newColors[infoIndex] = {
+        ...newColors[infoIndex],
+        value: infoHex,
+        name: "info",
+        role: "info",
       }
     }
 
@@ -80,37 +141,123 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     setIsOpen(false)
 
     toast({
-      title: "Material Designパレット適用",
-      description: "Material Designに基づいたカラーパレットを生成しました",
+      title: "Material Design Palette Applied",
+      description: "Generated palette based on Material Design",
     })
+  }
+
+  // 利用可能なインデックスを見つける関数
+  const findAvailableIndex = (colors: ColorData[], excludeIndices: number[]): number => {
+    for (let i = 0; i < colors.length; i++) {
+      if (!excludeIndices.includes(i)) {
+        return i
+      }
+    }
+    return -1
   }
 
   // 現在のプライマリカラーに最も近いマテリアルカラーを初期選択
   const initializeClosestColors = () => {
     if (colors.length > 0) {
-      const primaryHex = colors[primaryColorIndex].value
-      const closestPrimary = findClosestMaterialColor(primaryHex)
-      setPrimaryColor(closestPrimary.color)
-
-      // セカンダリカラーの初期化
-      const secondaryIndex = primaryColorIndex === 0 ? 1 : 0
-      if (secondaryIndex < colors.length) {
-        const secondaryHex = colors[secondaryIndex].value
-        const closestSecondary = findClosestMaterialColor(secondaryHex)
-        setSecondaryColor(closestSecondary.color)
-      }
-
-      // エラーカラーの初期化
-      const errorIndex =
-        primaryColorIndex !== 2 && secondaryIndex !== 2 ? 2 : primaryColorIndex !== 3 && secondaryIndex !== 3 ? 3 : -1
-      if (errorIndex >= 0 && errorIndex < colors.length) {
-        const errorHex = colors[errorIndex].value
-        const closestError = findClosestMaterialColor(errorHex)
-        setErrorColor(closestError.color)
-      } else {
-        setErrorColor("red") // デフォルト
-      }
+      // 役割ごとに色を初期化
+      colors.forEach((color) => {
+        if (color.role === "primary" || (color.role === undefined && colors.indexOf(color) === primaryColorIndex)) {
+          const closestPrimary = findClosestMaterialColor(color.value)
+          setPrimaryColor(closestPrimary.color)
+          setPrimaryShade(closestPrimary.shade || "500")
+        } else if (color.role === "secondary") {
+          const closestSecondary = findClosestMaterialColor(color.value)
+          setSecondaryColor(closestSecondary.color)
+          setSecondaryShade(closestSecondary.shade || "500")
+        } else if (color.role === "danger" || color.role === "error") {
+          const closestError = findClosestMaterialColor(color.value)
+          setErrorColor(closestError.color)
+          setErrorShade(closestError.shade || "500")
+        } else if (color.role === "success") {
+          const closestSuccess = findClosestMaterialColor(color.value)
+          setSuccessColor(closestSuccess.color)
+          setSuccessShade(closestSuccess.shade || "500")
+        } else if (color.role === "warning") {
+          const closestWarning = findClosestMaterialColor(color.value)
+          setWarningColor(closestWarning.color)
+          setWarningShade(closestWarning.shade || "500")
+        } else if (color.role === "info") {
+          const closestInfo = findClosestMaterialColor(color.value)
+          setInfoColor(closestInfo.color)
+          setInfoShade(closestInfo.shade || "500")
+        }
+      })
     }
+  }
+
+  // シェードの選択肢
+  const getShadeOptions = (colorName: string) => {
+    if (!materialColors[colorName]) return ["500"]
+    return Object.keys(materialColors[colorName]).sort((a, b) => {
+      // 数値シェードを数値順にソート
+      if (!isNaN(Number(a)) && !isNaN(Number(b))) {
+        return Number(a) - Number(b)
+      }
+      // A100などのアクセントカラーは後ろに
+      return a.localeCompare(b)
+    })
+  }
+
+  // カラー選択コンポーネント
+  const ColorSelector = ({
+    label,
+    color,
+    shade,
+    onColorChange,
+    onShadeChange,
+  }: {
+    label: string
+    color: string
+    shade: string
+    onColorChange: (color: string) => void
+    onShadeChange: (shade: string) => void
+  }) => {
+    const shadeOptions = getShadeOptions(color)
+
+    return (
+      <div className="space-y-1">
+        <Label>{label}</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={color} onValueChange={onColorChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select color" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(materialColors).map(([colorKey, shades]) => (
+                <SelectItem key={colorKey} value={colorKey}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: shades["500"] || Object.values(shades)[0] }}
+                    />
+                    <span>{colorKey}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={shade} onValueChange={onShadeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select shade" />
+            </SelectTrigger>
+            <SelectContent>
+              {shadeOptions.map((shadeOption) => (
+                <SelectItem key={shadeOption} value={shadeOption}>
+                  {shadeOption}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[color]?.[shade] || "#cccccc" }} />
+      </div>
+    )
   }
 
   return (
@@ -129,88 +276,76 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Material Designパレット</DialogTitle>
-            <DialogDescription>Material Designのカラーシステムに基づいたパレットを生成します</DialogDescription>
+        <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
+            <DialogTitle>Material Design Palette</DialogTitle>
+            <DialogDescription>Generate a palette based on Material Design color system</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4">
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="primary-color">プライマリカラー</Label>
-                <Select value={primaryColor} onValueChange={setPrimaryColor}>
-                  <SelectTrigger id="primary-color">
-                    <SelectValue placeholder="カラーを選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(materialColors).map(([color, shades]) => (
-                      <SelectItem key={color} value={color}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: shades[500] }} />
-                          <span>{color}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[primaryColor][500] }} />
-              </div>
+          <div className="py-4 space-y-4 overflow-auto flex-1">
+            <div className="space-y-4">
+              <ColorSelector
+                label="Primary"
+                color={primaryColor}
+                shade={primaryShade}
+                onColorChange={setPrimaryColor}
+                onShadeChange={setPrimaryShade}
+              />
 
-              <div className="space-y-1">
-                <Label htmlFor="secondary-color">セカンダリカラー</Label>
-                <Select value={secondaryColor} onValueChange={setSecondaryColor}>
-                  <SelectTrigger id="secondary-color">
-                    <SelectValue placeholder="カラーを選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(materialColors).map(([color, shades]) => (
-                      <SelectItem key={color} value={color}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: shades[500] }} />
-                          <span>{color}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[secondaryColor][500] }} />
-              </div>
+              <ColorSelector
+                label="Secondary"
+                color={secondaryColor}
+                shade={secondaryShade}
+                onColorChange={setSecondaryColor}
+                onShadeChange={setSecondaryShade}
+              />
 
-              <div className="space-y-1">
-                <Label htmlFor="error-color">エラーカラー</Label>
-                <Select value={errorColor} onValueChange={setErrorColor}>
-                  <SelectTrigger id="error-color">
-                    <SelectValue placeholder="カラーを選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(materialColors).map(([color, shades]) => (
-                      <SelectItem key={color} value={color}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: shades[500] }} />
-                          <span>{color}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[errorColor][500] }} />
-              </div>
+              <ColorSelector
+                label="Danger"
+                color={errorColor}
+                shade={errorShade}
+                onColorChange={setErrorColor}
+                onShadeChange={setErrorShade}
+              />
+
+              <ColorSelector
+                label="Success"
+                color={successColor}
+                shade={successShade}
+                onColorChange={setSuccessColor}
+                onShadeChange={setSuccessShade}
+              />
+
+              <ColorSelector
+                label="Warning"
+                color={warningColor}
+                shade={warningShade}
+                onColorChange={setWarningColor}
+                onShadeChange={setWarningShade}
+              />
+
+              <ColorSelector
+                label="Info"
+                color={infoColor}
+                shade={infoShade}
+                onColorChange={setInfoColor}
+                onShadeChange={setInfoShade}
+              />
             </div>
 
             <div className="p-3 bg-blue-50 rounded-md">
               <p className="text-sm text-blue-700">
-                Material Designでは、プライマリカラーとセカンダリカラーを中心に一貫性のあるカラーシステムを構築します。
-                エラーカラーは通常赤系統の色が使用されます。
+                Material Design builds a consistent color system around primary and secondary colors. Each color has
+                shades (100-900) with higher numbers being darker.
               </p>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              キャンセル
+              Cancel
             </Button>
-            <Button onClick={handleOptimize}>適用</Button>
+            <Button onClick={handleOptimize}>Apply</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

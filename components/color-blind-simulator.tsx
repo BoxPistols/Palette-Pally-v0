@@ -65,16 +65,16 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-[960px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
             <DialogTitle>色覚異常シミュレーション</DialogTitle>
             <DialogDescription>
               様々な色覚異常の方にとって、あなたのカラーパレットがどのように見えるかをシミュレーションします。
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid grid-cols-5">
+          <Tabs defaultValue="overview" className="w-full flex-1 overflow-hidden flex flex-col">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-5 mb-2">
               <TabsTrigger value="overview">概要</TabsTrigger>
               <TabsTrigger value="protanopia">{colorBlindnessTypes.protanopia.name}</TabsTrigger>
               <TabsTrigger value="deuteranopia">{colorBlindnessTypes.deuteranopia.name}</TabsTrigger>
@@ -82,81 +82,86 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
               <TabsTrigger value="achromatopsia">{colorBlindnessTypes.achromatopsia.name}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="mt-4">
-              <div className="space-y-4">
-                <p className="text-sm">
-                  色覚異常は、人口の約4.5%（男性の約8%、女性の約0.5%）に見られる特性です。
-                  色覚異常の方にも識別しやすいカラーパレットを設計することは、アクセシビリティの観点から重要です。
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(colorBlindnessTypes).map(([key, { name, description }]) => (
-                    <div key={key} className="p-3 bg-gray-50 rounded-md">
-                      <h3 className="font-medium text-sm">{name}</h3>
-                      <p className="text-xs text-gray-600 mt-1">{description}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-3 bg-blue-50 rounded-md">
-                  <p className="text-sm text-blue-700">
-                    <strong>ヒント:</strong> 色だけでなく、形やパターン、テキストラベルなどを併用することで、
-                    色覚異常の方にも情報が伝わりやすくなります。また、十分なコントラスト比を確保することも重要です。
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-
-            {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia"] as const).map((type) => (
-              <TabsContent key={type} value={type} className="mt-4">
+            <div className="flex-1 overflow-auto px-1">
+              <TabsContent value="overview" className="mt-4">
                 <div className="space-y-4">
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <h3 className="font-medium">{colorBlindnessTypes[type].name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{colorBlindnessTypes[type].description}</p>
-                  </div>
+                  <p className="text-sm">
+                    色覚異常は、人口の約4.5%（男性の約8%、女性の約0.5%）に見られる特性です。
+                    色覚異常の方にも識別しやすいカラーパレットを設計することは、アクセシビリティの観点から重要です。
+                  </p>
 
-                  <h3 className="font-medium text-sm">メインカラー</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                    {colors.map((color) => {
-                      const simulatedColor = simulateAllColorBlindness(color.value)[type]
-                      return (
-                        <div key={color.name} className="flex flex-col items-center space-y-2">
-                          <div className="flex space-x-2">
-                            {renderColorBlock(color.value, "通常")}
-                            {renderColorBlock(simulatedColor, type)}
-                          </div>
-                          <span className="text-xs font-medium">{color.name}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <h3 className="font-medium text-sm mt-6">カラーバリエーション</h3>
-                  {Object.entries(variations).map(([colorName, colorVariations]) => (
-                    <div key={colorName} className="mb-4">
-                      <h4 className="text-xs font-medium mb-2">{colorName}</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {Object.entries(colorVariations).map(([variationName, hexValue]) => {
-                          const simulatedColor = simulateAllColorBlindness(hexValue)[type]
-                          return (
-                            <div key={`${colorName}-${variationName}`} className="flex flex-col items-center space-y-2">
-                              <div className="flex space-x-2">
-                                {renderColorBlock(hexValue, "通常")}
-                                {renderColorBlock(simulatedColor, type)}
-                              </div>
-                              <span className="text-xs">{variationName}</span>
-                            </div>
-                          )
-                        })}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(colorBlindnessTypes).map(([key, { name, description }]) => (
+                      <div key={key} className="p-3 bg-gray-50 rounded-md">
+                        <h3 className="font-medium text-sm">{name}</h3>
+                        <p className="text-xs text-gray-600 mt-1">{description}</p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  <div className="p-3 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-700">
+                      <strong>ヒント:</strong> 色だけでなく、形やパターン、テキストラベルなどを併用することで、
+                      色覚異常の方にも情報が伝わりやすくなります。また、十分なコントラスト比を確保することも重要です。
+                    </p>
+                  </div>
                 </div>
               </TabsContent>
-            ))}
+
+              {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia"] as const).map((type) => (
+                <TabsContent key={type} value={type} className="mt-4">
+                  <div className="space-y-4">
+                    <div className="p-3 bg-gray-50 rounded-md">
+                      <h3 className="font-medium">{colorBlindnessTypes[type].name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{colorBlindnessTypes[type].description}</p>
+                    </div>
+
+                    <h3 className="font-medium text-sm">メインカラー</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {colors.map((color) => {
+                        const simulatedColor = simulateAllColorBlindness(color.value)[type]
+                        return (
+                          <div key={color.name} className="flex flex-col items-center space-y-2">
+                            <div className="flex space-x-2">
+                              {renderColorBlock(color.value, "通常")}
+                              {renderColorBlock(simulatedColor, type)}
+                            </div>
+                            <span className="text-xs font-medium">{color.name}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    <h3 className="font-medium text-sm mt-6">カラーバリエーション</h3>
+                    {Object.entries(variations).map(([colorName, colorVariations]) => (
+                      <div key={colorName} className="mb-4">
+                        <h4 className="text-xs font-medium mb-2">{colorName}</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          {Object.entries(colorVariations).map(([variationName, hexValue]) => {
+                            const simulatedColor = simulateAllColorBlindness(hexValue)[type]
+                            return (
+                              <div
+                                key={`${colorName}-${variationName}`}
+                                className="flex flex-col items-center space-y-2"
+                              >
+                                <div className="flex space-x-2">
+                                  {renderColorBlock(hexValue, "通常")}
+                                  {renderColorBlock(simulatedColor, type)}
+                                </div>
+                                <span className="text-xs">{variationName}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+              ))}
+            </div>
           </Tabs>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-white z-10 pt-4 border-t mt-4">
             <Button onClick={() => setIsOpen(false)}>閉じる</Button>
           </DialogFooter>
         </DialogContent>

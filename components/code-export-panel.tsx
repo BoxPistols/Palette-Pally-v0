@@ -72,16 +72,20 @@ export function CodeExportPanel({ colors, variations, primaryColorIndex }: CodeE
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-w-[960px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
             <DialogTitle>コード出力</DialogTitle>
             <DialogDescription>
               カラーパレットを様々な形式のコードとして出力できます。必要な形式を選択してください。
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full overflow-hidden">
-            <TabsList className="grid grid-cols-5">
+          <Tabs
+            defaultValue={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full flex-1 overflow-hidden flex flex-col"
+          >
+            <TabsList className="grid grid-cols-3 sm:grid-cols-5 mb-2">
               <TabsTrigger value="css">CSS</TabsTrigger>
               <TabsTrigger value="scss">SCSS</TabsTrigger>
               <TabsTrigger value="tailwind">Tailwind</TabsTrigger>
@@ -89,57 +93,59 @@ export function CodeExportPanel({ colors, variations, primaryColorIndex }: CodeE
               <TabsTrigger value="mapping">クラスマッピング</TabsTrigger>
             </TabsList>
 
-            <div className="mt-4 overflow-hidden flex flex-col h-[calc(100%-2rem)]">
-              <TabsContent value="css" className="flex-1 overflow-hidden flex flex-col">
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1">
-                  <pre className="text-sm font-mono whitespace-pre">{cssCode}</pre>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => handleCopyToClipboard(cssCode)}>コピー</Button>
+            <div className="flex-1 overflow-auto">
+              <TabsContent value="css" className="h-full flex flex-col">
+                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[400px] text-sm font-mono">
+                  <pre className="whitespace-pre">{cssCode}</pre>
                 </div>
               </TabsContent>
 
-              <TabsContent value="scss" className="flex-1 overflow-hidden flex flex-col">
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1">
-                  <pre className="text-sm font-mono whitespace-pre">{scssCode}</pre>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => handleCopyToClipboard(scssCode)}>コピー</Button>
+              <TabsContent value="scss" className="h-full flex flex-col">
+                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[400px] text-sm font-mono">
+                  <pre className="whitespace-pre">{scssCode}</pre>
                 </div>
               </TabsContent>
 
-              <TabsContent value="tailwind" className="flex-1 overflow-hidden flex flex-col">
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1">
-                  <pre className="text-sm font-mono whitespace-pre">{tailwindCode}</pre>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => handleCopyToClipboard(tailwindCode)}>コピー</Button>
+              <TabsContent value="tailwind" className="h-full flex flex-col">
+                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[400px] text-sm font-mono">
+                  <pre className="whitespace-pre">{tailwindCode}</pre>
                 </div>
               </TabsContent>
 
-              <TabsContent value="material" className="flex-1 overflow-hidden flex flex-col">
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1">
-                  <pre className="text-sm font-mono whitespace-pre">{materialUICode}</pre>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => handleCopyToClipboard(materialUICode)}>コピー</Button>
+              <TabsContent value="material" className="h-full flex flex-col">
+                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[400px] text-sm font-mono">
+                  <pre className="whitespace-pre">{materialUICode}</pre>
                 </div>
               </TabsContent>
 
-              <TabsContent value="mapping" className="flex-1 overflow-hidden flex flex-col">
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1">
-                  <pre className="text-sm font-mono whitespace-pre">{tailwindClassMapping}</pre>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => handleCopyToClipboard(tailwindClassMapping)}>コピー</Button>
+              <TabsContent value="mapping" className="h-full flex flex-col">
+                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[400px] text-sm font-mono">
+                  <pre className="whitespace-pre">{tailwindClassMapping}</pre>
                 </div>
               </TabsContent>
             </div>
           </Tabs>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <DialogFooter className="sticky bottom-0 bg-white z-10 pt-4 border-t mt-4">
+            <Button variant="outline" onClick={() => setIsOpen(false)} className="mr-2">
               閉じる
+            </Button>
+            <Button
+              onClick={() =>
+                handleCopyToClipboard(
+                  activeTab === "css"
+                    ? cssCode
+                    : activeTab === "scss"
+                      ? scssCode
+                      : activeTab === "tailwind"
+                        ? tailwindCode
+                        : activeTab === "material"
+                          ? materialUICode
+                          : tailwindClassMapping,
+                )
+              }
+            >
+              コピー
             </Button>
           </DialogFooter>
         </DialogContent>
