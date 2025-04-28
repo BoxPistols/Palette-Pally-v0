@@ -22,7 +22,7 @@ import { MaterialPaletteOptimizer } from "@/components/material-palette-optimize
 import { TailwindPaletteOptimizer } from "@/components/tailwind-palette-optimizer"
 import { CodeExportPanel } from "@/components/code-export-panel"
 import { ColorBlindSimulator } from "@/components/color-blind-simulator"
-import { ColorRoleSettings } from "@/components/color-role-settings"
+import { ColorRoleSettings } from "@/components/color-role-settings-improved"
 import { TextColorPreview } from "@/components/text-color-preview"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"

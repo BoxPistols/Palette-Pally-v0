@@ -137,8 +137,8 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     setIsOpen(false)
 
     toast({
-      title: "Tailwindパレット適用",
-      description: "Tailwind CSSに基づいたカラーパレットを生成しました",
+      title: "Tailwind Palette Applied",
+      description: "Generated palette based on Tailwind CSS",
     })
   }
 
@@ -216,7 +216,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
         <div className="grid grid-cols-2 gap-2">
           <Select value={color} onValueChange={onColorChange}>
             <SelectTrigger>
-              <SelectValue placeholder="カラーを選択" />
+              <SelectValue placeholder="Select color" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(tailwindColors).map(([colorKey, shades]) => (
@@ -232,7 +232,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
 
           <Select value={shade} onValueChange={onShadeChange}>
             <SelectTrigger>
-              <SelectValue placeholder="シェードを選択" />
+              <SelectValue placeholder="Select shade" />
             </SelectTrigger>
             <SelectContent>
               {shadeOptions.map((shadeOption) => (
@@ -267,16 +267,16 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[600px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
-            <DialogTitle>Tailwindパレット</DialogTitle>
-            <DialogDescription>Tailwind CSSのカラーシステムに基づいたパレットを生成します</DialogDescription>
+        <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
+            <DialogTitle>Tailwind Palette</DialogTitle>
+            <DialogDescription>Generate a palette based on Tailwind CSS color system</DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-auto flex-1">
             <div className="space-y-4">
               <ColorSelector
-                label="プライマリカラー"
+                label="Primary"
                 color={primaryColor}
                 shade={primaryShade}
                 onColorChange={setPrimaryColor}
@@ -284,7 +284,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="セカンダリカラー"
+                label="Secondary"
                 color={secondaryColor}
                 shade={secondaryShade}
                 onColorChange={setSecondaryColor}
@@ -292,7 +292,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="デンジャーカラー"
+                label="Danger"
                 color={dangerColor}
                 shade={dangerShade}
                 onColorChange={setDangerColor}
@@ -300,7 +300,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="サクセスカラー"
+                label="Success"
                 color={successColor}
                 shade={successShade}
                 onColorChange={setSuccessColor}
@@ -308,7 +308,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="ワーニングカラー"
+                label="Warning"
                 color={warningColor}
                 shade={warningShade}
                 onColorChange={setWarningColor}
@@ -316,7 +316,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="インフォカラー"
+                label="Info"
                 color={infoColor}
                 shade={infoShade}
                 onColorChange={setInfoColor}
@@ -326,17 +326,17 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
 
             <div className="p-3 bg-blue-50 rounded-md">
               <p className="text-sm text-blue-700">
-                Tailwind CSSでは、カラーとシェード（50〜950）の組み合わせでカラーパレットを構築します。
-                一般的に500がベースカラー、それより小さい数字が明るい色、大きい数字が暗い色になります。
+                Tailwind CSS builds color palettes with color and shade (50-950) combinations. Typically, 500 is the
+                base color, lower numbers are lighter, and higher numbers are darker.
               </p>
             </div>
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-white z-10 pt-4 border-t">
+          <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              キャンセル
+              Cancel
             </Button>
-            <Button onClick={handleOptimize}>適用</Button>
+            <Button onClick={handleOptimize}>Apply</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -43,7 +43,7 @@ export function PaletteOptimizer({
   const [accessibilityLevel, setAccessibilityLevel] = useState<number>(4.5) // デフォルトはAA（4.5:1）
   const [accessibilityPreset, setAccessibilityPreset] = useState<string>("aa") // デフォルトはAA
   const [harmonizationStrength, setHarmonizationStrength] = useState<number>(50) // 調和の強さ（0-100）
-  const [useCustomAccessibility, setUseCustomAccessibility] = useState<boolean>(false) // カスタム値を使用するかどうか
+  const [useCustomAccessibility, setUseCustomAccessibility] = useState<boolean>(false) /// カスタム値を使用するかどうか
 
   // アクセシビリティの問題を検出
   const detectAccessibilityIssues = () => {
@@ -228,8 +228,8 @@ export function PaletteOptimizer({
 
     setIsOpen(false)
     toast({
-      title: "最適化完了",
-      description: "パレットが最適化されました",
+      title: "Optimization Complete",
+      description: "Palette has been optimized",
     })
   }
 
@@ -273,7 +273,7 @@ export function PaletteOptimizer({
     <>
       <Button variant="outline" size="sm" className="flex items-center gap-1 relative" onClick={() => setIsOpen(true)}>
         <Wand2 className="h-4 w-4" />
-        <span>パレット最適化</span>
+        <span>Palette Optimizer</span>
         {accessibilityIssues > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
             {accessibilityIssues}
@@ -282,10 +282,12 @@ export function PaletteOptimizer({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[600px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
-            <DialogTitle>パレット最適化</DialogTitle>
-            <DialogDescription>カラーパレットの一貫性とアクセシビリティを向上させるためのオプション</DialogDescription>
+        <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
+            <DialogTitle>Palette Optimizer</DialogTitle>
+            <DialogDescription>
+              Options to improve consistency and accessibility of your color palette
+            </DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-auto flex-1">
@@ -293,10 +295,10 @@ export function PaletteOptimizer({
               <div className="flex p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 gap-2 items-start">
                 <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">アクセシビリティの問題が検出されました</p>
+                  <p className="text-sm font-medium">Accessibility issues detected</p>
                   <p className="text-xs mt-1">
-                    {accessibilityIssues}個のカラーでコントラスト比が不十分です（{accessibilityLevel.toFixed(1)}
-                    :1未満）。 「アクセシビリティ修正」オプションを有効にすることで自動的に修正できます。
+                    {accessibilityIssues} colors have insufficient contrast ratio (below {accessibilityLevel.toFixed(1)}
+                    :1). Enable "Fix Accessibility" option to automatically fix these issues.
                   </p>
                 </div>
               </div>
@@ -305,8 +307,8 @@ export function PaletteOptimizer({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="fix-accessibility">アクセシビリティ修正</Label>
-                  <p className="text-xs text-gray-500">コントラスト比が基準値以上になるよう色を調整</p>
+                  <Label htmlFor="fix-accessibility">Fix Accessibility</Label>
+                  <p className="text-xs text-gray-500">Adjust colors to meet contrast ratio requirements</p>
                 </div>
                 <Switch
                   id="fix-accessibility"
@@ -319,7 +321,7 @@ export function PaletteOptimizer({
 
               {optimizationOptions.fixAccessibility && (
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                  <Label className="text-xs">アクセシビリティレベル</Label>
+                  <Label className="text-xs">Accessibility Level</Label>
 
                   <RadioGroup
                     value={accessibilityPreset}
@@ -349,7 +351,7 @@ export function PaletteOptimizer({
                   <div className="space-y-1">
                     <div className="flex justify-between">
                       <Label htmlFor="custom-level" className="text-xs">
-                        カスタム値: {accessibilityLevel.toFixed(1)}:1
+                        Custom value: {accessibilityLevel.toFixed(1)}:1
                       </Label>
                       <Switch
                         id="use-custom"
@@ -379,8 +381,10 @@ export function PaletteOptimizer({
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="harmonize-colors">Primaryカラーとの調和</Label>
-                  <p className="text-xs text-gray-500">Primaryカラーの明度・彩度に合わせて調整（色相は維持）</p>
+                  <Label htmlFor="harmonize-colors">Harmonize with Primary</Label>
+                  <p className="text-xs text-gray-500">
+                    Adjust brightness and saturation to match primary color (preserves hue)
+                  </p>
                 </div>
                 <Switch
                   id="harmonize-colors"
@@ -394,10 +398,10 @@ export function PaletteOptimizer({
               {optimizationOptions.harmonizeColors && (
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100">
                   <Label htmlFor="harmonization-strength" className="text-xs">
-                    調和の強さ: {harmonizationStrength}%
+                    Harmony strength: {harmonizationStrength}%
                   </Label>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-gray-500">弱</span>
+                    <span className="text-xs text-gray-500">Weak</span>
                     <Slider
                       id="harmonization-strength"
                       min={10}
@@ -407,18 +411,18 @@ export function PaletteOptimizer({
                       onValueChange={(value) => setHarmonizationStrength(value[0])}
                       className="flex-1"
                     />
-                    <span className="text-xs text-gray-500">強</span>
+                    <span className="text-xs text-gray-500">Strong</span>
                   </div>
                   <p className="text-xs text-blue-600 mt-1">
-                    注意: この機能は色相を変更せず、明度と彩度のみを調整します
+                    Note: This feature only adjusts brightness and saturation, not hue
                   </p>
                 </div>
               )}
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="balance-variations">テキストカラー最適化</Label>
-                  <p className="text-xs text-gray-500">各バリエーションに最適なテキストカラーを設定</p>
+                  <Label htmlFor="balance-variations">Optimize Text Colors</Label>
+                  <p className="text-xs text-gray-500">Set optimal text colors for each variation</p>
                 </div>
                 <Switch
                   id="balance-variations"
@@ -431,11 +435,11 @@ export function PaletteOptimizer({
             </div>
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-white z-10 pt-4 border-t">
+          <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              キャンセル
+              Cancel
             </Button>
-            <Button onClick={handleOptimize}>最適化を適用</Button>
+            <Button onClick={handleOptimize}>Apply Optimization</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
