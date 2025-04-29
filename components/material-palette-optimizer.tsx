@@ -222,38 +222,42 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     return (
       <div className="space-y-1">
         <Label>{label}</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <Select value={color} onValueChange={onColorChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select color" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(materialColors).map(([colorKey, shades]) => (
-                <SelectItem key={colorKey} value={colorKey}>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: shades["500"] || Object.values(shades)[0] }}
-                    />
-                    <span>{colorKey}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-2 max-w-full">
+          <div className="w-full">
+            <Select value={color} onValueChange={onColorChange}>
+              <SelectTrigger className="w-full max-w-[150px]">
+                <SelectValue placeholder="Select color" />
+              </SelectTrigger>
+              <SelectContent className="max-w-[200px]">
+                {Object.entries(materialColors).map(([colorKey, shades]) => (
+                  <SelectItem key={colorKey} value={colorKey}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: shades["500"] || Object.values(shades)[0] }}
+                      />
+                      <span className="truncate">{colorKey}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select value={shade} onValueChange={onShadeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select shade" />
-            </SelectTrigger>
-            <SelectContent>
-              {shadeOptions.map((shadeOption) => (
-                <SelectItem key={shadeOption} value={shadeOption}>
-                  {shadeOption}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="w-full">
+            <Select value={shade} onValueChange={onShadeChange}>
+              <SelectTrigger className="w-full max-w-[100px]">
+                <SelectValue placeholder="Shade" />
+              </SelectTrigger>
+              <SelectContent className="max-w-[100px]">
+                {shadeOptions.map((shadeOption) => (
+                  <SelectItem key={shadeOption} value={shadeOption}>
+                    {shadeOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[color]?.[shade] || "#cccccc" }} />
       </div>
@@ -282,7 +286,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             <DialogDescription>Generate a palette based on Material Design color system</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4 overflow-auto flex-1">
+          <div className="py-4 space-y-4 overflow-y-auto flex-1">
             <div className="space-y-4">
               <ColorSelector
                 label="Primary"

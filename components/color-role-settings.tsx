@@ -57,8 +57,8 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
     setIsOpen(false)
 
     toast({
-      title: "Color Role Settings Updated",
-      description: "Color roles and order have been updated",
+      title: "カラーロール設定を更新しました",
+      description: "カラーの役割と順序が更新されました",
     })
   }
 
@@ -120,6 +120,38 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
     }
   }
 
+  // 日本語のロール名を取得
+  const getRoleDisplayName = (role: ColorRole): string => {
+    switch (role) {
+      case "primary":
+        return "プライマリ"
+      case "secondary":
+        return "セカンダリ"
+      case "success":
+        return "成功"
+      case "danger":
+        return "危険"
+      case "warning":
+        return "警告"
+      case "info":
+        return "情報"
+      case "text":
+        return "テキスト"
+      case "background":
+        return "背景"
+      case "border":
+        return "境界線"
+      case "accent":
+        return "アクセント"
+      case "neutral":
+        return "ニュートラル"
+      case "custom":
+        return "カスタム"
+      default:
+        return role
+    }
+  }
+
   return (
     <>
       <Button
@@ -127,27 +159,27 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
         size="sm"
         className="flex items-center gap-1 whitespace-nowrap"
         onClick={() => setIsOpen(true)}
-        title="Color Role Settings"
+        title="カラーロール設定"
       >
         <Tag className="h-4 w-4" />
-        <span>Color Roles</span>
+        <span>カラーロール</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
-            <DialogTitle>Color Role Settings</DialogTitle>
+            <DialogTitle>カラーロール設定</DialogTitle>
             <DialogDescription>
-              Assign roles to each color and drag to reorder. This helps define their purpose in your design system.
+              各カラーに役割を割り当て、ドラッグして順序を変更できます。これによりデザインシステムの一貫性が向上します。
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-auto flex-1">
             <div className="p-3 bg-blue-50 rounded-md mb-4">
               <p className="text-sm text-blue-700">
-                <strong>Tip:</strong> Drag colors to reorder them. Assign roles to create a consistent design system.
-                Primary colors represent your brand, while others like success, danger, and warning are used for
-                specific actions.
+                <strong>ヒント:</strong>{" "}
+                カラーをドラッグして順序を変更できます。役割を割り当てることで一貫したデザインシステムを作成できます。
+                プライマリカラーはブランドを表し、成功、危険、警告などの他の色は特定のアクションに使用されます。
               </p>
             </div>
 
@@ -187,13 +219,13 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
                                 <SelectTrigger
                                   className={`w-full ${getRoleBadgeClass(colorRoles[color.name] || "custom")}`}
                                 >
-                                  <SelectValue placeholder="Select role" />
+                                  <SelectValue placeholder="役割を選択" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {availableRoles.map((role) => (
                                     <SelectItem key={role} value={role}>
                                       <div className="flex flex-col">
-                                        <span className="capitalize">{role}</span>
+                                        <span className="capitalize">{getRoleDisplayName(role)}</span>
                                         <span className="text-xs text-gray-500 truncate">
                                           {colorRoleDescriptions[role]}
                                         </span>
@@ -216,9 +248,9 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
 
           <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
+              キャンセル
             </Button>
-            <Button onClick={handleApply}>Apply</Button>
+            <Button onClick={handleApply}>適用</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

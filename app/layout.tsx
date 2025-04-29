@@ -1,10 +1,17 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: "Palette Pally - カラーパレット作成ツール",
+  description: "カラーパレットの作成・管理・アクセシビリティチェックを簡単に行えるツール",
+  icons: {
+    icon: "/favicon.png",
+  },
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -13,8 +20,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="ja">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+      </head>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

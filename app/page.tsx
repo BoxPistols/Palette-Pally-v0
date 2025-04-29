@@ -22,7 +22,6 @@ import { MaterialPaletteOptimizer } from "@/components/material-palette-optimize
 import { TailwindPaletteOptimizer } from "@/components/tailwind-palette-optimizer"
 import { CodeExportPanel } from "@/components/code-export-panel"
 import { ColorBlindSimulator } from "@/components/color-blind-simulator"
-// Make sure we're using the correct import for ColorRoleSettings
 import { ColorRoleSettings } from "@/components/color-role-settings"
 import { TextColorPreview } from "@/components/text-color-preview"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
@@ -32,12 +31,16 @@ const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
 
 export default function Home() {
-  const [colorCount, setColorCount] = useState<number>(4)
+  const [colorCount, setColorCount] = useState<number>(8)
   const [colorData, setColorData] = useState<ColorData[]>([
-    { name: "primary", value: "#e61919", role: "primary" },
-    { name: "secondary", value: "#80e619", role: "secondary" },
-    { name: "info", value: "#19e5e6", role: "info" },
-    { name: "accent", value: "#7f19e6", role: "accent" },
+    { name: "primary", value: "#3b82f6", role: "primary" },
+    { name: "secondary", value: "#8b5cf6", role: "secondary" },
+    { name: "success", value: "#22c55e", role: "success" },
+    { name: "danger", value: "#ef4444", role: "danger" },
+    { name: "warning", value: "#f59e0b", role: "warning" },
+    { name: "info", value: "#06b6d4", role: "info" },
+    { name: "background", value: "#f8fafc", role: "background" },
+    { name: "text", value: "#1e293b", role: "text" },
   ])
   const [colorVariations, setColorVariations] = useState<Record<string, Record<string, string>>>({})
   const [textColorSettings, setTextColorSettings] = useState<TextColorSettingsType>({
@@ -172,8 +175,8 @@ export default function Home() {
 
     setPrimaryColorIndex(index)
     toast({
-      title: "Primary Color Set",
-      description: `${colorData[index].name} has been set as the primary color`,
+      title: "プライマリカラー設定",
+      description: `${colorData[index].name}がプライマリカラーに設定されました`,
     })
 
     // 変更後に自動保存
@@ -216,18 +219,20 @@ export default function Home() {
     localStorage.removeItem(STORAGE_KEY)
 
     const defaultColors = [
-      { name: "primary", value: "#e61919", role: "primary" },
-      { name: "secondary", value: "#80e619", role: "secondary" },
-      { name: "success", value: "#19e619", role: "success" },
-      { name: "danger", value: "#e61919", role: "danger" },
-      { name: "warning", value: "#e6e619", role: "warning" },
-      { name: "info", value: "#19e5e6", role: "info" },
+      { name: "primary", value: "#3b82f6", role: "primary" },
+      { name: "secondary", value: "#8b5cf6", role: "secondary" },
+      { name: "success", value: "#22c55e", role: "success" },
+      { name: "danger", value: "#ef4444", role: "danger" },
+      { name: "warning", value: "#f59e0b", role: "warning" },
+      { name: "info", value: "#06b6d4", role: "info" },
+      { name: "background", value: "#f8fafc", role: "background" },
+      { name: "text", value: "#1e293b", role: "text" },
     ]
 
     setColorData(defaultColors.slice(0, colorCount))
-    if (colorCount > 6) {
+    if (colorCount > 8) {
       const newColorData = [...defaultColors]
-      for (let i = 6; i < colorCount; i++) {
+      for (let i = 8; i < colorCount; i++) {
         const randomColor = `#${Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0")}`
@@ -253,8 +258,8 @@ export default function Home() {
     setShowMaterialNames(false)
 
     toast({
-      title: "Reset Complete",
-      description: "Palette data has been reset",
+      title: "リセット完了",
+      description: "パレットデータがリセットされました",
     })
   }
 
@@ -324,23 +329,23 @@ export default function Home() {
           }
 
           toast({
-            title: "Import Complete",
-            description: `Imported palette with ${validColors.length} colors`,
+            title: "インポート完了",
+            description: `${validColors.length}色のパレットをインポートしました`,
           })
 
           // Save to localStorage immediately after import
           setTimeout(saveToLocalStorage, 100)
         } else {
-          throw new Error("No valid color data found")
+          throw new Error("有効なカラーデータが見つかりませんでした")
         }
       } else {
-        throw new Error("No color data found")
+        throw new Error("カラーデータが見つかりませんでした")
       }
     } catch (error) {
       console.error("Import error:", error)
       toast({
-        title: "Import Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        title: "インポートエラー",
+        description: error instanceof Error ? error.message : "不明なエラーが発生しました",
         variant: "destructive",
       })
     }
@@ -438,8 +443,8 @@ export default function Home() {
     }, 100)
 
     toast({
-      title: "Reordering Complete",
-      description: "Color order has been updated",
+      title: "並べ替え完了",
+      description: "カラーの順序が更新されました",
     })
   }
 
@@ -460,7 +465,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
-              Colors:
+              カラー数:
             </label>
             <Input
               id="colorCount"
@@ -472,10 +477,10 @@ export default function Home() {
               className="w-16"
             />
             <Button onClick={resetColors} variant="secondary" size="sm">
-              Reset
+              リセット
             </Button>
             <Button onClick={saveToLocalStorage} variant="outline" size="sm">
-              Save
+              保存
             </Button>
           </div>
         </CardHeader>
