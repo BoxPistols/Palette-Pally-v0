@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { tailwindColors, findClosestTailwindColor } from "@/lib/color-systems"
+import { useLanguage } from "@/contexts/language-context"
 import type { ColorData } from "@/types/palette"
 
 interface TailwindPaletteOptimizerProps {
@@ -24,6 +25,7 @@ interface TailwindPaletteOptimizerProps {
 }
 
 export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize }: TailwindPaletteOptimizerProps) {
+  const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [primaryColor, setPrimaryColor] = useState<string>("blue")
   const [primaryShade, setPrimaryShade] = useState<string>("500")
@@ -37,6 +39,43 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
   const [warningShade, setWarningShade] = useState<string>("500")
   const [infoColor, setInfoColor] = useState<string>("sky")
   const [infoShade, setInfoShade] = useState<string>("500")
+
+  const texts = {
+    jp: {
+      button: "Tailwind CSS",
+      title: "Tailwind パレット",
+      description: "Tailwind CSSのカラーシステムに基づいたパレットを生成します",
+      primary: "プライマリ",
+      secondary: "セカンダリ",
+      danger: "デンジャー",
+      success: "サクセス",
+      warning: "ワーニング",
+      info: "インフォ",
+      note: "Tailwind CSSは、カラーとシェード（50-950）の組み合わせでパレットを構築します。通常、500が基本色で、数字が小さいほど明るく、大きいほど暗くなります。",
+      cancel: "キャンセル",
+      apply: "適用",
+      success_message: "Tailwindパレットを適用しました",
+      success_description: "Tailwind CSSに基づいたパレットを生成しました",
+    },
+    en: {
+      button: "Tailwind CSS",
+      title: "Tailwind Palette",
+      description: "Generate a palette based on Tailwind CSS color system",
+      primary: "Primary",
+      secondary: "Secondary",
+      danger: "Danger",
+      success: "Success",
+      warning: "Warning",
+      info: "Info",
+      note: "Tailwind CSS builds color palettes with color and shade (50-950) combinations. Typically, 500 is the base color, lower numbers are lighter, and higher numbers are darker.",
+      cancel: "Cancel",
+      apply: "Apply",
+      success_message: "Tailwind Palette Applied",
+      success_description: "Generated palette based on Tailwind CSS",
+    },
+  }
+
+  const t_local = texts[language]
 
   const handleOptimize = () => {
     // 新しいカラーパレットを生成
@@ -137,8 +176,8 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     setIsOpen(false)
 
     toast({
-      title: "Tailwind Palette Applied",
-      description: "Generated palette based on Tailwind CSS",
+      title: t_local.success_message,
+      description: t_local.success_description,
     })
   }
 
@@ -214,9 +253,9 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
       <div className="space-y-1">
         <Label>{label}</Label>
         <div className="grid grid-cols-2 gap-2 max-w-full">
-          <div className="w-full">
+          <div className="flex justify-center">
             <Select value={color} onValueChange={onColorChange}>
-              <SelectTrigger className="w-full max-w-[150px]">
+              <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Select color" />
               </SelectTrigger>
               <SelectContent className="max-w-[200px]">
@@ -232,9 +271,9 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             </Select>
           </div>
 
-          <div className="w-full">
+          <div className="flex justify-center">
             <Select value={shade} onValueChange={onShadeChange}>
-              <SelectTrigger className="w-full max-w-[100px]">
+              <SelectTrigger className="w-[80px]">
                 <SelectValue placeholder="Shade" />
               </SelectTrigger>
               <SelectContent className="max-w-[100px]">
@@ -267,20 +306,20 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
         }}
       >
         <Wand2 className="h-4 w-4" />
-        <span>Tailwind CSS</span>
+        <span>{t_local.button}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
-            <DialogTitle>Tailwind Palette</DialogTitle>
-            <DialogDescription>Generate a palette based on Tailwind CSS color system</DialogDescription>
+            <DialogTitle>{t_local.title}</DialogTitle>
+            <DialogDescription>{t_local.description}</DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-y-auto flex-1">
             <div className="space-y-4">
               <ColorSelector
-                label="Primary"
+                label={t_local.primary}
                 color={primaryColor}
                 shade={primaryShade}
                 onColorChange={setPrimaryColor}
@@ -288,7 +327,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Secondary"
+                label={t_local.secondary}
                 color={secondaryColor}
                 shade={secondaryShade}
                 onColorChange={setSecondaryColor}
@@ -296,7 +335,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Danger"
+                label={t_local.danger}
                 color={dangerColor}
                 shade={dangerShade}
                 onColorChange={setDangerColor}
@@ -304,7 +343,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Success"
+                label={t_local.success}
                 color={successColor}
                 shade={successShade}
                 onColorChange={setSuccessColor}
@@ -312,7 +351,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Warning"
+                label={t_local.warning}
                 color={warningColor}
                 shade={warningShade}
                 onColorChange={setWarningColor}
@@ -320,7 +359,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Info"
+                label={t_local.info}
                 color={infoColor}
                 shade={infoShade}
                 onColorChange={setInfoColor}
@@ -329,18 +368,15 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             </div>
 
             <div className="p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700">
-                Tailwind CSS builds color palettes with color and shade (50-950) combinations. Typically, 500 is the
-                base color, lower numbers are lighter, and higher numbers are darker.
-              </p>
+              <p className="text-sm text-blue-700">{t_local.note}</p>
             </div>
           </div>
 
           <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
+              {t_local.cancel}
             </Button>
-            <Button onClick={handleOptimize}>Apply</Button>
+            <Button onClick={handleOptimize}>{t_local.apply}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

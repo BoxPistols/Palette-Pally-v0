@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/use-toast"
 import { calculateContrastRatio, hexToHsl, hslToHex, getBetterContrastColor } from "@/lib/color-utils"
+import { useLanguage } from "@/contexts/language-context"
 import type { ColorData, TextColorSettings } from "@/types/palette"
 
 interface PaletteOptimizerProps {
@@ -34,6 +35,7 @@ export function PaletteOptimizer({
   onOptimize,
   onUpdateTextSettings,
 }: PaletteOptimizerProps) {
+  const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [optimizationOptions, setOptimizationOptions] = useState({
     fixAccessibility: true,
@@ -228,8 +230,8 @@ export function PaletteOptimizer({
 
     setIsOpen(false)
     toast({
-      title: "Optimization Complete",
-      description: "Palette has been optimized",
+      title: language === "jp" ? "最適化完了" : "Optimization Complete",
+      description: language === "jp" ? "パレットが最適化されました" : "Palette has been optimized",
     })
   }
 
@@ -273,7 +275,7 @@ export function PaletteOptimizer({
     <>
       <Button variant="outline" size="sm" className="flex items-center gap-1 relative" onClick={() => setIsOpen(true)}>
         <Wand2 className="h-4 w-4" />
-        <span>Palette Optimizer</span>
+        <span>{t("button.paletteOptimizer")}</span>
         {accessibilityIssues > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
             {accessibilityIssues}
@@ -284,10 +286,8 @@ export function PaletteOptimizer({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
-            <DialogTitle>Palette Optimizer</DialogTitle>
-            <DialogDescription>
-              Options to improve consistency and accessibility of your color palette
-            </DialogDescription>
+            <DialogTitle>{t("optimizer.title")}</DialogTitle>
+            <DialogDescription>{t("optimizer.description")}</DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-auto flex-1">
@@ -295,10 +295,10 @@ export function PaletteOptimizer({
               <div className="flex p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 gap-2 items-start">
                 <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">Accessibility issues detected</p>
+                  <p className="text-sm font-medium">{t("optimizer.accessibilityIssues")}</p>
                   <p className="text-xs mt-1">
-                    {accessibilityIssues} colors have insufficient contrast ratio (below {accessibilityLevel.toFixed(1)}
-                    :1). Enable "Fix Accessibility" option to automatically fix these issues.
+                    {accessibilityIssues} {t("optimizer.accessibilityIssuesDesc")} {accessibilityLevel.toFixed(1)}
+                    {t("optimizer.accessibilityIssuesDesc2")}
                   </p>
                 </div>
               </div>
@@ -307,8 +307,8 @@ export function PaletteOptimizer({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="fix-accessibility">Fix Accessibility</Label>
-                  <p className="text-xs text-gray-500">Adjust colors to meet contrast ratio requirements</p>
+                  <Label htmlFor="fix-accessibility">{t("optimizer.fixAccessibility")}</Label>
+                  <p className="text-xs text-gray-500">{t("optimizer.fixAccessibilityDesc")}</p>
                 </div>
                 <Switch
                   id="fix-accessibility"
@@ -321,7 +321,7 @@ export function PaletteOptimizer({
 
               {optimizationOptions.fixAccessibility && (
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                  <Label className="text-xs">Accessibility Level</Label>
+                  <Label className="text-xs">{t("optimizer.accessibilityLevel")}</Label>
 
                   <RadioGroup
                     value={accessibilityPreset}
@@ -351,7 +351,7 @@ export function PaletteOptimizer({
                   <div className="space-y-1">
                     <div className="flex justify-between">
                       <Label htmlFor="custom-level" className="text-xs">
-                        Custom value: {accessibilityLevel.toFixed(1)}:1
+                        {t("optimizer.customValue")} {accessibilityLevel.toFixed(1)}:1
                       </Label>
                       <Switch
                         id="use-custom"
@@ -381,10 +381,8 @@ export function PaletteOptimizer({
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="harmonize-colors">Harmonize with Primary</Label>
-                  <p className="text-xs text-gray-500">
-                    Adjust brightness and saturation to match primary color (preserves hue)
-                  </p>
+                  <Label htmlFor="harmonize-colors">{t("optimizer.harmonizeColors")}</Label>
+                  <p className="text-xs text-gray-500">{t("optimizer.harmonizeColorsDesc")}</p>
                 </div>
                 <Switch
                   id="harmonize-colors"
@@ -398,10 +396,10 @@ export function PaletteOptimizer({
               {optimizationOptions.harmonizeColors && (
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100">
                   <Label htmlFor="harmonization-strength" className="text-xs">
-                    Harmony strength: {harmonizationStrength}%
+                    {t("optimizer.harmonyStrength")} {harmonizationStrength}%
                   </Label>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-gray-500">Weak</span>
+                    <span className="text-xs text-gray-500">{t("optimizer.weak")}</span>
                     <Slider
                       id="harmonization-strength"
                       min={10}
@@ -411,18 +409,16 @@ export function PaletteOptimizer({
                       onValueChange={(value) => setHarmonizationStrength(value[0])}
                       className="flex-1"
                     />
-                    <span className="text-xs text-gray-500">Strong</span>
+                    <span className="text-xs text-gray-500">{t("optimizer.strong")}</span>
                   </div>
-                  <p className="text-xs text-blue-600 mt-1">
-                    Note: This feature only adjusts brightness and saturation, not hue
-                  </p>
+                  <p className="text-xs text-blue-600 mt-1">{t("optimizer.harmonizeNote")}</p>
                 </div>
               )}
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="balance-variations">Optimize Text Colors</Label>
-                  <p className="text-xs text-gray-500">Set optimal text colors for each variation</p>
+                  <Label htmlFor="balance-variations">{t("optimizer.optimizeTextColors")}</Label>
+                  <p className="text-xs text-gray-500">{t("optimizer.optimizeTextColorsDesc")}</p>
                 </div>
                 <Switch
                   id="balance-variations"
@@ -437,9 +433,9 @@ export function PaletteOptimizer({
 
           <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
+              {t("optimizer.cancel")}
             </Button>
-            <Button onClick={handleOptimize}>Apply Optimization</Button>
+            <Button onClick={handleOptimize}>{t("optimizer.apply")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

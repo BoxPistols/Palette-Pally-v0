@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { generateColorVariations } from "@/lib/color-utils"
 import { ColorDisplay } from "@/components/color-display"
 import { ExportImportPanel } from "@/components/export-import-panel"
+import { FigmaTokensPanel } from "@/components/figma-tokens-panel"
 import { Logo } from "@/components/logo"
 import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
@@ -24,13 +25,16 @@ import { CodeExportPanel } from "@/components/code-export-panel"
 import { ColorBlindSimulator } from "@/components/color-blind-simulator"
 import { ColorRoleSettings } from "@/components/color-role-settings"
 import { TextColorPreview } from "@/components/text-color-preview"
+import { LanguageProvider, useLanguage } from "@/contexts/language-context"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
 
-export default function Home() {
+function PaletteApp() {
+  const { language, t } = useLanguage()
   const [colorCount, setColorCount] = useState<number>(8)
   const [colorData, setColorData] = useState<ColorData[]>([
     { name: "primary", value: "#3b82f6", role: "primary" },
@@ -127,14 +131,14 @@ export default function Home() {
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
-        title: "保存完了",
-        description: "パレットデータをLocalStorageに保存しました",
+        title: t("toast.saved"),
+        description: t("toast.savedDescription"),
       })
     } catch (error) {
       console.error("Error saving to localStorage:", error)
       toast({
-        title: "保存エラー",
-        description: "データの保存中にエラーが発生しました",
+        title: t("toast.error"),
+        description: language === "jp" ? "データの保存中にエラーが発生しました" : "Error saving data",
         variant: "destructive",
       })
     }
@@ -175,8 +179,8 @@ export default function Home() {
 
     setPrimaryColorIndex(index)
     toast({
-      title: "プライマリカラー設定",
-      description: `${colorData[index].name}がプライマリカラーに設定されました`,
+      title: t("toast.primaryColorSet"),
+      description: `${colorData[index].name}${t("toast.primaryColorSetDescription")}`,
     })
 
     // 変更後に自動保存
@@ -258,8 +262,8 @@ export default function Home() {
     setShowMaterialNames(false)
 
     toast({
-      title: "リセット完了",
-      description: "パレットデータがリセットされました",
+      title: t("toast.resetComplete"),
+      description: t("toast.resetCompleteDescription"),
     })
   }
 
@@ -329,23 +333,31 @@ export default function Home() {
           }
 
           toast({
-            title: "インポート完了",
-            description: `${validColors.length}色のパレットをインポートしました`,
+            title: t("toast.importComplete"),
+            description:
+              language === "jp"
+                ? `${validColors.length}色のパレットをインポートしました`
+                : `Imported palette with ${validColors.length} colors`,
           })
 
           // Save to localStorage immediately after import
           setTimeout(saveToLocalStorage, 100)
         } else {
-          throw new Error("有効なカラーデータが見つかりませんでした")
+          throw new Error(language === "jp" ? "有効なカラーデータが見つかりませんでした" : "No valid color data found")
         }
       } else {
-        throw new Error("カラーデータが見つかりませんでした")
+        throw new Error(language === "jp" ? "カラーデータが見つかりませんでした" : "No color data found")
       }
     } catch (error) {
       console.error("Import error:", error)
       toast({
-        title: "インポートエラー",
-        description: error instanceof Error ? error.message : "不明なエラーが発生しました",
+        title: t("toast.importError"),
+        description:
+          error instanceof Error
+            ? error.message
+            : language === "jp"
+              ? "不明なエラーが発生しました"
+              : "Unknown error occurred",
         variant: "destructive",
       })
     }
@@ -443,8 +455,8 @@ export default function Home() {
     }, 100)
 
     toast({
-      title: "並べ替え完了",
-      description: "カラーの順序が更新されました",
+      title: t("toast.reorderComplete"),
+      description: t("toast.reorderCompleteDescription"),
     })
   }
 
@@ -462,10 +474,11 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Logo />
             <HelpModal />
+            <LanguageSwitcher />
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
-              カラー数:
+              {t("header.colorCount")}
             </label>
             <Input
               id="colorCount"
@@ -477,10 +490,10 @@ export default function Home() {
               className="w-16"
             />
             <Button onClick={resetColors} variant="secondary" size="sm">
-              リセット
+              {t("header.reset")}
             </Button>
             <Button onClick={saveToLocalStorage} variant="outline" size="sm">
-              保存
+              {t("header.save")}
             </Button>
           </div>
         </CardHeader>
@@ -488,6 +501,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
             <div className="flex items-center gap-2 flex-wrap">
               <ExportImportPanel data={exportData} onImport={handleImport} />
+              <FigmaTokensPanel colors={colorData} onImport={handleUpdateColors} />
               <CodeExportPanel colors={colorData} variations={colorVariations} primaryColorIndex={primaryColorIndex} />
               <ColorBlindSimulator colors={colorData} variations={colorVariations} />
               <TextColorPreview colors={colorData} />
@@ -538,7 +552,7 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Color Pickers Section with Drag & Drop */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">Color Picker</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="color-pickers" direction="horizontal">
               {(provided) => (
@@ -575,7 +589,7 @@ export default function Home() {
 
         {/* Color Palette Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">Color Palette</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {sortedColorVariations.map(([key, variations]) => {
               // カラー名からcolorDataの中での位置を特定
@@ -601,5 +615,13 @@ export default function Home() {
 
       <Toaster />
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <LanguageProvider>
+      <PaletteApp />
+    </LanguageProvider>
   )
 }

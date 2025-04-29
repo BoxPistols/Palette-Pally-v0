@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { materialColors, findClosestMaterialColor } from "@/lib/color-systems"
+import { useLanguage } from "@/contexts/language-context"
 import type { ColorData } from "@/types/palette"
 
 interface MaterialPaletteOptimizerProps {
@@ -24,6 +25,7 @@ interface MaterialPaletteOptimizerProps {
 }
 
 export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize }: MaterialPaletteOptimizerProps) {
+  const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [primaryColor, setPrimaryColor] = useState<string>("blue")
   const [primaryShade, setPrimaryShade] = useState<string>("500")
@@ -37,6 +39,43 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
   const [warningShade, setWarningShade] = useState<string>("500")
   const [infoColor, setInfoColor] = useState<string>("lightBlue")
   const [infoShade, setInfoShade] = useState<string>("500")
+
+  const texts = {
+    jp: {
+      button: "Material Design",
+      title: "Material Design パレット",
+      description: "Material Designのカラーシステムに基づいたパレットを生成します",
+      primary: "プライマリ",
+      secondary: "セカンダリ",
+      danger: "デンジャー",
+      success: "サクセス",
+      warning: "ワーニング",
+      info: "インフォ",
+      note: "Material Designは、プライマリカラーとセカンダリカラーを中心に一貫したカラーシステムを構築します。各カラーにはシェード（100-900）があり、数字が大きいほど暗くなります。",
+      cancel: "キャンセル",
+      apply: "適用",
+      success_message: "Material Designパレットを適用しました",
+      success_description: "Material Designに基づいたパレットを生成しました",
+    },
+    en: {
+      button: "Material Design",
+      title: "Material Design Palette",
+      description: "Generate a palette based on Material Design color system",
+      primary: "Primary",
+      secondary: "Secondary",
+      danger: "Danger",
+      success: "Success",
+      warning: "Warning",
+      info: "Info",
+      note: "Material Design builds a consistent color system around primary and secondary colors. Each color has shades (100-900) with higher numbers being darker.",
+      cancel: "Cancel",
+      apply: "Apply",
+      success_message: "Material Design Palette Applied",
+      success_description: "Generated palette based on Material Design",
+    },
+  }
+
+  const t_local = texts[language]
 
   const handleOptimize = () => {
     // 新しいカラーパレットを生成
@@ -141,8 +180,8 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     setIsOpen(false)
 
     toast({
-      title: "Material Design Palette Applied",
-      description: "Generated palette based on Material Design",
+      title: t_local.success_message,
+      description: t_local.success_description,
     })
   }
 
@@ -223,9 +262,9 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
       <div className="space-y-1">
         <Label>{label}</Label>
         <div className="grid grid-cols-2 gap-2 max-w-full">
-          <div className="w-full">
+          <div className="flex justify-center">
             <Select value={color} onValueChange={onColorChange}>
-              <SelectTrigger className="w-full max-w-[150px]">
+              <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Select color" />
               </SelectTrigger>
               <SelectContent className="max-w-[200px]">
@@ -244,9 +283,9 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             </Select>
           </div>
 
-          <div className="w-full">
+          <div className="flex justify-center">
             <Select value={shade} onValueChange={onShadeChange}>
-              <SelectTrigger className="w-full max-w-[100px]">
+              <SelectTrigger className="w-[80px]">
                 <SelectValue placeholder="Shade" />
               </SelectTrigger>
               <SelectContent className="max-w-[100px]">
@@ -276,20 +315,20 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
         }}
       >
         <Wand2 className="h-4 w-4" />
-        <span>Material Design</span>
+        <span>{t_local.button}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
-            <DialogTitle>Material Design Palette</DialogTitle>
-            <DialogDescription>Generate a palette based on Material Design color system</DialogDescription>
+            <DialogTitle>{t_local.title}</DialogTitle>
+            <DialogDescription>{t_local.description}</DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-y-auto flex-1">
             <div className="space-y-4">
               <ColorSelector
-                label="Primary"
+                label={t_local.primary}
                 color={primaryColor}
                 shade={primaryShade}
                 onColorChange={setPrimaryColor}
@@ -297,7 +336,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Secondary"
+                label={t_local.secondary}
                 color={secondaryColor}
                 shade={secondaryShade}
                 onColorChange={setSecondaryColor}
@@ -305,7 +344,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Danger"
+                label={t_local.danger}
                 color={errorColor}
                 shade={errorShade}
                 onColorChange={setErrorColor}
@@ -313,7 +352,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Success"
+                label={t_local.success}
                 color={successColor}
                 shade={successShade}
                 onColorChange={setSuccessColor}
@@ -321,7 +360,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Warning"
+                label={t_local.warning}
                 color={warningColor}
                 shade={warningShade}
                 onColorChange={setWarningColor}
@@ -329,7 +368,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
 
               <ColorSelector
-                label="Info"
+                label={t_local.info}
                 color={infoColor}
                 shade={infoShade}
                 onColorChange={setInfoColor}
@@ -338,18 +377,15 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             </div>
 
             <div className="p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700">
-                Material Design builds a consistent color system around primary and secondary colors. Each color has
-                shades (100-900) with higher numbers being darker.
-              </p>
+              <p className="text-sm text-blue-700">{t_local.note}</p>
             </div>
           </div>
 
           <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
+              {t_local.cancel}
             </Button>
-            <Button onClick={handleOptimize}>Apply</Button>
+            <Button onClick={handleOptimize}>{t_local.apply}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

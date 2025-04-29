@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Tag, ArrowRight, GripVertical } from "lucide-react"
+import { Tag, ArrowRight, GripVertical, ChevronUp, ChevronDown } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
+import { useLanguage } from "@/contexts/language-context"
 import type { ColorData, ColorRole } from "@/types/palette"
 import { colorRoleDescriptions } from "@/types/palette"
 
@@ -23,9 +24,97 @@ interface ColorRoleSettingsProps {
 }
 
 export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsProps) {
+  const { language } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [colorRoles, setColorRoles] = useState<Record<string, ColorRole>>({})
   const [orderedColors, setOrderedColors] = useState<ColorData[]>([])
+
+  // 翻訳テキスト
+  const texts = {
+    jp: {
+      button: "カラーロール",
+      title: "カラーロール設定",
+      description: "各カラーに役割を割り当て、順序を変更できます。これによりデザインシステムの一貫性が向上します。",
+      hint: "ヒント: カラーをドラッグするか矢印ボタンで順序を変更できます。役割を割り当てることで一貫したデザインシステムを作成できます。プライマリカラーはブランドを表し、成功、危険、警告などの他の色は特定のアクションに使用されます。",
+      cancel: "キャンセル",
+      apply: "適用",
+      roleUpdated: "カラーロール設定を更新しました",
+      roleUpdatedDesc: "カラーの役割と順序が更新されました",
+    },
+    en: {
+      button: "Color Roles",
+      title: "Color Role Settings",
+      description: "Assign roles to each color and change their order to improve design system consistency.",
+      hint: "Tip: Drag colors or use arrow buttons to change order. Assigning roles creates a consistent design system. Primary color represents your brand, while success, danger, warning, etc. are used for specific actions.",
+      cancel: "Cancel",
+      apply: "Apply",
+      roleUpdated: "Color role settings updated",
+      roleUpdatedDesc: "Color roles and order have been updated",
+    },
+  }
+
+  const t = texts[language]
+
+  // 日本語のロール名を取得
+  const getRoleDisplayName = (role: ColorRole): string => {
+    if (language === "jp") {
+      switch (role) {
+        case "primary":
+          return "プライマリ"
+        case "secondary":
+          return "セカンダリ"
+        case "success":
+          return "成功"
+        case "danger":
+          return "危険"
+        case "warning":
+          return "警告"
+        case "info":
+          return "情報"
+        case "text":
+          return "テキスト"
+        case "background":
+          return "背景"
+        case "border":
+          return "境界線"
+        case "accent":
+          return "アクセント"
+        case "neutral":
+          return "ニュートラル"
+        case "custom":
+          return "カスタム"
+        default:
+          return role
+      }
+    }
+    // 英語の場合はそのまま返す（先頭を大文字に）
+    return role.charAt(0).toUpperCase() + role.slice(1)
+  }
+
+  // 日本語のロール説明を取得
+  const getRoleDescription = (role: ColorRole): string => {
+    if (language === "jp") {
+      return colorRoleDescriptions[role]
+    }
+
+    // 英語の場合
+    const englishDescriptions: Record<ColorRole, string> = {
+      primary: "Main color, represents the brand",
+      secondary: "Secondary color, used as an accent",
+      success: "Indicates success state (green)",
+      danger: "Indicates error or danger (red)",
+      warning: "Indicates warning (yellow)",
+      info: "Indicates information (blue)",
+      text: "Used for text",
+      background: "Used for backgrounds",
+      border: "Used for borders",
+      accent: "Used as an accent color",
+      neutral: "Neutral color (gray)",
+      custom: "Custom purpose color",
+    }
+
+    return englishDescriptions[role]
+  }
 
   // Initialize state when dialog opens
   useEffect(() => {
@@ -57,8 +146,8 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
     setIsOpen(false)
 
     toast({
-      title: "カラーロール設定を更新しました",
-      description: "カラーの役割と順序が更新されました",
+      title: t.roleUpdated,
+      description: t.roleUpdatedDesc,
     })
   }
 
@@ -72,6 +161,19 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
     items.splice(result.destination.index, 0, reorderedItem)
 
     setOrderedColors(items)
+  }
+
+  // 上下矢印ボタンでの並べ替え
+  const moveItem = (index: number, direction: "up" | "down") => {
+    if ((direction === "up" && index === 0) || (direction === "down" && index === orderedColors.length - 1)) {
+      return // 端の場合は何もしない
+    }
+
+    const newIndex = direction === "up" ? index - 1 : index + 1
+    const newItems = [...orderedColors]
+    const [removed] = newItems.splice(index, 1)
+    newItems.splice(newIndex, 0, removed)
+    setOrderedColors(newItems)
   }
 
   // 使用可能なロールのリスト
@@ -120,38 +222,6 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
     }
   }
 
-  // 日本語のロール名を取得
-  const getRoleDisplayName = (role: ColorRole): string => {
-    switch (role) {
-      case "primary":
-        return "プライマリ"
-      case "secondary":
-        return "セカンダリ"
-      case "success":
-        return "成功"
-      case "danger":
-        return "危険"
-      case "warning":
-        return "警告"
-      case "info":
-        return "情報"
-      case "text":
-        return "テキスト"
-      case "background":
-        return "背景"
-      case "border":
-        return "境界線"
-      case "accent":
-        return "アクセント"
-      case "neutral":
-        return "ニュートラル"
-      case "custom":
-        return "カスタム"
-      default:
-        return role
-    }
-  }
-
   return (
     <>
       <Button
@@ -159,27 +229,23 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
         size="sm"
         className="flex items-center gap-1 whitespace-nowrap"
         onClick={() => setIsOpen(true)}
-        title="カラーロール設定"
+        title={t.button}
       >
         <Tag className="h-4 w-4" />
-        <span>カラーロール</span>
+        <span>{t.button}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
-            <DialogTitle>カラーロール設定</DialogTitle>
-            <DialogDescription>
-              各カラーに役割を割り当て、ドラッグして順序を変更できます。これによりデザインシステムの一貫性が向上します。
-            </DialogDescription>
+            <DialogTitle>{t.title}</DialogTitle>
+            <DialogDescription>{t.description}</DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4 overflow-auto flex-1">
             <div className="p-3 bg-blue-50 rounded-md mb-4">
               <p className="text-sm text-blue-700">
-                <strong>ヒント:</strong>{" "}
-                カラーをドラッグして順序を変更できます。役割を割り当てることで一貫したデザインシステムを作成できます。
-                プライマリカラーはブランドを表し、成功、危険、警告などの他の色は特定のアクションに使用されます。
+                <strong>{language === "jp" ? "ヒント:" : "Tip:"}</strong> {t.hint}
               </p>
             </div>
 
@@ -195,8 +261,30 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
                             {...provided.draggableProps}
                             className="flex items-center gap-3 p-3 border rounded-md bg-white hover:bg-gray-50 transition-colors"
                           >
-                            <div {...provided.dragHandleProps} className="cursor-move">
-                              <GripVertical className="h-5 w-5 text-gray-400" />
+                            <div className="flex items-center gap-1">
+                              <div {...provided.dragHandleProps} className="cursor-move">
+                                <GripVertical className="h-5 w-5 text-gray-400" />
+                              </div>
+                              <div className="flex flex-col">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 px-1"
+                                  onClick={() => moveItem(index, "up")}
+                                  disabled={index === 0}
+                                >
+                                  <ChevronUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 px-1"
+                                  onClick={() => moveItem(index, "down")}
+                                  disabled={index === orderedColors.length - 1}
+                                >
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
 
                             <div
@@ -219,7 +307,7 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
                                 <SelectTrigger
                                   className={`w-full ${getRoleBadgeClass(colorRoles[color.name] || "custom")}`}
                                 >
-                                  <SelectValue placeholder="役割を選択" />
+                                  <SelectValue placeholder={language === "jp" ? "役割を選択" : "Select role"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {availableRoles.map((role) => (
@@ -227,7 +315,7 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
                                       <div className="flex flex-col">
                                         <span className="capitalize">{getRoleDisplayName(role)}</span>
                                         <span className="text-xs text-gray-500 truncate">
-                                          {colorRoleDescriptions[role]}
+                                          {getRoleDescription(role)}
                                         </span>
                                       </div>
                                     </SelectItem>
@@ -248,9 +336,9 @@ export function ColorRoleSettings({ colors, onUpdateColors }: ColorRoleSettingsP
 
           <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              キャンセル
+              {t.cancel}
             </Button>
-            <Button onClick={handleApply}>適用</Button>
+            <Button onClick={handleApply}>{t.apply}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
