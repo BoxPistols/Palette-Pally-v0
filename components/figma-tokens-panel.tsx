@@ -14,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
+import { useTheme } from "@/contexts/theme-context"
 import type { ColorData } from "@/types/palette"
 
 interface FigmaTokensPanelProps {
@@ -23,6 +24,7 @@ interface FigmaTokensPanelProps {
 
 export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
+  const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const [jsonPreview, setJsonPreview] = useState<string>("")
   const [importJson, setImportJson] = useState<string>("")
@@ -159,6 +161,12 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
   const processNestedTokens = (tokens: any, prefix = ""): ColorData[] => {
     const result: ColorData[] = []
 
+    // トークンがオブジェクトでない場合は処理しない
+    if (!tokens || typeof tokens !== "object") {
+      return result
+    }
+
+    // オブジェクトの各キーを処理
     Object.entries(tokens).forEach(([key, value]: [string, any]) => {
       // common配下のトークンをスキップ
       if (key === "common" && prefix === "") return
@@ -166,7 +174,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       const currentPath = prefix ? `${prefix}/${key}` : key
 
       // 直接colorトークンの場合
-      if (value.$type === "color" && value.$value) {
+      if (value && value.$type === "color" && value.$value) {
         result.push({
           name: currentPath,
           value: value.$value,
@@ -174,7 +182,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
         })
       }
       // ネストされたトークンの場合
-      else if (typeof value === "object" && !value.$type) {
+      else if (value && typeof value === "object" && !value.$type) {
         // 再帰的に処理
         const nestedTokens = processNestedTokens(value, currentPath)
         result.push(...nestedTokens)
@@ -229,7 +237,9 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent
+          className={`max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col ${theme === "dark" ? "dark bg-gray-900 text-white" : ""}`}
+        >
           <DialogHeader>
             <DialogTitle>{t.title}</DialogTitle>
             <DialogDescription>{t.description}</DialogDescription>
@@ -243,8 +253,10 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
 
             <div className="flex-1 overflow-hidden flex flex-col">
               <TabsContent value="export" className="h-full flex-1 flex flex-col overflow-hidden mt-0">
-                <p className="text-sm text-gray-500 mb-2">{t.exportDescription}</p>
-                <div className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t.exportDescription}</p>
+                <div
+                  className={`${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono`}
+                >
                   <pre className="whitespace-pre">{jsonPreview}</pre>
                 </div>
                 <div className="mt-4 flex justify-end">
@@ -253,9 +265,9 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
               </TabsContent>
 
               <TabsContent value="import" className="h-full flex-1 flex flex-col overflow-hidden mt-0">
-                <p className="text-sm text-gray-500 mb-2">{t.importDescription}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t.importDescription}</p>
                 <textarea
-                  className="bg-gray-50 p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono resize-none"
+                  className={`${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-50"} p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono resize-none`}
                   placeholder={t.importPlaceholder}
                   value={importJson}
                   onChange={(e) => setImportJson(e.target.value)}
@@ -267,7 +279,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
             </div>
           </Tabs>
 
-          <DialogFooter className="mt-4 pt-4 border-t">
+          <DialogFooter className="mt-4 pt-4 border-t dark:border-gray-700">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               {t.closeButton}
             </Button>

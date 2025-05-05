@@ -26,7 +26,9 @@ import { ColorBlindSimulator } from "@/components/color-blind-simulator"
 import { ColorRoleSettings } from "@/components/color-role-settings"
 import { TextColorPreview } from "@/components/text-color-preview"
 import { LanguageProvider, useLanguage } from "@/contexts/language-context"
+import { ThemeProvider, useTheme } from "@/contexts/theme-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
@@ -35,6 +37,7 @@ const STORAGE_KEY = "palette-pally-data"
 
 function PaletteApp() {
   const { language, t } = useLanguage()
+  const { theme } = useTheme()
   const [colorCount, setColorCount] = useState<number>(8)
   const [colorData, setColorData] = useState<ColorData[]>([
     { name: "primary", value: "#3b82f6", role: "primary" },
@@ -468,13 +471,14 @@ function PaletteApp() {
   })
 
   return (
-    <main className="container mx-auto px-4 py-6">
+    <main className={`container mx-auto px-4 py-6 ${theme === "dark" ? "dark" : ""}`}>
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="flex items-center gap-2">
             <Logo />
             <HelpModal />
             <LanguageSwitcher />
+            <ThemeSwitcher />
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
@@ -621,7 +625,9 @@ function PaletteApp() {
 export default function Home() {
   return (
     <LanguageProvider>
-      <PaletteApp />
+      <ThemeProvider>
+        <PaletteApp />
+      </ThemeProvider>
     </LanguageProvider>
   )
 }
