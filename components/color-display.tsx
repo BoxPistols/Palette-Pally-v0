@@ -1,8 +1,11 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
 import { AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { findClosestTailwindColor, findClosestMaterialColor } from "@/lib/color-systems"
+import { useLanguage } from "@/contexts/language-context"
 import type { TextColorSettings, ColorRole } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
@@ -27,52 +30,95 @@ export function ColorDisplay({
   showMaterialNames,
   colorRole,
 }: ColorDisplayProps) {
+  const { language } = useLanguage()
+
   // カラーロールに基づいたバッジの色を設定
   const getRoleBadgeClass = (role?: ColorRole): string => {
-    if (!role) return "bg-gray-50 text-gray-500"
+    if (!role) return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
 
     switch (role) {
       case "primary":
-        return "bg-blue-50 text-blue-700"
+        return "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
       case "secondary":
-        return "bg-purple-50 text-purple-700"
+        return "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
       case "success":
-        return "bg-green-50 text-green-700"
+        return "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
       case "danger":
-        return "bg-red-50 text-red-700"
+        return "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
       case "warning":
-        return "bg-amber-50 text-amber-700"
+        return "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
       case "info":
-        return "bg-sky-50 text-sky-700"
+        return "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
       case "text":
-        return "bg-gray-50 text-gray-700"
+        return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
       case "background":
-        return "bg-slate-50 text-slate-700"
+        return "bg-slate-50 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300"
       case "border":
-        return "bg-zinc-50 text-zinc-700"
+        return "bg-zinc-50 text-zinc-700 dark:bg-zinc-900/30 dark:text-zinc-300"
       case "accent":
-        return "bg-pink-50 text-pink-700"
+        return "bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300"
       case "neutral":
-        return "bg-stone-50 text-stone-700"
+        return "bg-stone-50 text-stone-700 dark:bg-stone-900/30 dark:text-stone-300"
       default:
-        return "bg-gray-50 text-gray-500"
+        return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
     }
   }
 
   // カラーロールの表示名を取得
   const getRoleDisplayName = (role?: ColorRole): string => {
     if (!role) return ""
+
+    if (language === "jp") {
+      switch (role) {
+        case "primary":
+          return "プライマリ"
+        case "secondary":
+          return "セカンダリ"
+        case "success":
+          return "成功"
+        case "danger":
+          return "危険"
+        case "warning":
+          return "警告"
+        case "info":
+          return "情報"
+        case "text":
+          return "テキスト"
+        case "background":
+          return "背景"
+        case "border":
+          return "境界線"
+        case "accent":
+          return "アクセント"
+        case "neutral":
+          return "ニュートラル"
+        default:
+          return role.charAt(0).toUpperCase() + role.slice(1)
+      }
+    }
+
     return role.charAt(0).toUpperCase() + role.slice(1)
   }
 
+  // ネストされたパスを表示用に整形
+  const formatColorKey = (key: string): string => {
+    // スラッシュで区切られたパスの場合
+    if (key.includes("/")) {
+      return key
+    }
+    return key
+  }
+
   return (
-    <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
+    <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">{colorRole ? getRoleDisplayName(colorRole) : colorKey}</CardTitle>
+        <CardTitle className="text-sm">
+          {colorRole ? getRoleDisplayName(colorRole) : formatColorKey(colorKey)}
+        </CardTitle>
         <div className="flex gap-1">
           {isPrimary && (
-            <Badge variant="outline" className="ml-2 bg-gray-50 text-gray-500">
-              Primary
+            <Badge variant="outline" className="ml-2 bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              {language === "jp" ? "プライマリ" : "Primary"}
             </Badge>
           )}
           {colorRole && colorRole !== "primary" && (
@@ -113,12 +159,12 @@ export function ColorDisplay({
           // レベルに応じたバッジの色を設定
           const levelColor =
             wcagLevel.level === "AAA"
-              ? "bg-green-100 text-green-800"
+              ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
               : wcagLevel.level === "AA"
-                ? "bg-blue-100 text-blue-800"
+                ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
                 : wcagLevel.level === "A"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300"
 
           // Tailwindの最も近い色を取得
           const closestTailwind = findClosestTailwindColor(color)
@@ -126,15 +172,34 @@ export function ColorDisplay({
           // Material Designの最も近い色を取得
           const closestMaterial = findClosestMaterialColor(color)
 
+          // 表示名の翻訳
+          const getVariationName = (name: string): string => {
+            if (language === "jp") {
+              switch (name) {
+                case "main":
+                  return "メイン"
+                case "dark":
+                  return "ダーク"
+                case "light":
+                  return "ライト"
+                case "lighter":
+                  return "ライター"
+                default:
+                  return name
+              }
+            }
+            return name
+          }
+
           return (
             <div
               key={name}
-              className="flex items-center justify-between p-2 border-t first:border-t-0"
+              className="flex items-center justify-between p-2 border-t first:border-t-0 dark:border-gray-700"
               style={{ backgroundColor: color }}
             >
               <div className="flex items-center gap-1">
                 <div style={{ color: textColor }} className="text-xs font-medium">
-                  {name}: {color}
+                  {getVariationName(name)}: {color}
                   {/* カラーモードに応じた追加情報 */}
                   {colorMode === "tailwind" && showTailwindClasses && (
                     <span className="ml-1 opacity-80">
@@ -148,19 +213,25 @@ export function ColorDisplay({
                   )}
                 </div>
                 {showWarning && (
-                  <AlertTriangle size={14} className="text-red-500" title="コントラスト比が低すぎます（AA未満）" />
+                  <AlertTriangle
+                    size={14}
+                    className="text-red-500 dark:text-red-400"
+                    title={
+                      language === "jp" ? "コントラスト比が低すぎます（AA未満）" : "Contrast ratio too low (below AA)"
+                    }
+                  />
                 )}
               </div>
               <div className="flex items-center gap-1">
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full ${levelColor} opacity-80`}
-                  title={`コントラスト比: ${contrast.toFixed(2)}:1`}
+                  title={`${language === "jp" ? "コントラスト比" : "Contrast ratio"}: ${contrast.toFixed(2)}:1`}
                 >
                   {wcagLevel.level}
                 </span>
                 <span
-                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800 opacity-80"
-                  title={`コントラスト比: ${contrast.toFixed(2)}:1`}
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 opacity-80"
+                  title={`${language === "jp" ? "コントラスト比" : "Contrast ratio"}: ${contrast.toFixed(2)}:1`}
                 >
                   {contrast.toFixed(1)}:1
                 </span>

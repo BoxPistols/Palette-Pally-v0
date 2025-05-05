@@ -7,7 +7,7 @@ import { HexColorPicker } from "react-colorful"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { GripVertical } from "lucide-react"
+import { GripVertical, Lightbulb } from "lucide-react"
 import {
   hexToRgb,
   rgbToHex,
@@ -23,6 +23,25 @@ import { ColorSuggestions } from "@/components/color-suggestions"
 import { Badge } from "@/components/ui/badge"
 import type { ColorRole } from "@/types/palette"
 import { colorRoleDescriptions } from "@/types/palette"
+import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/contexts/language-context"
+
+// サジェストボタンの翻訳対応
+const SuggestButton = ({ baseColor, onSelectColor }: { baseColor: string; onSelectColor: (color: string) => void }) => {
+  const { language } = useLanguage()
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 px-2 text-xs"
+      onClick={() => onSelectColor(getBetterContrastColor(baseColor))}
+    >
+      <Lightbulb className="h-3.5 w-3.5 mr-1" />
+      {language === "jp" ? "サジェスト" : "Suggest"}
+    </Button>
+  )
+}
 
 interface ColorPickerProps {
   index: number
@@ -297,6 +316,7 @@ export function ColorPicker({
                 >
                   {contrast.toFixed(1)}:1
                 </span>
+                <SuggestButton baseColor={color} onSelectColor={onColorChange} />
               </>
             )
           })()}

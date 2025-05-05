@@ -36,33 +36,33 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 15% 16%; /* 彩度を落とした自然な暗さ */
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 220 15% 16%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 220 15% 16%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 217.2 80% 59.8%; /* 彩度を少し落とした */
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 15% 25.5%; /* 彩度を落とした */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217.2 15% 25.5%;
+    --muted-foreground: 215 20% 75.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217.2 15% 25.5%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 217.2 15% 25.5%;
+    --input: 217.2 15% 25.5%;
+    --ring: 224.3 76.3% 58%;
   }
 }
 
@@ -73,4 +73,86 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ダークモード用のスタイル追加 */
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .bg-gray-50 {
+  @apply bg-gray-800;
+}
+
+.dark .bg-gray-100 {
+  @apply bg-gray-800;
+}
+
+.dark .bg-blue-50 {
+  @apply bg-blue-900/30;
+}
+
+.dark .bg-amber-50 {
+  @apply bg-amber-900/30;
+}
+
+.dark .text-gray-500 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-300;
+}
+
+.dark .text-blue-700 {
+  @apply text-blue-300;
+}
+
+.dark .text-amber-800 {
+  @apply text-amber-300;
+}
+
+.dark .border-gray-200 {
+  @apply border-gray-700;
+}
+
+.dark .border-gray-300 {
+  @apply border-gray-600;
+}
+
+.dark .border-amber-200 {
+  @apply border-amber-700;
+}
+
+.dark .border-t {
+  @apply border-gray-700;
+}
+
+.dark .border-b {
+  @apply border-gray-700;
+}
+
+/* モーダル内の背景色を修正 */
+.dark [role="dialog"] {
+  @apply bg-gray-800 text-gray-100;
+}
+
+.dark [role="dialog"] .bg-white {
+  @apply bg-gray-800;
+}
+
+/* テキストエリアとプリタグの背景色を修正 */
+.dark textarea,
+.dark pre {
+  @apply bg-gray-900 text-gray-100;
+}
+
+/* ダイアログコンテンツの背景色を修正 */
+.dark .DialogContent {
+  @apply bg-gray-800;
+}
+
+/* タブコンテンツの背景色を修正 */
+.dark .TabsContent {
+  @apply bg-gray-800;
 }

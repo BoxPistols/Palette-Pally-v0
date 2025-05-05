@@ -493,6 +493,44 @@ const translations: Record<string, Record<Language, string>> = {
     jp: "閉じる",
     en: "Close",
   },
+
+  // カラーピッカー関連
+  "colorPicker.suggest": {
+    jp: "サジェスト",
+    en: "Suggest",
+  },
+  "colorPicker.rgb": {
+    jp: "RGB",
+    en: "RGB",
+  },
+  "colorPicker.hsl": {
+    jp: "HSL",
+    en: "HSL",
+  },
+  "colorPicker.oklab": {
+    jp: "Oklab",
+    en: "Oklab",
+  },
+
+  // カラーバリエーション
+  "colorVariation.main": {
+    jp: "メイン",
+    en: "Main",
+  },
+  "colorVariation.dark": {
+    jp: "ダーク",
+    en: "Dark",
+  },
+  "colorVariation.light": {
+    jp: "ライト",
+    en: "Light",
+  },
+  "colorVariation.lighter": {
+    jp: "ライター",
+    en: "Lighter",
+  },
+
+  // その他の追加翻訳...
 }
 
 // デフォルト値を持つコンテキストを作成

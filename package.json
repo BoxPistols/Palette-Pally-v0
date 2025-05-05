@@ -58,8 +58,8 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
     "zod": "^3.24.1",
-    "react-colorful": "latest",
-    "react-beautiful-dnd": "latest"
+    "react-beautiful-dnd": "latest",
+    "react-colorful": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

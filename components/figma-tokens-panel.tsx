@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Figma } from "lucide-react"
+import { Figma, Upload, Download } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +16,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
-import { useTheme } from "@/contexts/theme-context"
 import type { ColorData } from "@/types/palette"
 
 interface FigmaTokensPanelProps {
@@ -24,13 +25,13 @@ interface FigmaTokensPanelProps {
 
 export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
-  const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const [jsonPreview, setJsonPreview] = useState<string>("")
   const [importJson, setImportJson] = useState<string>("")
   const [activeTab, setActiveTab] = useState("export")
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 翻訳テキスト - 言語コンテキストが機能するまでの一時的な対応
+  // 翻訳テキスト
   const texts = {
     jp: {
       button: "Figmaトークン",
@@ -49,6 +50,10 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       importSuccess: "デザイントークンをインポートしました",
       importError: "インポートに失敗しました。JSONの形式を確認してください",
       invalidJson: "無効なJSONです。形式を確認してください",
+      downloadJson: "JSONをダウンロード",
+      uploadJson: "JSONをアップロード",
+      dropJsonHere: "JSONファイルをここにドロップ",
+      orClickToUpload: "またはクリックしてアップロード",
     },
     en: {
       button: "Figma Tokens",
@@ -67,10 +72,14 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       importSuccess: "Design tokens imported",
       importError: "Import failed. Please check the JSON format",
       invalidJson: "Invalid JSON. Please check the format",
+      downloadJson: "Download JSON",
+      uploadJson: "Upload JSON",
+      dropJsonHere: "Drop JSON file here",
+      orClickToUpload: "or click to upload",
     },
   }
 
-  const t = texts[language || "jp"]
+  const translation = texts[language]
 
   // Figmaデザイントークン形式に変換
   const generateFigmaTokens = () => {
@@ -144,17 +153,86 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
     navigator.clipboard.writeText(jsonPreview).then(
       () => {
         toast({
-          title: t.copySuccess,
+          title: translation.copySuccess,
         })
       },
       (err) => {
         console.error("Failed to copy:", err)
         toast({
-          title: t.copyError,
+          title: translation.copyError,
           variant: "destructive",
         })
       },
     )
+  }
+
+  // JSONをダウンロード
+  const handleDownloadJson = () => {
+    const blob = new Blob([jsonPreview], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "figma-tokens.json"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // ファイルアップロードを処理
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        setImportJson(content)
+      } catch (error) {
+        console.error("Error reading file:", error)
+        toast({
+          title: translation.importError,
+          variant: "destructive",
+        })
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  // ドラッグ&ドロップを処理
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const file = e.dataTransfer.files[0]
+    if (!file || file.type !== "application/json") {
+      toast({
+        title: language === "jp" ? "JSONファイルのみ対応しています" : "Only JSON files are supported",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        setImportJson(content)
+      } catch (error) {
+        console.error("Error reading file:", error)
+        toast({
+          title: translation.importError,
+          variant: "destructive",
+        })
+      }
+    }
+    reader.readAsText(file)
   }
 
   // 再帰的にネストされたトークンを処理する関数
@@ -168,9 +246,6 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
 
     // オブジェクトの各キーを処理
     Object.entries(tokens).forEach(([key, value]: [string, any]) => {
-      // common配下のトークンをスキップ
-      if (key === "common" && prefix === "") return
-
       const currentPath = prefix ? `${prefix}/${key}` : key
 
       // 直接colorトークンの場合
@@ -178,7 +253,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
         result.push({
           name: currentPath,
           value: value.$value,
-          role: prefix ? (prefix as any) : (key as any), // roleとして使用
+          role: prefix ? undefined : (key as any), // roleとして使用（ネストされている場合はroleを設定しない）
         })
       }
       // ネストされたトークンの場合
@@ -206,18 +281,18 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
         onImport(newColors)
         setIsOpen(false)
         toast({
-          title: t.importSuccess,
+          title: translation.importSuccess,
         })
       } else {
         toast({
-          title: t.importError,
+          title: translation.importError,
           variant: "destructive",
         })
       }
     } catch (error) {
       console.error("Import error:", error)
       toast({
-        title: t.invalidJson,
+        title: translation.invalidJson,
         variant: "destructive",
       })
     }
@@ -230,50 +305,72 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
         size="sm"
         className="flex items-center gap-1"
         onClick={handlePrepareExport}
-        title={t.button}
+        title={translation.button}
       >
         <Figma className="h-4 w-4" />
-        <span>{t.button}</span>
+        <span>{translation.button}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent
-          className={`max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col ${theme === "dark" ? "dark bg-gray-900 text-white" : ""}`}
-        >
+        <DialogContent className="max-w-[700px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>{t.title}</DialogTitle>
-            <DialogDescription>{t.description}</DialogDescription>
+            <DialogTitle>{translation.title}</DialogTitle>
+            <DialogDescription>{translation.description}</DialogDescription>
           </DialogHeader>
 
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="export">{t.exportTab}</TabsTrigger>
-              <TabsTrigger value="import">{t.importTab}</TabsTrigger>
+              <TabsTrigger value="export">{translation.exportTab}</TabsTrigger>
+              <TabsTrigger value="import">{translation.importTab}</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-hidden flex flex-col">
               <TabsContent value="export" className="h-full flex-1 flex flex-col overflow-hidden mt-0">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t.exportDescription}</p>
-                <div
-                  className={`${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono`}
-                >
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{translation.exportDescription}</p>
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono">
                   <pre className="whitespace-pre">{jsonPreview}</pre>
                 </div>
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={handleCopyToClipboard}>{t.copyButton}</Button>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="outline" onClick={handleDownloadJson} className="flex items-center gap-1">
+                    <Download className="h-4 w-4" />
+                    {translation.downloadJson}
+                  </Button>
+                  <Button onClick={handleCopyToClipboard}>{translation.copyButton}</Button>
                 </div>
               </TabsContent>
 
               <TabsContent value="import" className="h-full flex-1 flex flex-col overflow-hidden mt-0">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t.importDescription}</p>
-                <textarea
-                  className={`${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-50"} p-4 rounded-md overflow-auto flex-1 min-h-[300px] text-sm font-mono resize-none`}
-                  placeholder={t.importPlaceholder}
-                  value={importJson}
-                  onChange={(e) => setImportJson(e.target.value)}
-                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{translation.importDescription}</p>
+                <div className="flex-1 flex flex-col min-h-[300px]" onDragOver={handleDragOver} onDrop={handleDrop}>
+                  <textarea
+                    className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md overflow-auto flex-1 text-sm font-mono resize-none"
+                    placeholder={translation.importPlaceholder}
+                    value={importJson}
+                    onChange={(e) => setImportJson(e.target.value)}
+                  />
+                  <div className="mt-4 p-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md text-center">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept=".json"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {translation.uploadJson}
+                    </Button>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      {translation.dropJsonHere} {translation.orClickToUpload}
+                    </p>
+                  </div>
+                </div>
                 <div className="mt-4 flex justify-end">
-                  <Button onClick={handleImport}>{t.importButton}</Button>
+                  <Button onClick={handleImport}>{translation.importButton}</Button>
                 </div>
               </TabsContent>
             </div>
@@ -281,7 +378,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
 
           <DialogFooter className="mt-4 pt-4 border-t dark:border-gray-700">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              {t.closeButton}
+              {translation.closeButton}
             </Button>
           </DialogFooter>
         </DialogContent>
