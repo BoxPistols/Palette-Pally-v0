@@ -12,6 +12,7 @@ import { generateColorVariations } from "@/lib/color-utils"
 import { ColorDisplay } from "@/components/color-display"
 import { ExportImportPanel } from "@/components/export-import-panel"
 import { FigmaTokensPanel } from "@/components/figma-tokens-panel"
+import { TypographyPanel } from "@/components/typography-panel"
 import { Logo } from "@/components/logo"
 import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
@@ -506,6 +507,7 @@ function PaletteApp() {
             <div className="flex items-center gap-2 flex-wrap">
               <ExportImportPanel data={exportData} onImport={handleImport} />
               <FigmaTokensPanel colors={colorData} onImport={handleUpdateColors} />
+              <TypographyPanel />
               <CodeExportPanel colors={colorData} variations={colorVariations} primaryColorIndex={primaryColorIndex} />
               <ColorBlindSimulator colors={colorData} variations={colorVariations} />
               <TextColorPreview colors={colorData} />
