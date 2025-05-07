@@ -33,6 +33,9 @@ import { ThemeSwitcher } from "@/components/theme-switcher"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
+// 1. 必要なインポートを追加
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/resizable-panels"
+
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
 
@@ -127,7 +130,7 @@ function PaletteApp() {
       const dataToSave = {
         colors: colorData,
         variations: colorVariations,
-        textColorSettings: textColorSettings,
+        textColorSettings: textColorSettings, // テキストカラー設定を追加
         primaryColorIndex: primaryColorIndex,
         colorMode: colorMode,
         showTailwindClasses: showTailwindClasses,
@@ -274,7 +277,7 @@ function PaletteApp() {
   const exportData = {
     colors: colorData,
     variations: colorVariations,
-    textColorSettings: textColorSettings,
+    textColorSettings: textColorSettings, // テキストカラー設定を追加
     primaryColorIndex: primaryColorIndex,
     colorMode: colorMode,
     showTailwindClasses: showTailwindClasses,
@@ -555,9 +558,11 @@ function PaletteApp() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 2. グリッドレイアウトをResizablePanelsに置き換え */}
+      {/* 以下のコードを: */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Color Pickers Section with Drag & Drop */}
-        <div>
+      {/*  <div>
           <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="color-pickers" direction="horizontal">
@@ -594,7 +599,7 @@ function PaletteApp() {
         </div>
 
         {/* Color Palette Section */}
-        <div>
+      {/*  <div>
           <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {sortedColorVariations.map(([key, variations]) => {
@@ -617,7 +622,76 @@ function PaletteApp() {
             })}
           </div>
         </div>
-      </div>
+      </div> */}
+
+      {/* 以下のコードに置き換え: */}
+      <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
+        <ResizablePanel defaultSize={50} minSize={30}>
+          <div className="pr-2">
+            <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="color-pickers" direction="horizontal">
+                {(provided) => (
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {colorData.map((color, index) => (
+                      <Draggable key={`color-${index}`} draggableId={`color-${index}`} index={index}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
+                            <ColorPicker
+                              index={index}
+                              name={color.name}
+                              color={color.value}
+                              isPrimary={index === primaryColorIndex}
+                              onColorChange={(value) => handleColorChange(index, value)}
+                              onNameChange={(name) => handleNameChange(index, name)}
+                              onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
+                              dragHandleProps={provided.dragHandleProps}
+                              colorRole={color.role}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={50} minSize={30}>
+          <div className="pl-2">
+            <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {sortedColorVariations.map(([key, variations]) => {
+                // カラー名からcolorDataの中での位置を特定
+                const colorIndex = colorData.findIndex((c) => c.name === key)
+                const color = colorData[colorIndex]
+                return (
+                  <ColorDisplay
+                    key={key}
+                    colorKey={key}
+                    variations={variations}
+                    textColorSettings={textColorSettings}
+                    isPrimary={colorIndex === primaryColorIndex}
+                    colorMode={colorMode}
+                    showTailwindClasses={showTailwindClasses}
+                    showMaterialNames={showMaterialNames}
+                    colorRole={color?.role}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       <Toaster />
     </main>

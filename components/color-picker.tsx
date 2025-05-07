@@ -7,7 +7,7 @@ import { HexColorPicker } from "react-colorful"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { GripVertical, Lightbulb } from "lucide-react"
+import { GripVertical } from "lucide-react"
 import {
   hexToRgb,
   rgbToHex,
@@ -23,23 +23,133 @@ import { ColorSuggestions } from "@/components/color-suggestions"
 import { Badge } from "@/components/ui/badge"
 import type { ColorRole } from "@/types/palette"
 import { colorRoleDescriptions } from "@/types/palette"
-import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
+import { useTheme } from "@/contexts/theme-context"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // サジェストボタンの翻訳対応
-const SuggestButton = ({ baseColor, onSelectColor }: { baseColor: string; onSelectColor: (color: string) => void }) => {
+// const SuggestButton = ({ baseColor, onSelectColor }: { baseColor: string; onSelectColor: (color: string) => void }) => {
+//   const { language } = useLanguage()
+
+//   return (
+//     <Button
+//       variant="ghost"
+//       size="sm"
+//       className="h-8 px-2 text-xs"
+//       onClick={() => onSelectColor(getBetterContrastColor(baseColor))}
+//     >
+//       <Lightbulb className="h-3.5 w-3.5 mr-1" />
+//       {language === "jp" ? "サジェスト" : "Suggest"}
+//     </Button>
+//   )
+// }
+
+// サジェストボタンの代わりにA11yInfoコンポーネントを追加
+const getContrastInfo = (bgColor: string, colorRole: ColorRole | undefined) => {
+  const { theme } = useTheme()
+  const isBackgroundRole = colorRole === "background"
+
+  // 背景色ロールの場合と通常の場合で処理を分ける
+  if (isBackgroundRole) {
+    // 背景色ロールの場合は、黒と白のテキストに対するコントラスト比を計算
+    const whiteContrast = calculateContrastRatio(bgColor, "#FFFFFF")
+    const blackContrast = calculateContrastRatio(bgColor, "#000000")
+    const bestContrast = Math.max(whiteContrast, blackContrast)
+    const bestContrastColor = getBetterContrastColor(bgColor)
+    const wcagLevel = getWCAGLevel(bestContrast)
+
+    return {
+      contrast: bestContrast,
+      level: wcagLevel.level,
+      textColor: bestContrastColor,
+      isBackground: true,
+    }
+  } else {
+    // 通常のカラーの場合は、現在のテーマの背景色に対するコントラスト比を計算
+    const themeBgColor = theme === "dark" ? "#1e1e1e" : "#ffffff" // テーマに応じた背景色
+    const colorOnThemeBgContrast = calculateContrastRatio(themeBgColor, bgColor)
+    const wcagLevel = getWCAGLevel(colorOnThemeBgContrast)
+
+    return {
+      contrast: colorOnThemeBgContrast,
+      level: wcagLevel.level,
+      textColor: themeBgColor,
+      isBackground: false,
+    }
+  }
+}
+
+// A11yInfo関数を修正
+const A11yInfo = ({ color, colorRole }: { color: string; colorRole: ColorRole | undefined }) => {
+  const { theme } = useTheme()
   const { language } = useLanguage()
+  const isBackgroundRole = colorRole === "background"
+
+  // 背景色としての評価
+  const blackOnColorContrast = calculateContrastRatio(color, "#000000")
+  const whiteOnColorContrast = calculateContrastRatio(color, "#ffffff")
+  const bgTextColor = whiteOnColorContrast > blackOnColorContrast ? "#ffffff" : "#000000"
+  const bgContrast = Math.max(blackOnColorContrast, whiteOnColorContrast)
+  const bgLevel = getWCAGLevel(bgContrast)
+
+  // テキスト色としての評価（背景色ロールでない場合のみ）
+  const themeBgColor = theme === "dark" ? "#1e1e1e" : "#ffffff"
+  const colorOnThemeBgContrast = calculateContrastRatio(themeBgColor, color)
+  const textLevel = getWCAGLevel(colorOnThemeBgContrast)
+
+  // レベルに応じたバッジの色を設定
+  const getBadgeColor = (level: string) => {
+    return level === "AAA"
+      ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+      : level === "AA"
+        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+        : level === "A"
+          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
+          : "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300"
+  }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-8 px-2 text-xs"
-      onClick={() => onSelectColor(getBetterContrastColor(baseColor))}
-    >
-      <Lightbulb className="h-3.5 w-3.5 mr-1" />
-      {language === "jp" ? "サジェスト" : "Suggest"}
-    </Button>
+    <TooltipProvider>
+      <div className="flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center">
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full ${getBadgeColor(bgLevel.level)}`}
+                style={{ color: bgTextColor, backgroundColor: color }}
+              >
+                {bgLevel.level}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p>
+              {language === "jp" ? "背景色として使用: " : "As background: "} {bgContrast.toFixed(1)}:1
+            </p>
+          </TooltipContent>
+        </Tooltip>
+
+        {!isBackgroundRole && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center">
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${getBadgeColor(textLevel.level)}`}
+                  style={{ color: color, backgroundColor: themeBgColor }}
+                >
+                  {textLevel.level}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>
+                {language === "jp" ? "テキスト色として使用: " : "As text: "} {colorOnThemeBgContrast.toFixed(1)}:1
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
   )
 }
 
@@ -77,6 +187,7 @@ export function ColorPicker({
   const [rgbValues, setRgbValues] = useState({ r: 0, g: 0, b: 0 })
   const [hslValues, setHslValues] = useState({ h: 0, s: 0, l: 0 })
   const [oklabValues, setOklabValues] = useState({ l: 0, a: 0, b: 0 })
+  const { language } = useLanguage()
 
   useEffect(() => {
     setInputValue(color)
@@ -123,25 +234,6 @@ export function ColorPicker({
   const handlePickerChange = (newColor: string) => {
     setInputValue(newColor)
     onColorChange(newColor)
-  }
-
-  const getContrastInfo = (bgColor: string) => {
-    // 白と黒のコントラスト比を計算
-    const whiteContrast = calculateContrastRatio(bgColor, "#FFFFFF")
-    const blackContrast = calculateContrastRatio(bgColor, "#000000")
-
-    // 最適なコントラスト比を選択
-    const bestContrast = Math.max(whiteContrast, blackContrast)
-    const bestContrastColor = getBetterContrastColor(bgColor)
-
-    // WCAGレベルを判定
-    const wcagLevel = getWCAGLevel(bestContrast)
-
-    return {
-      contrast: bestContrast,
-      level: wcagLevel.level,
-      textColor: bestContrastColor,
-    }
   }
 
   const handleRgbChange = (channel: "r" | "g" | "b", value: string) => {
@@ -293,7 +385,7 @@ export function ColorPicker({
         <div className="flex justify-between items-center mt-1 mb-1">
           <ColorSuggestions baseColor={color} onSelectColor={onColorChange} />
           {(() => {
-            const { contrast, level } = getContrastInfo(color)
+            const { contrast, level } = getContrastInfo(color, colorRole)
 
             // レベルに応じたバッジの色を設定
             const levelColor =
@@ -307,16 +399,23 @@ export function ColorPicker({
 
             return (
               <>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${levelColor}`} title="アクセシビリティレベル">
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${levelColor}`}
+                  title={
+                    language === "jp"
+                      ? `${colorRole === "background" ? "背景色" : "テキスト色"}としてのアクセシビリティレベル`
+                      : `Accessibility level as ${colorRole === "background" ? "background" : "text"} color`
+                  }
+                >
                   {level}
                 </span>
                 <span
-                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800"
-                  title="コントラスト比"
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                  title={language === "jp" ? "コントラスト比" : "Contrast ratio"}
                 >
                   {contrast.toFixed(1)}:1
                 </span>
-                <SuggestButton baseColor={color} onSelectColor={onColorChange} />
+                <A11yInfo color={color} colorRole={colorRole} />
               </>
             )
           })()}

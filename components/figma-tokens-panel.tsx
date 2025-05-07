@@ -13,6 +13,7 @@ import type { ColorData } from "@/types/palette"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { FigmaTokensPreviewModal } from "@/components/figma-tokens-preview-modal"
 
 interface FigmaTokensPanelProps {
   colors: ColorData[]
@@ -90,6 +91,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
   const [uploadedFiles, setUploadedFiles] = useState<{
     [filename: string]: string
   }>({})
+  const [exportData, setExportData] = useState<any>(null)
 
   // テーマが変更されたときにスキーマモードも更新
   useEffect(() => {
@@ -140,6 +142,9 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       darkModeTooltip: "ダークモードのカラートークンを表示します。アプリのテーマも変更されます。",
       applyToApp: "アプリに適用",
       applyToAppTooltip: "現在表示中のモード（ライト/ダーク）のカラートークンをアプリに適用します",
+      "toast.exportComplete": "エクスポートが完了しました",
+      "toast.exportCompleteDescription": "デザイントークンが正常にエクスポートされました",
+      "toast.exportError": "エクスポートエラー",
     },
     en: {
       button: "Figma Tokens",
@@ -183,6 +188,9 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       darkModeTooltip: "Show dark mode color tokens. This will also change the app theme.",
       applyToApp: "Apply to App",
       applyToAppTooltip: "Apply the currently displayed mode (light/dark) color tokens to the app",
+      "toast.exportComplete": "Export Complete",
+      "toast.exportCompleteDescription": "Design tokens exported successfully",
+      "toast.exportError": "Export Error",
     },
   }
 
@@ -236,13 +244,52 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
       },
     }
 
-    return JSON.stringify(tokens, null, 2)
+    return tokens
+  }
+
+  const generateExportData = () => {
+    try {
+      const exportData = generateFigmaTokens()
+
+      // 生成したデータを状態に保存
+      setExportData(exportData)
+      return exportData
+    } catch (error) {
+      console.error("Export data generation error:", error)
+      toast({
+        title: t("toast.exportError"),
+        description: language === "jp" ? "データ生成中にエラーが発生しました" : "Error generating data",
+        variant: "destructive",
+      })
+      return null
+    }
+  }
+
+  const handleExport = () => {
+    const data = generateExportData()
+    if (!data) return
+
+    // ダウンロード処理
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "figma-tokens.json"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: t("toast.exportComplete"),
+      description: t("toast.exportCompleteDescription"),
+    })
   }
 
   // エクスポート用JSONを生成
   const handlePrepareExport = () => {
     try {
-      const tokensJson = generateFigmaTokens()
+      const tokensJson = JSON.stringify(generateFigmaTokens(), null, 2)
       setJsonPreview(tokensJson)
       setActiveTab("export")
       setIsOpen(true)
@@ -1208,6 +1255,7 @@ export function FigmaTokensPanel({ colors, onImport }: FigmaTokensPanelProps) {
           </Tabs>
         </DialogContent>
       </Dialog>
+      <FigmaTokensPreviewModal tokens={exportData || generateExportData()} onDownload={handleExport} />
     </>
   )
 }
