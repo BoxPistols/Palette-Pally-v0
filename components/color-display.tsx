@@ -68,35 +68,7 @@ export function ColorDisplay({
   const getRoleDisplayName = (role?: ColorRole): string => {
     if (!role) return ""
 
-    if (language === "jp") {
-      switch (role) {
-        case "primary":
-          return "プライマリ"
-        case "secondary":
-          return "セカンダリ"
-        case "success":
-          return "成功"
-        case "danger":
-          return "危険"
-        case "warning":
-          return "警告"
-        case "info":
-          return "情報"
-        case "text":
-          return "テキスト"
-        case "background":
-          return "背景"
-        case "border":
-          return "境界線"
-        case "accent":
-          return "アクセント"
-        case "neutral":
-          return "ニュートラル"
-        default:
-          return role.charAt(0).toUpperCase() + role.slice(1)
-      }
-    }
-
+    // 常に英語名をそのまま返す（日本語変換なし）
     return role.charAt(0).toUpperCase() + role.slice(1)
   }
 

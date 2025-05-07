@@ -97,55 +97,55 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '${primaryColor.value}',
 `
 
-  // プライマリカラーのバリエーション
-  if (variations[primaryColor.name]) {
-    const primaryVars = variations[primaryColor.name]
-    if (primaryVars.dark) themeOutput += `      dark: '${primaryVars.dark}',\n`
-    if (primaryVars.light) themeOutput += `      light: '${primaryVars.light}',\n`
-  }
+  // すべてのカラーを処理
+  colors.forEach((color) => {
+    const colorName = color.name
 
-  themeOutput += `    },\n`
+    // color.nameがMaterial UIの標準カラー名（primary, secondary, error, warning, info, success）に一致するか確認
+    if (["primary", "secondary", "error", "warning", "info", "success"].includes(colorName)) {
+      themeOutput += `    ${colorName}: {
+      main: '${color.value}',\n`
 
-  // セカンダリカラー
-  if (secondaryColor) {
-    themeOutput += `    secondary: {
-      main: '${secondaryColor.value}',\n`
+      // カラーのバリエーション
+      if (variations[colorName]) {
+        const colorVars = variations[colorName]
+        if (colorVars.dark) themeOutput += `      dark: '${colorVars.dark}',\n`
+        if (colorVars.light) themeOutput += `      light: '${colorVars.light}',\n`
+        if (colorVars.lighter) themeOutput += `      contrastText: '${colorVars.contrastText || "#ffffff"}',\n`
+      }
 
-    // セカンダリカラーのバリエーション
-    if (variations[secondaryColor.name]) {
-      const secondaryVars = variations[secondaryColor.name]
-      if (secondaryVars.dark) themeOutput += `      dark: '${secondaryVars.dark}',\n`
-      if (secondaryVars.light) themeOutput += `      light: '${secondaryVars.light}',\n`
+      themeOutput += `    },\n`
     }
+  })
 
-    themeOutput += `    },\n`
-  }
+  // グレーも追加
+  themeOutput += `    grey: {
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#eeeeee',
+      300: '#e0e0e0',
+      400: '#bdbdbd',
+      500: '#9e9e9e',
+      600: '#757575',
+      700: '#616161',
+      800: '#424242',
+      900: '#212121',
+    },
+`
 
-  // エラーカラー（3番目のカラーがあれば使用）
-  const errorColorIndex =
-    primaryColorIndex !== 2 && secondaryColorIndex !== 2
-      ? 2
-      : primaryColorIndex !== 3 && secondaryColorIndex !== 3
-        ? 3
-        : -1
-  if (errorColorIndex >= 0 && errorColorIndex < colors.length) {
-    const errorColor = colors[errorColorIndex]
-    themeOutput += `    error: {
-      main: '${errorColor.value}',\n`
-
-    // エラーカラーのバリエーション
-    if (variations[errorColor.name]) {
-      const errorVars = variations[errorColor.name]
-      if (errorVars.dark) themeOutput += `      dark: '${errorVars.dark}',\n`
-      if (errorVars.light) themeOutput += `      light: '${errorVars.light}',\n`
-    }
-
-    themeOutput += `    },\n`
-  }
+  // 背景色とテキスト色
+  themeOutput += `    background: {
+      default: '#ffffff',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: 'rgba(0, 0, 0, 0.87)',
+      secondary: 'rgba(0, 0, 0, 0.6)',
+      disabled: 'rgba(0, 0, 0, 0.38)',
+    },
+`
 
   themeOutput += `  },
 });
