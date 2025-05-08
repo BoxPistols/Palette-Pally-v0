@@ -81,6 +81,12 @@ export function ColorDisplay({
     return key
   }
 
+  // getVariationName関数を修正します
+  const getVariationName = (name: string): string => {
+    // 常に英語名を返す（日本語変換なし）
+    return name
+  }
+
   return (
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
@@ -90,7 +96,7 @@ export function ColorDisplay({
         <div className="flex gap-1">
           {isPrimary && (
             <Badge variant="outline" className="ml-2 bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-              {language === "jp" ? "プライマリ" : "Primary"}
+              Primary
             </Badge>
           )}
           {colorRole && colorRole !== "primary" && (
@@ -143,25 +149,6 @@ export function ColorDisplay({
 
           // Material Designの最も近い色を取得
           const closestMaterial = findClosestMaterialColor(color)
-
-          // 表示名の翻訳
-          const getVariationName = (name: string): string => {
-            if (language === "jp") {
-              switch (name) {
-                case "main":
-                  return "メイン"
-                case "dark":
-                  return "ダーク"
-                case "light":
-                  return "ライト"
-                case "lighter":
-                  return "ライター"
-                default:
-                  return name
-              }
-            }
-            return name
-          }
 
           return (
             <div

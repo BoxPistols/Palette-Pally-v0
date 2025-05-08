@@ -15,6 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { simulateAllColorBlindness, type ColorBlindnessType } from "@/lib/color-blind-simulation"
 import { useLanguage } from "@/contexts/language-context"
 import type { ColorData } from "@/types/palette"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 interface ColorBlindSimulatorProps {
   colors: ColorData[]
@@ -24,6 +26,7 @@ interface ColorBlindSimulatorProps {
 export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorProps) {
   const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
+  const [showOriginal, setShowOriginal] = useState(true)
 
   // 色覚異常の種類と説明
   const colorBlindnessTypes: Record<
@@ -70,6 +73,16 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
         en: "Complete inability to perceive colors, seeing only in black, white, and shades of gray. Very rare.",
       },
     },
+    grayscale: {
+      name: {
+        jp: "グレースケール",
+        en: "Grayscale",
+      },
+      description: {
+        jp: "すべての色をグレースケール（白黒）で表示します。これは色覚異常ではなく、モノクロでの見え方を確認するためのモードです。",
+        en: "Displays all colors in grayscale (black and white). This is not a color blindness type but a mode to check how colors appear in monochrome.",
+      },
+    },
   }
 
   // カラーブロックを生成する関数
@@ -104,13 +117,19 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
             <DialogDescription>{t("colorBlind.description")}</DialogDescription>
           </DialogHeader>
 
+          <div className="flex items-center justify-end mb-4 gap-2">
+            <Switch id="show-original" checked={showOriginal} onCheckedChange={setShowOriginal} />
+            <Label htmlFor="show-original">{language === "jp" ? "元の色を表示" : "Show original colors"}</Label>
+          </div>
+
           <Tabs defaultValue="overview" className="w-full flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-5 mb-2">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-6 mb-2">
               <TabsTrigger value="overview">{t("colorBlind.overview")}</TabsTrigger>
               <TabsTrigger value="protanopia">{colorBlindnessTypes.protanopia.name[language]}</TabsTrigger>
               <TabsTrigger value="deuteranopia">{colorBlindnessTypes.deuteranopia.name[language]}</TabsTrigger>
               <TabsTrigger value="tritanopia">{colorBlindnessTypes.tritanopia.name[language]}</TabsTrigger>
               <TabsTrigger value="achromatopsia">{colorBlindnessTypes.achromatopsia.name[language]}</TabsTrigger>
+              <TabsTrigger value="grayscale">{colorBlindnessTypes.grayscale.name[language]}</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-auto px-1">
@@ -142,7 +161,7 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
                 </div>
               </TabsContent>
 
-              {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia"] as const).map((type) => (
+              {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia", "grayscale"] as const).map((type) => (
                 <TabsContent key={type} value={type} className="mt-4">
                   <div className="space-y-4">
                     <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
@@ -159,7 +178,7 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
                         return (
                           <div key={color.name} className="flex flex-col items-center space-y-2">
                             <div className="flex space-x-2">
-                              {renderColorBlock(color.value, language === "jp" ? "通常" : "Normal")}
+                              {showOriginal && renderColorBlock(color.value, language === "jp" ? "通常" : "Normal")}
                               {renderColorBlock(simulatedColor, type)}
                             </div>
                             <span className="text-xs font-medium">{color.name}</span>
@@ -183,7 +202,7 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
                                 className="flex flex-col items-center space-y-2"
                               >
                                 <div className="flex space-x-2">
-                                  {renderColorBlock(hexValue, language === "jp" ? "通常" : "Normal")}
+                                  {showOriginal && renderColorBlock(hexValue, language === "jp" ? "通常" : "Normal")}
                                   {renderColorBlock(simulatedColor, type)}
                                 </div>
                                 <span className="text-xs">{variationName}</span>

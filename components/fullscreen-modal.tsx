@@ -1,62 +1,93 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Maximize2, Minimize2 } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
+import { useState, useEffect, type ReactNode } from "react"
+import { X, Maximize2, Minimize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/hooks/use-language"
 
 interface FullscreenModalProps {
+  isOpen: boolean
+  onClose: () => void
   title: string
-  description?: string
-  children: React.ReactNode
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  children: ReactNode
+  className?: string
+  initialFullscreen?: boolean
 }
 
-export function FullscreenModal({ title, description, children, open, onOpenChange }: FullscreenModalProps) {
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const { language } = useLanguage()
+export function FullscreenModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className,
+  initialFullscreen = false,
+}: FullscreenModalProps) {
+  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen)
+  const { t } = useLanguage()
+
+  // ESCキーでモーダルを閉じる
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleEsc)
+    return () => {
+      window.removeEventListener("keydown", handleEsc)
+    }
+  }, [onClose])
+
+  // モーダルが開いているときは背景のスクロールを無効にする
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+    return () => {
+      document.body.style.overflow = "auto"
+    }
+  }, [isOpen])
+
+  if (!isOpen) return null
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div
         className={cn(
-          "sm:max-w-[600px] transition-all duration-300",
-          isFullscreen && "fixed inset-0 w-screen h-screen max-w-none rounded-none",
+          "bg-background flex flex-col rounded-lg shadow-lg",
+          isFullscreen
+            ? "fixed inset-2 max-h-[calc(100vh-16px)] overflow-auto"
+            : "w-full max-w-[600px] max-h-[80vh] overflow-auto",
+          className,
         )}
       >
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <div>
-            <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
+        <div className="flex items-center justify-between border-b p-4">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={toggleFullscreen}
+              className="rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700"
+              aria-label={isFullscreen ? t("縮小") : t("拡大")}
+            >
+              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700"
+              aria-label={t("閉じる")}
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleFullscreen}
-            title={
-              isFullscreen
-                ? language === "jp"
-                  ? "通常サイズに戻す"
-                  : "Exit fullscreen"
-                : language === "jp"
-                  ? "全画面表示"
-                  : "Fullscreen"
-            }
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
-        </DialogHeader>
-        <div className={cn("overflow-auto", isFullscreen && "h-[calc(100vh-120px)]")}>{children}</div>
-      </DialogContent>
-    </Dialog>
+        </div>
+        <div className="flex-1 overflow-auto p-4">{children}</div>
+      </div>
+    </div>
   )
 }

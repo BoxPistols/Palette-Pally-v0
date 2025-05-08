@@ -18,9 +18,24 @@ import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
 import type { PaletteType } from "@/types/palette"
 
+// Define the missing types
+type ColorMode = "light" | "dark" | "system" // Example ColorMode type
+type ColorData = {
+  name: string
+  value: string
+  role?: string
+}
+
 interface ExportImportPanelProps {
   data: PaletteType & { primaryColorIndex?: number }
-  onImport: (data: PaletteType & { primaryColorIndex?: number }) => void
+  onImport: (
+    importedData: PaletteType & {
+      primaryColorIndex?: number
+      colorMode?: ColorMode
+      showTailwindClasses?: boolean
+      showMaterialNames?: boolean
+    },
+  ) => void
 }
 
 export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
@@ -109,7 +124,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
         }
 
         const json = JSON.parse(event.target.result) as PaletteType & { primaryColorIndex?: number }
-        onImport(json)
+        handleImport(json)
         setError(null)
 
         // Reset file input
@@ -136,6 +151,92 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       })
     }
     reader.readAsText(file)
+  }
+
+  const handleImport = (
+    importedData: PaletteType & {
+      primaryColorIndex?: number
+      colorMode?: ColorMode
+      showTailwindClasses?: boolean
+      showMaterialNames?: boolean
+    },
+  ) => {
+    try {
+      // Figmaトークン形式かどうかをチェック
+      if (importedData.global && importedData.global.colors) {
+        // Figmaトークン形式からカラーデータに変換
+        const figmaColors = importedData.global.colors
+        const extractedColors: ColorData[] = []
+
+        Object.entries(figmaColors).forEach(([category, tokens]) => {
+          if (category === "common") return // common.white/blackはスキップ
+
+          // カテゴリ内の基本色のみを抽出（バリエーションはスキップ）
+          Object.entries(tokens).forEach(([tokenName, token]: [string, any]) => {
+            // バリエーション（例：primary-light）はスキップ
+            if (tokenName.includes("-")) return
+
+            if (token.$type === "color" && token.$value) {
+              extractedColors.push({
+                name: tokenName,
+                value: token.$value,
+                role: tokenName === "primary" ? "primary" : undefined,
+              })
+            }
+          })
+        })
+
+        if (extractedColors.length > 0) {
+          onImport({
+            colors: extractedColors,
+          })
+          return
+        }
+      }
+
+      // 通常のパレットデータ形式の処理
+      if (importedData.colors && Array.isArray(importedData.colors)) {
+        // Validate each color entry
+        const validColors = importedData.colors.filter(
+          (color) =>
+            color &&
+            typeof color === "object" &&
+            "name" in color &&
+            "value" in color &&
+            typeof color.name === "string" &&
+            typeof color.value === "string" &&
+            /^#[0-9A-F]{6}$/i.test(color.value),
+        )
+
+        if (validColors.length > 0) {
+          onImport({ colors: validColors })
+
+          toast({
+            title: t.importComplete,
+            description:
+              language === "jp"
+                ? `${validColors.length}色のパレットをインポートしました`
+                : `Imported palette with ${validColors.length} colors`,
+          })
+        } else {
+          throw new Error(language === "jp" ? "有効なカラーデータが見つかりませんでした" : "No valid color data found")
+        }
+      } else {
+        throw new Error(language === "jp" ? "カラーデータが見つかりませんでした" : "No color data found")
+      }
+    } catch (error) {
+      console.error("Import error:", error)
+      toast({
+        title: t.importError,
+        description:
+          error instanceof Error
+            ? error.message
+            : language === "jp"
+              ? "不明なエラーが発生しました"
+              : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

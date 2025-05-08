@@ -54,3 +54,69 @@ export const colorRoleDescriptions: Record<ColorRole, string> = {
   neutral: "中立的な色（グレー系）",
   custom: "カスタム用途の色",
 }
+
+export interface ColorPalette {
+  primary: { main: string; light: string; dark: string; contrastText: string }
+  secondary: { main: string; light: string; dark: string; contrastText: string }
+  error: { main: string; light: string; dark: string; contrastText: string }
+  warning: { main: string; light: string; dark: string; contrastText: string }
+  info: { main: string; light: string; dark: string; contrastText: string }
+  success: { main: string; light: string; dark: string; contrastText: string }
+  grey: {
+    50: string
+    100: string
+    200: string
+    300: string
+    400: string
+    500: string
+    600: string
+    700: string
+    800: string
+    900: string
+  }
+  text: {
+    primary: string
+    secondary: string
+    disabled: string
+  }
+  background: {
+    default: string
+    paper: string
+  }
+  common: {
+    black: string
+    white: string
+  }
+}
+
+export interface TypographyValue {
+  fontFamily: string
+  fontSize: string
+  fontWeight: number
+  letterSpacing: string
+  lineHeight: string
+  textTransform: string
+  textDecoration: string
+}
+
+export interface TypographyToken {
+  $type: string
+  $value: TypographyValue
+  $description?: string
+}
+
+export interface Typography {
+  h1: TypographyValue
+  h2: TypographyValue
+  h3: TypographyValue
+  h4: TypographyValue
+  h5: TypographyValue
+  h6: TypographyValue
+  body1: TypographyValue
+  body2: TypographyValue
+  button: TypographyValue
+  caption: TypographyValue
+  overline: TypographyValue
+}
+
+export type Language = "jp" | "en"
