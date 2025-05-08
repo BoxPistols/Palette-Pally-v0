@@ -86,16 +86,22 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
   }
 
   // カラーブロックを生成する関数
-  const renderColorBlock = (color: string, label: string) => (
-    <div className="flex flex-col items-center">
-      <div
-        className="w-12 h-12 rounded-md border border-gray-200 dark:border-gray-700"
-        style={{ backgroundColor: color }}
-        title={color}
-      />
-      <span className="text-xs mt-1">{label}</span>
-    </div>
-  )
+  const renderColorBlock = (color: string, label: string) => {
+    // 無効なカラーコードの場合はデフォルト値を使用
+    const safeColor =
+      color && typeof color === "string" && color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i) ? color : "#cccccc"
+
+    return (
+      <div className="flex flex-col items-center">
+        <div
+          className="w-12 h-12 rounded-md border border-gray-200 dark:border-gray-700"
+          style={{ backgroundColor: safeColor }}
+          title={safeColor}
+        />
+        <span className="text-xs mt-1">{label}</span>
+      </div>
+    )
+  }
 
   return (
     <>

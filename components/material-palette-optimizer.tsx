@@ -257,48 +257,49 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     onShadeChange: (shade: string) => void
   }) => {
     const shadeOptions = getShadeOptions(color)
+    const colorHex = materialColors[color]?.[shade] || "#cccccc"
+    const bgClass = `bg-${color}-${shade}`
 
     return (
       <div className="space-y-1">
-        <Label>{label}</Label>
-        <div className="grid grid-cols-2 gap-2 max-w-full">
-          <div className="flex justify-center">
-            <Select value={color} onValueChange={onColorChange}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Select color" />
-              </SelectTrigger>
-              <SelectContent className="max-w-[200px]">
-                {Object.entries(materialColors).map(([colorKey, shades]) => (
-                  <SelectItem key={colorKey} value={colorKey}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: shades["500"] || Object.values(shades)[0] }}
-                      />
-                      <span className="truncate">{colorKey}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-center">
-            <Select value={shade} onValueChange={onShadeChange}>
-              <SelectTrigger className="w-[80px]">
-                <SelectValue placeholder="Shade" />
-              </SelectTrigger>
-              <SelectContent className="max-w-[100px]">
-                {shadeOptions.map((shadeOption) => (
-                  <SelectItem key={shadeOption} value={shadeOption}>
-                    {shadeOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorHex }} />
+          <Label>{label}</Label>
         </div>
-        <div className="mt-1 h-6 rounded" style={{ backgroundColor: materialColors[color]?.[shade] || "#cccccc" }} />
+        <div className="grid grid-cols-2 gap-2 max-w-full">
+          <Select value={color} onValueChange={onColorChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select color" />
+            </SelectTrigger>
+            <SelectContent className="max-w-[200px]">
+              {Object.entries(materialColors).map(([colorKey, shades]) => (
+                <SelectItem key={colorKey} value={colorKey}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: shades["500"] || Object.values(shades)[0] }}
+                    />
+                    <span className="truncate">{colorKey}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={shade} onValueChange={onShadeChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Shade" />
+            </SelectTrigger>
+            <SelectContent className="max-w-[100px]">
+              {shadeOptions.map((shadeOption) => (
+                <SelectItem key={shadeOption} value={shadeOption}>
+                  {shadeOption}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="mt-1 h-6 rounded" style={{ backgroundColor: colorHex }} />
       </div>
     )
   }
@@ -320,7 +321,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[500px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="sticky top-0 bg-white z-20 pb-4 border-b">
+          <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 z-20 pb-4 border-b">
             <DialogTitle>{t_local.title}</DialogTitle>
             <DialogDescription>{t_local.description}</DialogDescription>
           </DialogHeader>
@@ -376,12 +377,12 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
               />
             </div>
 
-            <div className="p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700">{t_local.note}</p>
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <p className="text-sm text-blue-700 dark:text-blue-300">{t_local.note}</p>
             </div>
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-white z-20 pt-4 border-t">
+          <DialogFooter className="sticky bottom-0 bg-white dark:bg-gray-900 z-20 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               {t_local.cancel}
             </Button>

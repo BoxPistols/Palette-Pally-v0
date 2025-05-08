@@ -29,6 +29,7 @@ import { LanguageProvider, useLanguage } from "@/contexts/language-context"
 import { ThemeProvider, useTheme } from "@/contexts/theme-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { TypographyPreviewPanel } from "@/components/typography-preview-panel"
 import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
@@ -63,6 +64,7 @@ function PaletteApp() {
   const [colorMode, setColorMode] = useState<ColorMode>("standard") // デフォルトは標準モード
   const [showTailwindClasses, setShowTailwindClasses] = useState<boolean>(false)
   const [showMaterialNames, setShowMaterialNames] = useState<boolean>(false)
+  const [typographyTokens, setTypographyTokens] = useState<Record<string, any>>({})
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -74,6 +76,7 @@ function PaletteApp() {
           colorMode?: ColorMode
           showTailwindClasses?: boolean
           showMaterialNames?: boolean
+          typographyTokens?: Record<string, any>
         }
         if (parsedData.colors && Array.isArray(parsedData.colors)) {
           setColorData(parsedData.colors)
@@ -106,6 +109,11 @@ function PaletteApp() {
         if (typeof parsedData.showMaterialNames === "boolean") {
           setShowMaterialNames(parsedData.showMaterialNames)
         }
+
+        // Load typography tokens if available
+        if (parsedData.typographyTokens) {
+          setTypographyTokens(parsedData.typographyTokens)
+        }
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
       }
@@ -134,6 +142,7 @@ function PaletteApp() {
         colorMode: colorMode,
         showTailwindClasses: showTailwindClasses,
         showMaterialNames: showMaterialNames,
+        typographyTokens: typographyTokens, // タイポグラフィトークンを追加
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -267,6 +276,9 @@ function PaletteApp() {
     setShowTailwindClasses(false)
     setShowMaterialNames(false)
 
+    // Reset typography tokens
+    setTypographyTokens({})
+
     toast({
       title: t("toast.resetComplete"),
       description: t("toast.resetCompleteDescription"),
@@ -281,6 +293,7 @@ function PaletteApp() {
     colorMode: colorMode,
     showTailwindClasses: showTailwindClasses,
     showMaterialNames: showMaterialNames,
+    typographyTokens: typographyTokens, // タイポグラフィトークンを追加
   }
 
   const handleImport = (
@@ -289,6 +302,7 @@ function PaletteApp() {
       colorMode?: ColorMode
       showTailwindClasses?: boolean
       showMaterialNames?: boolean
+      typographyTokens?: Record<string, any>
     },
   ) => {
     try {
@@ -336,6 +350,11 @@ function PaletteApp() {
 
           if (typeof importedData.showMaterialNames === "boolean") {
             setShowMaterialNames(importedData.showMaterialNames)
+          }
+
+          // Import typography tokens if available
+          if (importedData.typographyTokens) {
+            setTypographyTokens(importedData.typographyTokens)
           }
 
           toast({
@@ -427,6 +446,16 @@ function PaletteApp() {
     }, 100)
   }
 
+  // タイポグラフィトークンの更新
+  const handleUpdateTypography = (newTypography: Record<string, any>) => {
+    setTypographyTokens(newTypography)
+
+    // 変更後に自動保存
+    setTimeout(() => {
+      saveToLocalStorage()
+    }, 100)
+  }
+
   // ドラッグ＆ドロップの処理
   const handleDragEnd = (result: any) => {
     // ドロップ先がない場合は何もしない
@@ -508,10 +537,15 @@ function PaletteApp() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
             <div className="flex items-center gap-2 flex-wrap">
               <ExportImportPanel data={exportData} onImport={handleImport} />
-              <FigmaTokensPanel colors={colorData} onImport={handleUpdateColors} />
+              <FigmaTokensPanel
+                colors={colorData}
+                onImport={handleUpdateColors}
+                onTypographyImport={handleUpdateTypography}
+              />
               <CodeExportPanel colors={colorData} variations={colorVariations} primaryColorIndex={primaryColorIndex} />
               <ColorBlindSimulator colors={colorData} variations={colorVariations} />
               <TextColorPreview colors={colorData} />
+              {Object.keys(typographyTokens).length > 0 && <TypographyPreviewPanel tokens={typographyTokens} />}
             </div>
 
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -556,73 +590,6 @@ function PaletteApp() {
         </CardContent>
       </Card>
 
-      {/* 2. グリッドレイアウトをResizablePanelsに置き換え */}
-      {/* 以下のコードを: */}
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Color Pickers Section with Drag & Drop */}
-      {/*  <div>
-          <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="color-pickers" direction="horizontal">
-              {(provided) => (
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {colorData.map((color, index) => (
-                    <Draggable key={`color-${index}`} draggableId={`color-${index}`} index={index}>
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
-                          <ColorPicker
-                            index={index}
-                            name={color.name}
-                            color={color.value}
-                            isPrimary={index === primaryColorIndex}
-                            onColorChange={(value) => handleColorChange(index, value)}
-                            onNameChange={(name) => handleNameChange(index, name)}
-                            onSetAsPrimary={index !== primaryColorIndex ? () => handleSetAsPrimary(index) : undefined}
-                            dragHandleProps={provided.dragHandleProps}
-                            colorRole={color.role}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
-
-        {/* Color Palette Section */}
-      {/*  <div>
-          <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {sortedColorVariations.map(([key, variations]) => {
-              // カラー名からcolorDataの中での位置を特定
-              const colorIndex = colorData.findIndex((c) => c.name === key)
-              const color = colorData[colorIndex]
-              return (
-                <ColorDisplay
-                  key={key}
-                  colorKey={key}
-                  variations={variations}
-                  textColorSettings={textColorSettings}
-                  isPrimary={colorIndex === primaryColorIndex}
-                  colorMode={colorMode}
-                  showTailwindClasses={showTailwindClasses}
-                  showMaterialNames={showMaterialNames}
-                  colorRole={color?.role}
-                />
-              )
-            })}
-          </div>
-        </div>
-      </div> */}
-
-      {/* 以下のコードに置き換え: */}
       <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
         <ResizablePanel defaultSize={50} minSize={30}>
           <div className="pr-2">

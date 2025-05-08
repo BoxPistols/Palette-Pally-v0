@@ -59,6 +59,11 @@ const colorBlindnessMatrices: Record<ColorBlindnessType, number[][]> = {
 
 // HEXカラーコードをRGB値に変換
 function hexToRgb(hex: string): [number, number, number] {
+  // 無効なHEXコードの場合はデフォルト値を返す
+  if (!hex || typeof hex !== "string" || !hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)) {
+    return [0, 0, 0]
+  }
+
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
     ? [Number.parseInt(result[1], 16), Number.parseInt(result[2], 16), Number.parseInt(result[3], 16)]
@@ -72,9 +77,12 @@ function rgbToHex(r: number, g: number, b: number): string {
 
 // 色覚異常シミュレーション
 export function simulateColorBlindness(hexColor: string, type: ColorBlindnessType): string {
-  const rgb = hexToRgb(hexColor)
-  if (!rgb) return hexColor
+  // 無効なHEXコードの場合はそのまま返す
+  if (!hexColor || typeof hexColor !== "string" || !hexColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)) {
+    return "#cccccc"
+  }
 
+  const rgb = hexToRgb(hexColor)
   const [r, g, b] = rgb
   const normalizedRGB = normalizeRGB(r, g, b)
 
@@ -88,8 +96,13 @@ export function simulateColorBlindness(hexColor: string, type: ColorBlindnessTyp
   return rgbToHex(simR, simG, simB)
 }
 
-// モノクロ（グレースケール）変換関数を追加
+// モノクロ（グレースケール）変換関数
 export function simulateMonochromacy(hexColor: string): string {
+  // 無効なHEXコードの場合はデフォルト値を返す
+  if (!hexColor || typeof hexColor !== "string" || !hexColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)) {
+    return "#cccccc"
+  }
+
   // 16進数カラーコードをRGB値に変換
   const r = Number.parseInt(hexColor.slice(1, 3), 16)
   const g = Number.parseInt(hexColor.slice(3, 5), 16)
@@ -105,50 +118,46 @@ export function simulateMonochromacy(hexColor: string): string {
   return `#${grayHex}${grayHex}${grayHex}`
 }
 
-// グレースケール変換関数のエイリアスを追加（simulateMonochromacyと同じ機能）
+// グレースケール変換関数のエイリアス
 export function simulateGrayscale(hexColor: string): string {
   return simulateMonochromacy(hexColor)
 }
 
 // すべての色覚異常タイプでシミュレーション
 export function simulateAllColorBlindness(hexColor: string): Record<ColorBlindnessType, string> {
-  const rgb = hexToRgb(hexColor)
-  if (!rgb)
+  // 無効なHEXコードの場合はデフォルト値を返す
+  if (!hexColor || typeof hexColor !== "string" || !hexColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)) {
     return {
-      protanopia: hexColor,
-      deuteranopia: hexColor,
-      tritanopia: hexColor,
-      achromatopsia: hexColor,
-      grayscale: hexColor,
+      protanopia: "#cccccc",
+      deuteranopia: "#cccccc",
+      tritanopia: "#cccccc",
+      achromatopsia: "#cccccc",
+      grayscale: "#cccccc",
     }
+  }
 
+  const rgb = hexToRgb(hexColor)
   const [r, g, b] = rgb
-  const normalizedRGB = normalizeRGB(r, g, b)
 
-  const protanopiaRgb = simulateColorBlindness(hexColor, "protanopia")
-  const deuteranopiaRgb = simulateColorBlindness(hexColor, "deuteranopia")
-  const tritanopiaRgb = simulateColorBlindness(hexColor, "tritanopia")
-  const achromatopsiaRgb = simulateColorBlindness(hexColor, "achromatopsia")
-
-  // グレースケール変換を追加
-  const grayValue = Math.round(0.299 * r + 0.587 * g + 0.114 * b)
-  const grayscaleRgb = [grayValue, grayValue, grayValue]
+  // 各色覚異常タイプでシミュレーション
+  const protanopiaColor = simulateColorBlindness(hexColor, "protanopia")
+  const deuteranopiaColor = simulateColorBlindness(hexColor, "deuteranopia")
+  const tritanopiaColor = simulateColorBlindness(hexColor, "tritanopia")
+  const achromatopsiaColor = simulateColorBlindness(hexColor, "achromatopsia")
+  const grayscaleColor = simulateGrayscale(hexColor)
 
   return {
-    protanopia: protanopiaRgb,
-    deuteranopia: deuteranopiaRgb,
-    tritanopia: tritanopiaRgb,
-    achromatopsia: achromatopsiaRgb,
-    grayscale: rgbToHex(grayscaleRgb[0], grayscaleRgb[1], grayscaleRgb[2]),
+    protanopia: protanopiaColor,
+    deuteranopia: deuteranopiaColor,
+    tritanopia: tritanopiaColor,
+    achromatopsia: achromatopsiaColor,
+    grayscale: grayscaleColor,
   }
 }
 
-export function simulateProtanopia(color: string): string {
-  const [r, g, b] = hexToRgb(color)
-  const simulatedR = Math.round(r * 0.567 + g * 0.433)
-  const simulatedG = Math.round(r * 0.558 + g * 0.442)
-  const simulatedB = Math.round(g * 0.242 + b * 0.758)
-  return rgbToHex(simulatedR, simulatedG, simulatedB)
+// 特定の色覚異常タイプでシミュレーション（個別関数）
+export function simulateProtanopia(hexColor: string): string {
+  return simulateColorBlindness(hexColor, "protanopia")
 }
 
 export function simulateDeuteranopia(hexColor: string): string {
