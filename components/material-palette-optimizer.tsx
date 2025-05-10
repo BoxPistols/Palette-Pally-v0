@@ -258,12 +258,10 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
   }) => {
     const shadeOptions = getShadeOptions(color)
     const colorHex = materialColors[color]?.[shade] || "#cccccc"
-    const bgClass = `bg-${color}-${shade}`
 
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorHex }} />
           <Label>{label}</Label>
         </div>
         <div className="grid grid-cols-2 gap-2 max-w-full">
@@ -325,7 +323,7 @@ export function MaterialPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             <DialogDescription>{t_local.description}</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4 overflow-y-auto flex-1">
+          <div className="py-4 space-y-4 overflow-y-auto flex-1 px-2">
             <div className="space-y-4">
               <ColorSelector
                 label={t_local.primary}

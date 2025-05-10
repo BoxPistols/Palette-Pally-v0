@@ -156,3 +156,7 @@
 .dark .TabsContent {
   @apply bg-gray-800;
 }
+
+.grayscale * {
+  filter: grayscale(100%) !important;
+}

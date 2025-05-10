@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Figma, Download, X, Upload, Maximize, Minimize } from "lucide-react"
+import { Figma, X, Upload, Maximize, Minimize } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/hooks/use-language"
@@ -332,7 +332,21 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
     const minutes = String(now.getMinutes()).padStart(2, "0")
 
     const timestamp = `${year}${month}${day}-${hours}${minutes}`
-    const filename = `palette-pally-${timestamp}.json`
+
+    // ファイル名の生成
+    let filename = `palette-pally-${timestamp}.json`
+
+    // インポートされたファイル名に基づいてファイル名を生成
+    if (parsedData && parsedData.$metadata && parsedData.$metadata.fileName) {
+      const originalName = parsedData.$metadata.fileName
+      if (originalName.includes("text.styles")) {
+        filename = `palette-pally-text.styles.tokens-${timestamp}.json`
+      } else if (originalName.includes("variableCollection.dark")) {
+        filename = `palette-pally-variableCollection.dark.tokens-${timestamp}.json`
+      } else if (originalName.includes("variableCollection.light")) {
+        filename = `palette-pally-variableCollection.light.tokens-${timestamp}.json`
+      }
+    }
 
     const jsonString = JSON.stringify(exportData, null, 2)
     const blob = new Blob([jsonString], { type: "application/json" })
@@ -370,10 +384,6 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
           <div className="flex justify-end gap-2 mb-4">
             <Button variant="outline" onClick={() => setShowPreview(true)} className="mr-2">
               {language === "jp" ? "プレビュー" : "Preview"}
-            </Button>
-            <Button variant="outline" onClick={() => {}} className="flex items-center gap-1">
-              <Download className="h-4 w-4" />
-              {t.downloadJson}
             </Button>
             <Button onClick={handleExport}>{t.copyButton}</Button>
           </div>

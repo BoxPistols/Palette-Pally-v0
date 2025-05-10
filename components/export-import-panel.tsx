@@ -87,14 +87,25 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
     }
   }
 
-  const exportJSON = () => {
+  const handleExport = () => {
     try {
+      // 現在の日本時間を取得（ローカル時間を使用）
+      const now = new Date()
+      const year = now.getFullYear().toString().slice(-2) // 年の下2桁
+      const month = String(now.getMonth() + 1).padStart(2, "0")
+      const day = String(now.getDate()).padStart(2, "0")
+      const hours = String(now.getHours()).padStart(2, "0")
+      const minutes = String(now.getMinutes()).padStart(2, "0")
+
+      const timestamp = `${year}${month}${day}-${hours}${minutes}`
+      const filename = `palette-pally-${timestamp}.json`
+
       const blob = new Blob([jsonPreview], { type: "application/json" })
       const url = URL.createObjectURL(blob)
 
       const a = document.createElement("a")
       a.href = url
-      a.download = "palette-pally-export.json"
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -110,6 +121,10 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       setError(language === "jp" ? "エクスポート中にエラーが発生しました。" : "Error during export.")
       console.error("Export error:", err)
     }
+  }
+
+  const exportJSON = () => {
+    handleExport()
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

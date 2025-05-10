@@ -130,7 +130,13 @@ export function ColorDisplay({
 
   // カスタムバリエーションがある場合は、それに基づいて表示を変更
   const hasCustomVariations = !!customVariations
-  const isCompactView = group && !hasCustomVariations
+  const isCompactView =
+    group &&
+    !hasCustomVariations &&
+    (!Object.keys(displayVariations).includes("main") ||
+      !Object.keys(displayVariations).includes("dark") ||
+      !Object.keys(displayVariations).includes("light") ||
+      !Object.keys(displayVariations).includes("lighter"))
 
   return (
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}>

@@ -141,13 +141,12 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
           </div>
 
           <Tabs defaultValue="overview" className="w-full flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-6 mb-4 px-4">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-5 mb-4 px-4">
               <TabsTrigger value="overview">{t("colorBlind.overview")}</TabsTrigger>
               <TabsTrigger value="protanopia">{colorBlindnessTypes.protanopia.name[language]}</TabsTrigger>
               <TabsTrigger value="deuteranopia">{colorBlindnessTypes.deuteranopia.name[language]}</TabsTrigger>
               <TabsTrigger value="tritanopia">{colorBlindnessTypes.tritanopia.name[language]}</TabsTrigger>
               <TabsTrigger value="achromatopsia">{colorBlindnessTypes.achromatopsia.name[language]}</TabsTrigger>
-              <TabsTrigger value="grayscale">{colorBlindnessTypes.grayscale.name[language]}</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-auto px-4">
@@ -179,7 +178,7 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
                 </div>
               </TabsContent>
 
-              {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia", "grayscale"] as const).map((type) => (
+              {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia"] as const).map((type) => (
                 <TabsContent key={type} value={type} className="mt-0 p-0">
                   <div className="space-y-6">
                     <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">

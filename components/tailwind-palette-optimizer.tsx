@@ -250,12 +250,10 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
     onShadeChange: (shade: string) => void
   }) => {
     const colorHex = tailwindColors[color][shade]
-    const bgClass = `bg-${color}-${shade}`
 
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorHex }} />
           <Label>{label}</Label>
           <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
             bg-{color}-{shade}
@@ -317,7 +315,7 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             <DialogDescription>{t_local.description}</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4 overflow-y-auto flex-1">
+          <div className="py-4 space-y-4 overflow-y-auto flex-1 px-2">
             <div className="space-y-4">
               <ColorSelector
                 label={t_local.primary}
