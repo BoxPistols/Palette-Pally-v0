@@ -2,21 +2,23 @@ export interface ColorData {
   name: string
   value: string
   role?: ColorRole
+  group?: string
+  variations?: Record<string, string>
 }
 
 export interface PaletteType {
   colors: ColorData[]
-  variations: Record<string, Record<string, string>>
+  variations?: Record<string, Record<string, string>>
   textColorSettings?: TextColorSettings
 }
 
 export type TextColorMode = "default" | "white" | "black"
 
 export interface TextColorSettings {
-  main: TextColorMode
-  dark: TextColorMode
-  light: TextColorMode
-  lighter: TextColorMode
+  main: "default" | "white" | "black"
+  dark: "default" | "white" | "black"
+  light: "default" | "white" | "black"
+  lighter: "default" | "white" | "black"
 }
 
 export const defaultTextColorSettings: TextColorSettings = {
@@ -38,7 +40,6 @@ export type ColorRole =
   | "border"
   | "accent"
   | "neutral"
-  | "custom"
 
 export const colorRoleDescriptions: Record<ColorRole, string> = {
   primary: "メインカラー、ブランドを表す主要な色",

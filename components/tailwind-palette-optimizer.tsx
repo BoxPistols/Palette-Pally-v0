@@ -291,7 +291,6 @@ export function TailwindPaletteOptimizer({ colors, primaryColorIndex, onOptimize
             </SelectContent>
           </Select>
         </div>
-        <div className="mt-1 h-6 rounded" style={{ backgroundColor: colorHex }} />
       </div>
     )
   }

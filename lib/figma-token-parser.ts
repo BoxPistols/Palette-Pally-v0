@@ -25,97 +25,148 @@ export function extractColorsFromFigmaTokens(data: any): ColorData[] {
     if (data.palette && data.palette.light) {
       const lightPalette = data.palette.light
 
-      // プライマリカラー
-      if (lightPalette.primary && lightPalette.primary.main) {
-        extractedColors.push({
-          name: "primary",
-          value: lightPalette.primary.main.$value || lightPalette.primary.main,
-          role: "primary",
-        })
-      }
-
-      // セカンダリカラー
-      if (lightPalette.secondary && lightPalette.secondary.main) {
-        extractedColors.push({
-          name: "secondary",
-          value: lightPalette.secondary.main.$value || lightPalette.secondary.main,
-          role: "secondary",
-        })
-      }
-
-      // その他のカラーロール
-      const colorRoles = ["success", "warning", "error", "info"]
+      // 主要なカラーロールを処理（primary, secondary, success, warning, error, info）
+      const colorRoles = ["primary", "secondary", "success", "warning", "error", "info"]
       colorRoles.forEach((role) => {
-        if (lightPalette[role] && lightPalette[role].main) {
-          extractedColors.push({
-            name: role,
-            value: lightPalette[role].main.$value || lightPalette[role].main,
-            role: role,
-          })
+        if (lightPalette[role]) {
+          // main, dark, light, lighter, contrastTextの構造を持つカラー
+          if (lightPalette[role].main) {
+            const colorValue = lightPalette[role].main.$value || lightPalette[role].main
+            // 有効なHEXカラーコードかチェック
+            if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
+              extractedColors.push({
+                name: role,
+                value: colorValue,
+                role: role === "error" ? "danger" : role,
+                variations: {
+                  main: colorValue,
+                  dark: lightPalette[role].dark?.$value || lightPalette[role].dark,
+                  light: lightPalette[role].light?.$value || lightPalette[role].light,
+                  lighter: lightPalette[role].lighter?.$value || lightPalette[role].lighter,
+                  contrastText: lightPalette[role].contrastText?.$value || lightPalette[role].contrastText,
+                },
+              })
+            }
+          } else {
+            // 単一のカラー値
+            const colorValue = lightPalette[role].$value || lightPalette[role]
+            if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
+              extractedColors.push({
+                name: role,
+                value: colorValue,
+                role: role === "error" ? "danger" : role,
+              })
+            }
+          }
         }
       })
 
       // テキストカラー
-      if (lightPalette.text && lightPalette.text.primary) {
-        extractedColors.push({
-          name: "text-primary",
-          value: lightPalette.text.primary.$value || lightPalette.text.primary,
-          role: "text",
+      if (lightPalette.text) {
+        Object.entries(lightPalette.text).forEach(([key, value]: [string, any]) => {
+          const colorValue = value.$value || value
+          if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
+            extractedColors.push({
+              name: `text-${key}`,
+              value: colorValue,
+              role: key === "primary" ? "text" : undefined,
+              group: "text",
+            })
+          }
         })
       }
 
       // バックグラウンドカラー
-      if (lightPalette.background && lightPalette.background.default) {
-        extractedColors.push({
-          name: "background",
-          value: lightPalette.background.default.$value || lightPalette.background.default,
-          role: "background",
+      if (lightPalette.background) {
+        Object.entries(lightPalette.background).forEach(([key, value]: [string, any]) => {
+          const colorValue = value.$value || value
+          if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
+            extractedColors.push({
+              name: `background-${key}`,
+              value: colorValue,
+              role: key === "default" ? "background" : undefined,
+              group: "background",
+            })
+          }
         })
       }
-    }
 
-    // Figma形式（figma.primary など）
-    if (data.figma) {
-      // カラートークンを探す
-      Object.entries(data.figma).forEach(([key, value]: [string, any]) => {
-        if (value && value.$type === "color" && value.$value) {
-          extractedColors.push({
-            name: `figma-${key}`,
-            value: value.$value,
-            role: key === "primary" ? "primary" : undefined,
-          })
-        }
-      })
-
-      // ネストされたカラートークンを探す
-      if (data.figma.colors) {
-        Object.entries(data.figma.colors).forEach(([key, value]: [string, any]) => {
-          if (value && value.$type === "color" && value.$value) {
+      // 共通カラー
+      if (lightPalette.common) {
+        Object.entries(lightPalette.common).forEach(([key, value]: [string, any]) => {
+          const colorValue = value.$value || value
+          if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
             extractedColors.push({
-              name: key,
-              value: value.$value,
-              role: key === "primary" ? "primary" : undefined,
+              name: `common-${key}`,
+              value: colorValue,
+              group: "common",
             })
           }
         })
       }
     }
 
+    // グレースケール
+    if (data.palette && data.palette.grey) {
+      Object.entries(data.palette.grey).forEach(([shade, value]: [string, any]) => {
+        const colorValue = value.$value || value
+        if (typeof colorValue === "string" && /^#[0-9A-F]{6}$/i.test(colorValue)) {
+          extractedColors.push({
+            name: `grey-${shade}`,
+            value: colorValue,
+            group: "grey",
+          })
+        }
+      })
+    }
+
+    // Figma形式（figma.primary など）
+    if (data.figma) {
+      // カラートークンを探す
+      Object.entries(data.figma).forEach(([key, value]: [string, any]) => {
+        if (value && typeof value === "object") {
+          if (value.$type === "color" && value.$value) {
+            // 単一のカラー値
+            if (typeof value.$value === "string" && /^#[0-9A-F]{6}$/i.test(value.$value)) {
+              extractedColors.push({
+                name: `figma-${key}`,
+                value: value.$value,
+                role: key === "primary" ? "primary" : undefined,
+                group: "figma",
+              })
+            }
+          } else {
+            // ネストされたオブジェクト（figma.text.primary など）
+            Object.entries(value).forEach(([subKey, subValue]: [string, any]) => {
+              if (subValue && subValue.$type === "color" && subValue.$value) {
+                if (typeof subValue.$value === "string" && /^#[0-9A-F]{6}$/i.test(subValue.$value)) {
+                  extractedColors.push({
+                    name: `figma-${key}-${subKey}`,
+                    value: subValue.$value,
+                    role: key === "text" && subKey === "primary" ? "text" : undefined,
+                    group: `figma-${key}`,
+                  })
+                }
+              }
+            })
+          }
+        }
+      })
+    }
+
     // グローバル形式（global.colors など）
     if (data.global && data.global.colors) {
       Object.entries(data.global.colors).forEach(([category, tokens]: [string, any]) => {
-        if (category === "common") return // common.white/blackはスキップ
-
         Object.entries(tokens).forEach(([tokenName, token]: [string, any]) => {
-          // バリエーション（例：primary-light）はスキップ
-          if (tokenName.includes("-")) return
-
           if (token.$type === "color" && token.$value) {
-            extractedColors.push({
-              name: tokenName,
-              value: token.$value,
-              role: tokenName === "primary" ? "primary" : undefined,
-            })
+            if (typeof token.$value === "string" && /^#[0-9A-F]{6}$/i.test(token.$value)) {
+              extractedColors.push({
+                name: `${category}-${tokenName}`,
+                value: token.$value,
+                role: category === "primary" && tokenName === "main" ? "primary" : undefined,
+                group: category,
+              })
+            }
           }
         })
       })

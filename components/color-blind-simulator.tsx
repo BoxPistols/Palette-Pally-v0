@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Eye } from "lucide-react"
+import { Eye, Maximize2, Minimize2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
   const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [showOriginal, setShowOriginal] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   // 色覚異常の種類と説明
   const colorBlindnessTypes: Record<
@@ -103,6 +104,10 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
     )
   }
 
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen)
+  }
+
   return (
     <>
       <Button
@@ -117,19 +122,26 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[960px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="sticky top-0 z-10 pb-4 border-b">
-            <DialogTitle>{t("colorBlind.title")}</DialogTitle>
-            <DialogDescription>{t("colorBlind.description")}</DialogDescription>
+        <DialogContent
+          className={`${isFullscreen ? "max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh]" : "max-w-[960px] w-[90vw] max-h-[85vh]"} overflow-hidden flex flex-col`}
+        >
+          <DialogHeader className="sticky top-0 z-10 pb-4 border-b flex flex-row items-center justify-between">
+            <div>
+              <DialogTitle>{t("colorBlind.title")}</DialogTitle>
+              <DialogDescription>{t("colorBlind.description")}</DialogDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="h-8 w-8">
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
           </DialogHeader>
 
-          <div className="flex items-center justify-end mb-4 gap-2">
+          <div className="flex items-center justify-end my-3 gap-2 px-4">
             <Switch id="show-original" checked={showOriginal} onCheckedChange={setShowOriginal} />
             <Label htmlFor="show-original">{language === "jp" ? "元の色を表示" : "Show original colors"}</Label>
           </div>
 
           <Tabs defaultValue="overview" className="w-full flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-6 mb-2">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-6 mb-4 px-4">
               <TabsTrigger value="overview">{t("colorBlind.overview")}</TabsTrigger>
               <TabsTrigger value="protanopia">{colorBlindnessTypes.protanopia.name[language]}</TabsTrigger>
               <TabsTrigger value="deuteranopia">{colorBlindnessTypes.deuteranopia.name[language]}</TabsTrigger>
@@ -138,25 +150,25 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
               <TabsTrigger value="grayscale">{colorBlindnessTypes.grayscale.name[language]}</TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-auto px-1">
-              <TabsContent value="overview" className="mt-4">
-                <div className="space-y-4">
+            <div className="flex-1 overflow-auto px-4">
+              <TabsContent value="overview" className="mt-0 p-0">
+                <div className="space-y-6">
                   <p className="text-sm">
                     {language === "jp"
                       ? "色覚異常は、人口の約4.5%（男性の約8%、女性の約0.5%）に見られる特性です。色覚異常の方にも識別しやすいカラーパレットを設計することは、アクセシビリティの観点から重要です。"
                       : "Color blindness affects approximately 4.5% of the population (about 8% of males and 0.5% of females). Designing color palettes that are distinguishable for people with color blindness is important from an accessibility perspective."}
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {Object.entries(colorBlindnessTypes).map(([key, { name, description }]) => (
-                      <div key={key} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                        <h3 className="font-medium text-sm">{name[language]}</h3>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{description[language]}</p>
+                      <div key={key} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <h3 className="font-medium text-sm mb-2">{name[language]}</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">{description[language]}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-md">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
                       <strong>{language === "jp" ? "ヒント:" : "Tip:"}</strong>{" "}
                       {language === "jp"
@@ -168,22 +180,22 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
               </TabsContent>
 
               {(["protanopia", "deuteranopia", "tritanopia", "achromatopsia", "grayscale"] as const).map((type) => (
-                <TabsContent key={type} value={type} className="mt-4">
-                  <div className="space-y-4">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                      <h3 className="font-medium">{colorBlindnessTypes[type].name[language]}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                <TabsContent key={type} value={type} className="mt-0 p-0">
+                  <div className="space-y-6">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                      <h3 className="font-medium mb-2">{colorBlindnessTypes[type].name[language]}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {colorBlindnessTypes[type].description[language]}
                       </p>
                     </div>
 
                     <h3 className="font-medium text-sm">{language === "jp" ? "メインカラー" : "Main Colors"}</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                       {colors.map((color) => {
                         const simulatedColor = simulateAllColorBlindness(color.value)[type]
                         return (
-                          <div key={color.name} className="flex flex-col items-center space-y-2">
-                            <div className="flex space-x-2">
+                          <div key={color.name} className="flex flex-col items-center space-y-3">
+                            <div className="flex space-x-3">
                               {showOriginal && renderColorBlock(color.value, language === "jp" ? "通常" : "Normal")}
                               {renderColorBlock(simulatedColor, type)}
                             </div>
@@ -193,21 +205,21 @@ export function ColorBlindSimulator({ colors, variations }: ColorBlindSimulatorP
                       })}
                     </div>
 
-                    <h3 className="font-medium text-sm mt-6">
+                    <h3 className="font-medium text-sm mt-8">
                       {language === "jp" ? "カラーバリエーション" : "Color Variations"}
                     </h3>
                     {Object.entries(variations).map(([colorName, colorVariations]) => (
-                      <div key={colorName} className="mb-4">
-                        <h4 className="text-xs font-medium mb-2">{colorName}</h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      <div key={colorName} className="mb-6">
+                        <h4 className="text-xs font-medium mb-3">{colorName}</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                           {Object.entries(colorVariations).map(([variationName, hexValue]) => {
                             const simulatedColor = simulateAllColorBlindness(hexValue)[type]
                             return (
                               <div
                                 key={`${colorName}-${variationName}`}
-                                className="flex flex-col items-center space-y-2"
+                                className="flex flex-col items-center space-y-3"
                               >
-                                <div className="flex space-x-2">
+                                <div className="flex space-x-3">
                                   {showOriginal && renderColorBlock(hexValue, language === "jp" ? "通常" : "Normal")}
                                   {renderColorBlock(simulatedColor, type)}
                                 </div>

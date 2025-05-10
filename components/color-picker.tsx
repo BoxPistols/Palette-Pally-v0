@@ -45,8 +45,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 // }
 
 // サジェストボタンの代わりにA11yInfoコンポーネントを追加
-const getContrastInfo = (bgColor: string, colorRole: ColorRole | undefined) => {
-  const { theme } = useTheme()
+const getContrastInfo = (bgColor: string, colorRole: ColorRole | undefined, theme: string) => {
   const isBackgroundRole = colorRole === "background"
 
   // 背景色ロールの場合と通常の場合で処理を分ける
@@ -188,6 +187,7 @@ export function ColorPicker({
   const [hslValues, setHslValues] = useState({ h: 0, s: 0, l: 0 })
   const [oklabValues, setOklabValues] = useState({ l: 0, a: 0, b: 0 })
   const { language } = useLanguage()
+  const { theme } = useTheme()
 
   useEffect(() => {
     setInputValue(color)
@@ -337,7 +337,9 @@ export function ColorPicker({
   }
 
   return (
-    <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300" : ""}`}>
+    <Card
+      className={`overflow-hidden flex-shrink-0 w-[300px] ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}
+    >
       <CardHeader className="pb-2 px-3 pt-3 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="cursor-move" {...dragHandleProps}>
@@ -385,7 +387,7 @@ export function ColorPicker({
         <div className="flex justify-between items-center mt-1 mb-1">
           <ColorSuggestions baseColor={color} onSelectColor={onColorChange} />
           {(() => {
-            const { contrast, level } = getContrastInfo(color, colorRole)
+            const { contrast, level } = getContrastInfo(color, colorRole, theme)
 
             // レベルに応じたバッジの色を設定
             const levelColor =
