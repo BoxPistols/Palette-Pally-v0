@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SimpleColorPicker } from "./simple-color-picker"
-import { getContrastText } from "@/lib/color-utils"
+import { getBetterContrastColor } from "@/lib/color-utils"
 import type { PaletteColor } from "@/types/palette"
 
 interface RoleColorDetailEditorProps {
@@ -14,45 +14,52 @@ interface RoleColorDetailEditorProps {
 
 export function RoleColorDetailEditor({ color, onChange }: RoleColorDetailEditorProps) {
   const [activeTab, setActiveTab] = useState("main")
+  const [localColor, setLocalColor] = useState<PaletteColor>({ ...color })
+
+  // 親コンポーネントからのcolorプロップが変更されたら、ローカルの状態を更新
+  useEffect(() => {
+    setLocalColor({ ...color })
+  }, [color])
 
   const handleColorChange = (role: string, newValue: string) => {
-    const updatedColor = { ...color }
+    const updatedColor = { ...localColor }
 
     if (role === "main") {
       updatedColor.value = newValue
-      updatedColor.contrastText = getContrastText(newValue)
+      updatedColor.contrastText = getBetterContrastColor(newValue)
     } else {
       if (!updatedColor.variations) {
         updatedColor.variations = {}
       }
 
       if (!updatedColor.variations[role]) {
-        updatedColor.variations[role] = { value: newValue, contrastText: getContrastText(newValue) }
+        updatedColor.variations[role] = { value: newValue, contrastText: getBetterContrastColor(newValue) }
       } else {
         updatedColor.variations[role].value = newValue
-        updatedColor.variations[role].contrastText = getContrastText(newValue)
+        updatedColor.variations[role].contrastText = getBetterContrastColor(newValue)
       }
     }
 
+    setLocalColor(updatedColor)
     onChange(updatedColor)
   }
 
   const getColorValue = (role: string) => {
     if (role === "main") {
-      return color.value
+      return localColor.value
     }
 
-    if (color.variations && color.variations[role]) {
-      return color.variations[role].value
+    if (localColor.variations && localColor.variations[role]) {
+      return localColor.variations[role].value
     }
 
     // デフォルト値
-    return color.value
+    return localColor.value
   }
 
   return (
     <div className="p-4 border rounded-lg">
-      <h3 className="text-lg font-medium mb-4">{color.name} - 詳細調整</h3>
+      <h3 className="text-lg font-medium mb-4">{localColor.name} - 詳細調整</h3>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-4">
@@ -64,10 +71,16 @@ export function RoleColorDetailEditor({ color, onChange }: RoleColorDetailEditor
 
         <TabsContent value="main" className="space-y-4">
           <Label>メインカラー</Label>
-          <SimpleColorPicker color={getColorValue("main")} onChange={(value) => handleColorChange("main", value)} />
+          <SimpleColorPicker
+            index={0}
+            name={localColor.name}
+            color={getColorValue("main")}
+            onColorChange={(value) => handleColorChange("main", value)}
+            onNameChange={() => {}}
+          />
           <div
             className="h-12 rounded-md flex items-center justify-center mt-2"
-            style={{ backgroundColor: getColorValue("main"), color: color.contrastText }}
+            style={{ backgroundColor: getColorValue("main"), color: localColor.contrastText }}
           >
             プレビュー
           </div>
@@ -75,12 +88,18 @@ export function RoleColorDetailEditor({ color, onChange }: RoleColorDetailEditor
 
         <TabsContent value="light" className="space-y-4">
           <Label>ライトカラー</Label>
-          <SimpleColorPicker color={getColorValue("light")} onChange={(value) => handleColorChange("light", value)} />
+          <SimpleColorPicker
+            index={0}
+            name={`${localColor.name}-light`}
+            color={getColorValue("light")}
+            onColorChange={(value) => handleColorChange("light", value)}
+            onNameChange={() => {}}
+          />
           <div
             className="h-12 rounded-md flex items-center justify-center mt-2"
             style={{
               backgroundColor: getColorValue("light"),
-              color: color.variations?.light?.contrastText || getContrastText(getColorValue("light")),
+              color: localColor.variations?.light?.contrastText || getBetterContrastColor(getColorValue("light")),
             }}
           >
             プレビュー
@@ -90,14 +109,17 @@ export function RoleColorDetailEditor({ color, onChange }: RoleColorDetailEditor
         <TabsContent value="lighter" className="space-y-4">
           <Label>ライターカラー</Label>
           <SimpleColorPicker
+            index={0}
+            name={`${localColor.name}-lighter`}
             color={getColorValue("lighter")}
-            onChange={(value) => handleColorChange("lighter", value)}
+            onColorChange={(value) => handleColorChange("lighter", value)}
+            onNameChange={() => {}}
           />
           <div
             className="h-12 rounded-md flex items-center justify-center mt-2"
             style={{
               backgroundColor: getColorValue("lighter"),
-              color: color.variations?.lighter?.contrastText || getContrastText(getColorValue("lighter")),
+              color: localColor.variations?.lighter?.contrastText || getBetterContrastColor(getColorValue("lighter")),
             }}
           >
             プレビュー
@@ -106,12 +128,18 @@ export function RoleColorDetailEditor({ color, onChange }: RoleColorDetailEditor
 
         <TabsContent value="dark" className="space-y-4">
           <Label>ダークカラー</Label>
-          <SimpleColorPicker color={getColorValue("dark")} onChange={(value) => handleColorChange("dark", value)} />
+          <SimpleColorPicker
+            index={0}
+            name={`${localColor.name}-dark`}
+            color={getColorValue("dark")}
+            onColorChange={(value) => handleColorChange("dark", value)}
+            onNameChange={() => {}}
+          />
           <div
             className="h-12 rounded-md flex items-center justify-center mt-2"
             style={{
               backgroundColor: getColorValue("dark"),
-              color: color.variations?.dark?.contrastText || getContrastText(getColorValue("dark")),
+              color: localColor.variations?.dark?.contrastText || getBetterContrastColor(getColorValue("dark")),
             }}
           >
             プレビュー

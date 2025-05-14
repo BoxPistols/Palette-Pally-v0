@@ -37,7 +37,6 @@ import type { ColorMode } from "@/lib/color-systems"
 // 必要なインポートを追加
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/resizable-panels"
 import { GrayscaleToggle } from "@/components/grayscale-toggle"
-import { A11yChecker } from "@/components/a11y-checker"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Paintbrush, Type } from "lucide-react"
 import { TypographyPreview } from "@/components/typography-preview"
@@ -326,8 +325,8 @@ function PaletteApp() {
     setTextColorSettings({
       main: "default",
       dark: "default",
-      light: "default",
-      lighter: "default",
+      light: "light",
+      lighter: "lighter",
     })
 
     // Reset primary color index
@@ -751,7 +750,6 @@ function PaletteApp() {
                     variations={colorVariations}
                     primaryColorIndex={primaryColorIndex}
                   />
-                  <A11yChecker colors={colorData} variations={colorVariations} />
                   <ColorBlindSimulator colors={colorData} variations={colorVariations} />
                   <TextColorPreview colors={colorData} />
                 </>

@@ -163,7 +163,7 @@ export function ColorDisplay({
                 type="text"
                 value={color?.name}
                 onChange={(e) => onNameChange?.(e.target.value)}
-                className="bg-transparent border-b border-gray-300 dark:border-gray-700 focus:outline-none focus:border-primary px-1 text-sm font-medium"
+                className="bg-transparent focus:outline-none focus:border-primary text-sm font-medium"
               />
             </div>
             <div className="flex items-center space-x-1">

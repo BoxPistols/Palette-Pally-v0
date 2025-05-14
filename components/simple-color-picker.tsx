@@ -1,5 +1,8 @@
 "use client"
 
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +25,7 @@ interface SimpleColorPickerProps {
 export function SimpleColorPicker({
   index,
   name,
-  color,
+  color = "#ffffff", // デフォルト値を設定
   isPrimary = false,
   onColorChange,
   onNameChange,
@@ -30,6 +33,34 @@ export function SimpleColorPicker({
   colorRole,
   group,
 }: SimpleColorPickerProps) {
+  // ローカルの状態を追加して、propsの変更を追跡
+  const [localColor, setLocalColor] = useState(color || "#ffffff")
+  const [localName, setLocalName] = useState(name || `color${index + 1}`)
+
+  // propsが変更されたらローカルの状態を更新
+  useEffect(() => {
+    if (color) {
+      setLocalColor(color)
+    }
+    if (name) {
+      setLocalName(name)
+    }
+  }, [color, name, index])
+
+  // 名前変更ハンドラ
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value
+    setLocalName(newName)
+    onNameChange(newName)
+  }
+
+  // 色変更ハンドラ
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value
+    setLocalColor(newColor)
+    onColorChange(newColor)
+  }
+
   // カラーロールに基づいたバッジの色を設定
   const getRoleBadgeClass = (role?: ColorRole): string => {
     if (!role) return "bg-gray-50 text-gray-500"
@@ -96,8 +127,8 @@ export function SimpleColorPicker({
             <GripVertical className="h-4 w-4 text-gray-400" />
           </div>
           <Input
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
+            value={localName}
+            onChange={handleNameChange}
             className="font-medium text-sm h-8"
             placeholder={`color${index + 1}`}
           />
@@ -126,19 +157,9 @@ export function SimpleColorPicker({
       </CardHeader>
       <CardContent className="p-3 space-y-2">
         <div className="flex gap-2 items-center">
-          <div className="w-8 h-8 rounded-md" style={{ backgroundColor: color }}></div>
-          <Input
-            value={color}
-            onChange={(e) => onColorChange(e.target.value)}
-            className="text-sm h-8"
-            placeholder="カラーコード"
-          />
-          <Input
-            type="color"
-            value={color}
-            onChange={(e) => onColorChange(e.target.value)}
-            className="w-8 h-8 p-0 border-0"
-          />
+          <div className="w-8 h-8 rounded-md" style={{ backgroundColor: localColor }}></div>
+          <Input value={localColor} onChange={handleColorChange} className="text-sm h-8" placeholder="カラーコード" />
+          <Input type="color" value={localColor} onChange={handleColorChange} className="w-8 h-8 p-0 border-0" />
         </div>
       </CardContent>
     </Card>
