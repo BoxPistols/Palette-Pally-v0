@@ -106,8 +106,8 @@ export function TypographyPreview({ tokens }: TypographyPreviewProps) {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="mb-3">
+        <CardContent className="p-0">
+          <div className="mb-3 p-4">
             <p
               className="mb-2 pb-2 border-b"
               style={{
@@ -137,7 +137,7 @@ export function TypographyPreview({ tokens }: TypographyPreviewProps) {
               {longSampleText}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs p-4">
             <div>
               <span className="font-medium">{t.fontFamily}:</span> {token.$value.fontFamily}
             </div>
@@ -155,7 +155,7 @@ export function TypographyPreview({ tokens }: TypographyPreviewProps) {
             </div>
           </div>
           {token.$description && (
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 p-4">
               <span className="font-medium">{language === "jp" ? "説明" : "Description"}:</span> {token.$description}
             </div>
           )}
