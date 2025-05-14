@@ -20,6 +20,7 @@ interface ColorDisplayProps {
   colorRole?: ColorRole
   group?: string
   customVariations?: Record<string, string>
+  disableVariationGeneration?: boolean
 }
 
 export function ColorDisplay({
@@ -33,6 +34,7 @@ export function ColorDisplay({
   colorRole,
   group,
   customVariations,
+  disableVariationGeneration = false,
 }: ColorDisplayProps) {
   const { language } = useLanguage()
 
@@ -128,15 +130,21 @@ export function ColorDisplay({
   // カスタムバリエーションがある場合はそれを使用し、なければ通常のバリエーションを使用
   const displayVariations = customVariations || variations
 
+  // バリエーション生成を無効にする場合は、mainのみを表示
+  const finalVariations =
+    disableVariationGeneration && Object.keys(displayVariations).length > 1
+      ? { main: displayVariations.main || Object.values(displayVariations)[0] }
+      : displayVariations
+
   // カスタムバリエーションがある場合は、それに基づいて表示を変更
   const hasCustomVariations = !!customVariations
   const isCompactView =
-    group &&
-    !hasCustomVariations &&
-    (!Object.keys(displayVariations).includes("main") ||
-      !Object.keys(displayVariations).includes("dark") ||
-      !Object.keys(displayVariations).includes("light") ||
-      !Object.keys(displayVariations).includes("lighter"))
+    (group && !hasCustomVariations) ||
+    disableVariationGeneration ||
+    !Object.keys(finalVariations).includes("main") ||
+    !Object.keys(finalVariations).includes("dark") ||
+    !Object.keys(finalVariations).includes("light") ||
+    !Object.keys(finalVariations).includes("lighter")
 
   return (
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}>
@@ -169,20 +177,20 @@ export function ColorDisplay({
           // コンパクトビュー（グループ化されたカラー）
           <div
             className="flex items-center justify-between p-2 border-t first:border-t-0 dark:border-gray-700 min-h-[40px]"
-            style={{ backgroundColor: Object.values(displayVariations)[0] }}
+            style={{ backgroundColor: Object.values(finalVariations)[0] }}
           >
             <div className="flex items-center gap-1">
               <div
-                style={{ color: isLightColor(Object.values(displayVariations)[0]) ? "#000000" : "#FFFFFF" }}
+                style={{ color: isLightColor(Object.values(finalVariations)[0]) ? "#000000" : "#FFFFFF" }}
                 className="text-xs font-medium"
               >
-                {colorKey}: {Object.values(displayVariations)[0]}
+                {colorKey}: {Object.values(finalVariations)[0]}
               </div>
             </div>
           </div>
         ) : (
           // 標準ビュー（main, dark, light, lighter, contrastText）
-          Object.entries(displayVariations).map(([name, color]) => {
+          Object.entries(finalVariations).map(([name, color]) => {
             // 無効なカラー値をスキップ
             if (!color || typeof color !== "string" || !/^#[0-9A-F]{6}$/i.test(color)) {
               return null

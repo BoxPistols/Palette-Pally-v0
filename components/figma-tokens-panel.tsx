@@ -33,6 +33,8 @@ interface FigmaTokensPanelProps {
   onTypographyImport?: (typography: Record<string, any>) => void
 }
 
+export type ColorRole = "primary" | "secondary" | "success" | "danger" | "warning" | "info"
+
 export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
   const { theme } = useTheme()
@@ -51,6 +53,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
   const [showTypographyPreview, setShowTypographyPreview] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [exportData, setExportData] = useState<any>({})
+  const [isTypographyOnly, setIsTypographyOnly] = useState(false)
+  const [showImportOptions, setShowImportOptions] = useState(false)
 
   // テーマが変更されたときにスキーマモードも更新
   useEffect(() => {
@@ -105,6 +109,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
       export: "エクスポート",
       close: "閉じる",
       exportingJson: "エクスポートされるJSONデータのプレビュー",
+      importOptions: "インポートオプション",
+      importOptionsDescription: "インポートするデータを選択してください",
     },
     en: {
       button: "Figma Tokens",
@@ -152,6 +158,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
       export: "Export",
       close: "Close",
       exportingJson: "Preview of the JSON data to be exported",
+      importOptions: "Import Options",
+      importOptionsDescription: "Select what data to import",
     },
   }
 
@@ -201,10 +209,18 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
 
       // タイポグラフィデータのみの場合は警告を表示
       if (extractedColors.length === 0 && Object.keys(flatTypography).length > 0) {
+        setIsTypographyOnly(true)
+        setActiveContentTab("typography")
         toast({
           title: t.typographyOnly,
           description: "",
         })
+      } else if (extractedColors.length > 0 && Object.keys(flatTypography).length > 0) {
+        // 両方のデータがある場合はインポートオプションを表示
+        setShowImportOptions(true)
+      } else {
+        setIsTypographyOnly(false)
+        setShowImportOptions(false)
       }
 
       setImportError(null)
@@ -254,7 +270,7 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
     reader.readAsText(file)
   }
 
-  const handleImportJson = () => {
+  const handleImportJson = (importType?: "typography" | "colors" | "both") => {
     setImportError(null)
 
     // 入力が空かどうかチェック
@@ -276,8 +292,14 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
       const typography = extractTypographyFromFigmaTokens(parsedData || JSON.parse(importJson))
       const flatTypography = flattenTypographyData(typography)
 
+      // インポートタイプに基づいて処理
+      const importTypographyData =
+        importType === "typography" || importType === "both" || (!importType && Object.keys(flatTypography).length > 0)
+      const importColorData =
+        importType === "colors" || importType === "both" || (!importType && extractedColors.length > 0)
+
       // タイポグラフィデータをコールバックで渡す
-      if (Object.keys(flatTypography).length > 0 && onTypographyImport) {
+      if (importTypographyData && Object.keys(flatTypography).length > 0 && onTypographyImport) {
         onTypographyImport(flatTypography)
         toast({
           title: t.typographyImported,
@@ -285,7 +307,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
         })
       }
 
-      if (extractedColors.length > 0) {
+      // カラーデータをコールバックで渡す
+      if (importColorData && extractedColors.length > 0) {
         onImport(extractedColors)
         toast({
           title: t.importSuccess,
@@ -294,10 +317,12 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
               ? `${extractedColors.length}色のパレットをインポートしました`
               : `Imported palette with ${extractedColors.length} colors`,
         })
-        setIsOpen(false)
-      } else {
-        // タイポグラフィデータのみの場合はデフォルトのカラーパレットを使用
-        if (Object.keys(flatTypography).length > 0) {
+      }
+
+      // タイポグラフィデータのみの場合
+      if (!importColorData && importTypographyData && Object.keys(flatTypography).length > 0) {
+        // デフォルトのカラーパレットを使用
+        if (colors.length === 0) {
           const defaultColors = [
             { name: "primary", value: "#3b82f6", role: "primary" },
             { name: "secondary", value: "#8b5cf6", role: "secondary" },
@@ -307,15 +332,11 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
             { name: "info", value: "#06b6d4", role: "info" },
           ]
           onImport(defaultColors)
-          toast({
-            title: t.typographyOnly,
-            description: "",
-          })
-          setIsOpen(false)
-        } else {
-          setImportError(language === "jp" ? "カラーデータが見つかりませんでした" : "No color data found")
         }
       }
+
+      setIsOpen(false)
+      setShowImportOptions(false)
     } catch (error) {
       console.error("JSON parsing error:", error)
       setImportError(t.invalidJson)
@@ -362,6 +383,27 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
   }
 
   const renderModalContent = () => {
+    if (showImportOptions) {
+      return (
+        <div className="p-4">
+          <h3 className="text-lg font-semibold mb-2">{t.importOptions}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t.importOptionsDescription}</p>
+
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => handleImportJson("both")} className="w-full">
+              {t.importBoth}
+            </Button>
+            <Button onClick={() => handleImportJson("colors")} variant="outline" className="w-full">
+              {t.importColors}
+            </Button>
+            <Button onClick={() => handleImportJson("typography")} variant="outline" className="w-full">
+              {t.importTypography}
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex justify-between items-center mb-4">
@@ -504,11 +546,96 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
               </Alert>
             )}
 
-            <Button onClick={handleImportJson}>{t.importButton}</Button>
+            <Button onClick={() => handleImportJson()}>{t.importButton}</Button>
           </div>
         </TabsContent>
       </Tabs>
     )
+  }
+
+  const processColorTokens = (tokens: any, prefix = ""): ColorData[] => {
+    const colors: ColorData[] = []
+
+    const processToken = (token: any, tokenName: string, parentPath = "", group = "") => {
+      if (token.$type === "color" && token.$value) {
+        // カラートークンの場合
+        const colorName = prefix ? `${prefix}-${tokenName}` : tokenName
+        const fullPath = parentPath ? `${parentPath}.${tokenName}` : tokenName
+
+        // グループ名を決定（親パスの最初の部分を使用）
+        const groupName = group || parentPath.split(".")[0] || ""
+
+        // 特殊なパスの処理（text.primary, background.defaultなど）
+        const isSpecialPath =
+          parentPath.includes("text") || parentPath.includes("background") || parentPath.includes("common")
+
+        colors.push({
+          name: fullPath,
+          value: token.$value,
+          group: groupName,
+          // text/background/commonの場合はロールを設定
+          role:
+            isSpecialPath && tokenName === "primary"
+              ? "text"
+              : isSpecialPath && tokenName === "default"
+                ? "background"
+                : undefined,
+        })
+      } else if (typeof token === "object" && !token.$type) {
+        // ネストされたオブジェクトの場合は再帰的に処理
+        const newParentPath = parentPath ? `${parentPath}.${tokenName}` : tokenName
+
+        // main/dark/light/lighterの構造を持つかチェック
+        const hasStandardStructure =
+          token.main &&
+          token.main.$type === "color" &&
+          token.dark &&
+          token.dark.$type === "color" &&
+          token.light &&
+          token.light.$type === "color" &&
+          token.lighter &&
+          token.lighter.$type === "color"
+
+        if (hasStandardStructure) {
+          // 標準構造を持つ場合はバリエーションとして処理
+          const variations: Record<string, string> = {}
+          Object.entries(token).forEach(([varName, varToken]: [string, any]) => {
+            if (varToken.$type === "color" && varToken.$value) {
+              variations[varName] = varToken.$value
+            }
+          })
+
+          // ロールを決定
+          let role: ColorRole | undefined = undefined
+          if (tokenName === "primary") role = "primary"
+          else if (tokenName === "secondary") role = "secondary"
+          else if (tokenName === "success") role = "success"
+          else if (tokenName === "error" || tokenName === "danger") role = "danger"
+          else if (tokenName === "warning") role = "warning"
+          else if (tokenName === "info") role = "info"
+
+          colors.push({
+            name: newParentPath,
+            value: token.main.$value,
+            variations,
+            role,
+            group: group || parentPath.split(".")[0] || "",
+          })
+        } else {
+          // 標準構造を持たない場合は個別のカラーとして処理
+          Object.entries(token).forEach(([subTokenName, subToken]: [string, any]) => {
+            processToken(subToken, subTokenName, newParentPath, group || parentPath.split(".")[0] || "")
+          })
+        }
+      }
+    }
+
+    // トークンを処理
+    Object.entries(tokens).forEach(([tokenName, token]: [string, any]) => {
+      processToken(token, tokenName)
+    })
+
+    return colors
   }
 
   return (

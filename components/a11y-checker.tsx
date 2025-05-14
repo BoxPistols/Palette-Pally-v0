@@ -200,6 +200,9 @@ export function A11yChecker({ colors, variations }: A11yCheckerProps) {
     const passCount = Object.values(contrasts).filter((c) => c.passAANormal).length
     const totalColors = colors.length
 
+    // 色が0の場合は0%とする
+    if (totalColors === 0) return { score: 0, label: t_local.poor, color: "red" }
+
     const score = (passCount / totalColors) * 100
 
     if (score >= 90) return { score, label: t_local.excellent, color: "green" }
