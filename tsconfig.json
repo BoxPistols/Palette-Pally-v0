@@ -4,6 +4,7 @@
     "allowJs": true,
     "target": "ES6",
     "skipLibCheck": true,
+    // FIXME: これをtrueにすると、型エラーが出るので、falseにしている
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
