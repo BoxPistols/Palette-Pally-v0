@@ -279,3 +279,8 @@ export function calculatePerceptualDistance(color1: string, color2: string): num
 
   return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
 }
+
+// getContrastText関数を追加
+export function getContrastText(backgroundColor: string): string {
+  return getBetterContrastColor(backgroundColor)
+}

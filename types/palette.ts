@@ -40,6 +40,7 @@ export type ColorRole =
   | "border"
   | "accent"
   | "neutral"
+  | "custom"
 
 export const colorRoleDescriptions: Record<ColorRole, string> = {
   primary: "メインカラー、ブランドを表す主要な色",
@@ -121,3 +122,13 @@ export interface Typography {
 }
 
 export type Language = "jp" | "en"
+
+export interface PaletteColor extends ColorData {
+  contrastText?: string
+  variations?: {
+    main?: { value: string; contrastText: string }
+    light?: { value: string; contrastText: string }
+    lighter?: { value: string; contrastText: string }
+    dark?: { value: string; contrastText: string }
+  }
+}

@@ -8,6 +8,7 @@ import { findClosestTailwindColor, findClosestMaterialColor } from "@/lib/color-
 import { useLanguage } from "@/contexts/language-context"
 import type { TextColorSettings, ColorRole } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
+import { RoleColorSettings } from "./role-color-settings"
 
 interface ColorDisplayProps {
   colorKey: string
@@ -21,6 +22,9 @@ interface ColorDisplayProps {
   group?: string
   customVariations?: Record<string, string>
   disableVariationGeneration?: boolean
+  color?: any // TODO: Define type
+  onColorChange?: (updatedColor: any) => void // TODO: Define type
+  onNameChange?: (name: string) => void
 }
 
 export function ColorDisplay({
@@ -35,6 +39,9 @@ export function ColorDisplay({
   group,
   customVariations,
   disableVariationGeneration = false,
+  color,
+  onColorChange,
+  onNameChange,
 }: ColorDisplayProps) {
   const { language } = useLanguage()
 
@@ -150,6 +157,20 @@ export function ColorDisplay({
     <Card className={`overflow-hidden ${isPrimary ? "ring-1 ring-gray-300 dark:ring-gray-700" : ""}`}>
       <CardHeader className="pb-2 px-3 pt-3 flex flex-col">
         <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={color?.name}
+                onChange={(e) => onNameChange?.(e.target.value)}
+                className="bg-transparent border-b border-gray-300 dark:border-gray-700 focus:outline-none focus:border-primary px-1 text-sm font-medium"
+              />
+            </div>
+            <div className="flex items-center space-x-1">
+              <RoleColorSettings color={color} onChange={(updatedColor) => onColorChange?.(updatedColor)} />
+              {/* 既存のボタン */}
+            </div>
+          </div>
           <CardTitle className="text-sm">
             {colorRole ? getRoleDisplayName(colorRole) : formatColorKey(colorKey)}
           </CardTitle>

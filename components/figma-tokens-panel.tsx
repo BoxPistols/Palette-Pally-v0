@@ -26,6 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 interface FigmaTokensPanelProps {
   colors: ColorData[]
@@ -375,7 +377,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
 
     const a = document.createElement("a")
     a.href = url
-    a.download = filename
+    // ファイル名にfigma-prefixを追加
+    a.download = `figma-tokens-export-${new Date().toISOString().slice(0, 10)}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -706,7 +709,18 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
                   : "Preview of the JSON data to be exported"}
               </DialogDescription>
             </DialogHeader>
-            <div className="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-gray-900 rounded-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Figma Tokens Preview</h2>
+              <div className="flex items-center space-x-2">
+                <Switch id="fullscreen-toggle" checked={isFullscreen} onCheckedChange={setIsFullscreen} />
+                <Label htmlFor="fullscreen-toggle">フルスクリーン</Label>
+              </div>
+            </div>
+            <div
+              className={`${
+                isFullscreen ? "fixed inset-0 z-50 bg-background p-6 overflow-auto" : "max-h-[80vh] overflow-auto"
+              }`}
+            >
               <pre className="text-xs font-mono whitespace-pre">{JSON.stringify(exportData, null, 2)}</pre>
             </div>
             <DialogFooter>
