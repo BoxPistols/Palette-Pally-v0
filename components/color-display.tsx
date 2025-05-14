@@ -158,14 +158,6 @@ export function ColorDisplay({
       <CardHeader className="pb-2 px-3 pt-3 flex flex-col">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={color?.name}
-                onChange={(e) => onNameChange?.(e.target.value)}
-                className="bg-transparent focus:outline-none focus:border-primary text-sm font-medium"
-              />
-            </div>
             <div className="flex items-center space-x-1">
               <RoleColorSettings color={color} onChange={(updatedColor) => onColorChange?.(updatedColor)} />
               {/* 既存のボタン */}
