@@ -1,7 +1,5 @@
 name: New rule
 version: 0.0.1
-schema: v1
 rules:
-  - Always give concise responses
+  - always give concise responses
   - 必ず日本語で答える
-  - use Japanese

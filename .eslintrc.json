@@ -1,5 +1,5 @@
 {
-  "extends": "next",
+  "extends": ["next", "next/core-web-vitals"],
   "rules": {
     "react/no-unescaped-entities": "off",
     "react/no-unknown-property": [
@@ -8,11 +8,6 @@
         "ignore": ["css"]
       }
     ],
-    "no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_"
-      }
-    ]
+    "no-unused-vars": "off"
   }
 }
