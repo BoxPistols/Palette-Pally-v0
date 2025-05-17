@@ -19,15 +19,28 @@ import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
+const DEFAULT_COLOR_COUNT = 9
+
+const colorSchemes = [
+  { name: "primary", value: "#42a5f5" },    // MUIのデフォルトプライマリ
+  { name: "secondary", value: "#3f495c" },  // MUIのデフォルトセカンダリ
+  { name: "success", value: "#2e9733" },    // 緑 - 成功状態
+  { name: "warning", value: "#ff9800" },    // オレンジ - 警告状態
+  { name: "error", value: "#ef5350" },      // 赤 - エラー状態
+  { name: "info", value: "#03a9f4" },       // 水色 - 情報状態
+  // text color
+  { name: "text", value: "#000000" },       // 黒 - デフォルトテキスト
+  // background color
+  { name: "background", value: "#ffffff" }, // 白 - デフォルト背景
+  // border color
+  { name: "border", value: "#cccccc" },     // 灰色 - デフォルトボーダー
+]
 
 export default function Home() {
-  const [colorCount, setColorCount] = useState<number>(4)
-  const [colorData, setColorData] = useState<ColorData[]>([
-    { name: "color1", value: "#e61919" },
-    { name: "color2", value: "#80e619" },
-    { name: "color3", value: "#19e5e6" },
-    { name: "color4", value: "#7f19e6" },
-  ])
+  // カラー数の初期値は8に設定
+  const [colorCount, setColorCount] = useState<number>(DEFAULT_COLOR_COUNT)
+  // 初期状態では空の配列に設定（ハイドレーションエラー回避のため）
+  const [colorData, setColorData] = useState<ColorData[]>([])
   const [colorVariations, setColorVariations] = useState<Record<string, Record<string, string>>>({})
   const [textColorSettings, setTextColorSettings] = useState<TextColorSettingsType>({
     main: "default",
@@ -35,9 +48,32 @@ export default function Home() {
     light: "default",
     lighter: "default",
   })
+  // クライアントサイドのみでレンダリングする制御用
+  const [isClient, setIsClient] = useState(false)
 
-  // Load data from localStorage on initial render
+  // クライアントサイドでのレンダリングフラグを設定
   useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // 初期カラーデータ作成関数
+  const createInitialColorData = (count: number) => {
+    const initialColors = [...colorSchemes];
+    // 足りない分をランダムカラーで埋める
+    if (count > colorSchemes.length) {
+      for (let i = colorSchemes.length; i < count; i++) {
+        const randomColor = `#${Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0")}`;
+        initialColors.push({ name: `color${i + 1}`, value: randomColor });
+      }
+    }
+    return initialColors.slice(0, count);
+  }
+
+  // クライアントサイドでのみ初期化を行う
+  useEffect(() => {
+    // ローカルストレージからデータをロード
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
@@ -53,9 +89,14 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
+        // エラー時は初期カラーを設定
+        setColorData(createInitialColorData(colorCount))
       }
+    } else {
+      // 保存データがない場合は初期カラーを設定
+      setColorData(createInitialColorData(colorCount))
     }
-  }, [])
+  }, []) // 空の依存配列で初回のみ実行
 
   // Generate color variations when colors change
   useEffect(() => {
@@ -131,24 +172,13 @@ export default function Home() {
     // Clear localStorage
     localStorage.removeItem(STORAGE_KEY)
 
-    const defaultColors = [
-      { name: "color1", value: "#e61919" },
-      { name: "color2", value: "#80e619" },
-      { name: "color3", value: "#19e5e6" },
-      { name: "color4", value: "#7f19e6" },
-    ]
+    // リセット時は常に8色に戻す
+    const defaultColorCount = DEFAULT_COLOR_COUNT;
+    setColorCount(defaultColorCount);
 
-    setColorData(defaultColors.slice(0, colorCount))
-    if (colorCount > 4) {
-      const newColorData = [...defaultColors]
-      for (let i = 4; i < colorCount; i++) {
-        const randomColor = `#${Math.floor(Math.random() * 16777215)
-          .toString(16)
-          .padStart(6, "0")}`
-        newColorData.push({ name: `color${i + 1}`, value: randomColor })
-      }
-      setColorData(newColorData)
-    }
+    // デフォルトのカラーデータを作成して設定
+    const newColorData = createInitialColorData(defaultColorCount);
+    setColorData(newColorData);
 
     // Reset text color settings
     setTextColorSettings({
@@ -223,6 +253,11 @@ export default function Home() {
     setTimeout(() => {
       saveToLocalStorage()
     }, 100)
+  }
+
+  // クライアントサイドレンダリングが完了するまでは最小限の内容だけ表示
+  if (!isClient || colorData.length === 0) {
+    return <div className="container mx-auto px-4 py-6">Loading...</div>;
   }
 
   return (
