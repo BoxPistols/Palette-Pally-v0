@@ -31,7 +31,7 @@ import { ThemeProvider, useTheme } from "@/contexts/theme-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { TypographyPreviewPanel } from "@/components/typography-preview-panel"
-import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
+import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType, ColorRole, TextColorMode } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 
 // 必要なインポートを追加
@@ -50,21 +50,21 @@ function PaletteApp() {
   const { theme } = useTheme()
   const [colorCount, setColorCount] = useState<number>(8)
   const [colorData, setColorData] = useState<ColorData[]>([
-    { name: "primary", value: "#3b82f6", role: "primary" },
-    { name: "secondary", value: "#8b5cf6", role: "secondary" },
-    { name: "success", value: "#22c55e", role: "success" },
-    { name: "danger", value: "#ef4444", role: "danger" },
-    { name: "warning", value: "#f59e0b", role: "warning" },
-    { name: "info", value: "#06b6d4", role: "info" },
-    { name: "background", value: "#f8fafc", role: "background" },
-    { name: "text", value: "#1e293b", role: "text" },
+    { name: "primary", value: "#3b82f6", role: "primary" as ColorRole },
+    { name: "secondary", value: "#8b5cf6", role: "secondary" as ColorRole },
+    { name: "success", value: "#22c55e", role: "success" as ColorRole },
+    { name: "danger", value: "#ef4444", role: "danger" as ColorRole },
+    { name: "warning", value: "#f59e0b", role: "warning" as ColorRole },
+    { name: "info", value: "#06b6d4", role: "info" as ColorRole },
+    { name: "background", value: "#f8fafc", role: "background" as ColorRole },
+    { name: "text", value: "#1e293b", role: "text" as ColorRole },
   ])
   const [colorVariations, setColorVariations] = useState<Record<string, Record<string, string>>>({})
   const [textColorSettings, setTextColorSettings] = useState<TextColorSettingsType>({
-    main: "default",
-    dark: "default",
-    light: "default",
-    lighter: "default",
+    main: "default" as TextColorMode,
+    dark: "default" as TextColorMode,
+    light: "default" as TextColorMode,
+    lighter: "default" as TextColorMode,
   })
   const [primaryColorIndex, setPrimaryColorIndex] = useState<number>(0) // デフォルトでcolor1をPrimaryに
   const [colorMode, setColorMode] = useState<ColorMode>("standard") // デフォルトは標準モード
@@ -291,15 +291,15 @@ function PaletteApp() {
     // Clear localStorage
     localStorage.removeItem(STORAGE_KEY)
 
-    const defaultColors = [
-      { name: "primary", value: "#3b82f6", role: "primary" },
-      { name: "secondary", value: "#8b5cf6", role: "secondary" },
-      { name: "success", value: "#22c55e", role: "success" },
-      { name: "danger", value: "#ef4444", role: "danger" },
-      { name: "warning", value: "#f59e0b", role: "warning" },
-      { name: "info", value: "#06b6d4", role: "info" },
-      { name: "background", value: "#f8fafc", role: "background" },
-      { name: "text", value: "#1e293b", role: "text" },
+    const defaultColors: ColorData[] = [
+      { name: "primary", value: "#3b82f6", role: "primary" as ColorRole },
+      { name: "secondary", value: "#8b5cf6", role: "secondary" as ColorRole },
+      { name: "success", value: "#22c55e", role: "success" as ColorRole },
+      { name: "danger", value: "#ef4444", role: "danger" as ColorRole },
+      { name: "warning", value: "#f59e0b", role: "warning" as ColorRole },
+      { name: "info", value: "#06b6d4", role: "info" as ColorRole },
+      { name: "background", value: "#f8fafc", role: "background" as ColorRole },
+      { name: "text", value: "#1e293b", role: "text" as ColorRole },
     ]
 
     // 先にカラーバリエーションをリセット
@@ -320,10 +320,10 @@ function PaletteApp() {
 
     // Reset text color settings
     setTextColorSettings({
-      main: "default",
-      dark: "default",
-      light: "light",
-      lighter: "lighter",
+      main: "default" as TextColorMode,
+      dark: "default" as TextColorMode,
+      light: "light" as TextColorMode,
+      lighter: "lighter" as TextColorMode,
     })
 
     // Reset primary color index
@@ -657,13 +657,21 @@ function PaletteApp() {
       color.name.startsWith("common-") ||
       color.name.includes("text-") ||
       color.name.includes("background-") ||
-      (color.role && (color.role === "text" || color.role === "background"))
+      (color.role === "text" || color.role === "background") // ここで "text" の可能性を考慮している
     ) {
       return false
     }
-
     // ロールを持つカラーは標準バリエーションを持つと判定（text/backgroundを除く）
-    return !!color.role && color.role !== "text" && color.role !== "background"
+    // 型の重複エラー回避のため、color.roleがstring型であることを明示的にチェック
+    // かつ、color.roleが"primary" | "secondary" | ... のいずれかであることを型ガードで確認
+    // 型の重複エラー回避のため、color.roleがstring型であることを明示的にチェック
+    // かつ、color.roleが"primary" | "secondary" | ... のいずれかであることを型ガードで確認
+    // さらに、"text" と "background" は ColorRole の型に含まれないため、これらを除外する条件は不要
+    return (
+      !!color.role &&
+      typeof color.role === "string" &&
+      ["primary", "secondary", "success", "danger", "warning", "info", "border", "accent", "neutral", "custom"].includes(color.role)
+    )
   }
 
   // パレットの色を追加する関数を修正
@@ -693,6 +701,14 @@ function PaletteApp() {
   // ランダムなカラーを生成する関数
   const generateRandomColor = () => {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`
+  }
+
+  // ColorRoleの比較を修正
+  const isSpecialPath = (parentPath: string, tokenName: string): boolean => {
+    if (parentPath.includes("text") && tokenName === "primary") return true
+    if (parentPath.includes("background") && tokenName === "default") return true
+    if (parentPath.includes("common")) return true
+    return false
   }
 
   return (
@@ -824,451 +840,192 @@ function PaletteApp() {
           </CardContent>
         </Card>
       ) : // カラーとタイポグラフィの両方がある場合はタブで切り替え
-      Object.keys(typographyTokens).length > 0 ? (
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => {
-            setActiveTab(value as "colors" | "typography")
-            saveToLocalStorage()
-          }}
-        >
-          <TabsList className="mb-4">
-            <TabsTrigger value="colors">
-              <Paintbrush className="h-4 w-4 mr-2" />
-              カラーパレット
-            </TabsTrigger>
-            <TabsTrigger value="typography">
-              <Type className="h-4 w-4 mr-2" />
-              タイポグラフィ
-            </TabsTrigger>
-          </TabsList>
+        Object.keys(typographyTokens).length > 0 ? (
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              setActiveTab(value as "colors" | "typography")
+              saveToLocalStorage()
+            }}
+          >
+            <TabsList className="mb-4">
+              <TabsTrigger value="colors">
+                <Paintbrush className="h-4 w-4 mr-2" />
+                カラーパレット
+              </TabsTrigger>
+              <TabsTrigger value="typography">
+                <Type className="h-4 w-4 mr-2" />
+                タイポグラフィ
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="colors" className="mt-0">
-            {/* カラーデータがある場合のみカラー関連UIを表示 */}
-            {colorData.length > 0 ? (
-              <div className="flex flex-col md:flex-row gap-4 w-full">
-                <div className="w-full md:w-1/2">
-                  {/* カラーピッカー部分 */}
-                  <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
-                    <ResizablePanel defaultSize={100} minSize={30}>
-                      {/* カラーピッカーの横スクロール対応 */}
-                      <div className="pr-2">
-                        <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                          <Droppable droppableId="color-pickers" direction="horizontal">
-                            {(provided) => (
-                              <div className="space-y-6" {...provided.droppableProps} ref={provided.innerRef}>
-                                {/* 標準のカラーピッカー（ロールを持つカラー） */}
-                                {colorData.filter((color) => color.role).length > 0 && (
-                                  <div className="mb-4">
-                                    <h3 className="text-md font-semibold mb-2">Role Colors</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                      {colorData
-                                        .filter((color) => color.role)
-                                        .map((color, index) => {
-                                          const realIndex = colorData.findIndex((c) => c === color)
-                                          return (
-                                            <Draggable
-                                              key={`color-${realIndex}`}
-                                              draggableId={`color-${realIndex}`}
-                                              index={realIndex}
-                                            >
-                                              {(provided) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  className="relative"
-                                                >
-                                                  {hasStandardVariations(color) ? (
-                                                    <ColorPicker
-                                                      index={realIndex}
-                                                      name={color.name}
-                                                      color={color.value}
-                                                      isPrimary={realIndex === primaryColorIndex}
-                                                      onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                      onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                      onSetAsPrimary={
-                                                        realIndex !== primaryColorIndex
-                                                          ? () => handleSetAsPrimary(realIndex)
-                                                          : undefined
-                                                      }
-                                                      dragHandleProps={provided.dragHandleProps}
-                                                      colorRole={color.role}
-                                                    />
-                                                  ) : (
-                                                    <SimpleColorPicker
-                                                      index={realIndex}
-                                                      name={color.name}
-                                                      color={color.value}
-                                                      isPrimary={realIndex === primaryColorIndex}
-                                                      onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                      onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                      dragHandleProps={provided.dragHandleProps}
-                                                      colorRole={color.role}
-                                                    />
-                                                  )}
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          )
-                                        })}
+            <TabsContent value="colors" className="mt-0">
+              {/* カラーデータがある場合のみカラー関連UIを表示 */}
+              {colorData.length > 0 ? (
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="w-full">
+                    <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
+                      <ResizablePanel defaultSize={50} minSize={30}>
+                        {/* カラーピッカーの横スクロール対応 */}
+                        <div className="pr-2">
+                          <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
+                          <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="color-pickers" direction="horizontal" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
+                              {(provided) => (
+                                <div className="space-y-6" {...provided.droppableProps} ref={provided.innerRef}>
+                                  {/* 標準のカラーピッカー（ロールを持つカラー） */}
+                                  {colorData.filter((color) => color.role).length > 0 && (
+                                    <div className="mb-4">
+                                      <h3 className="text-md font-semibold mb-2">Role Colors</h3>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        {colorData
+                                          .filter((color) => color.role)
+                                          .map((color, index) => {
+                                            const realIndex = colorData.findIndex((c) => c === color)
+                                            return (
+                                              <Draggable
+                                                key={`color-${realIndex}`}
+                                                draggableId={`color-${realIndex}`}
+                                                index={realIndex}
+                                                isDragDisabled={false}
+                                              >
+                                                {(provided) => (
+                                                  <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    className="relative"
+                                                  >
+                                                    {hasStandardVariations(color) ? (
+                                                      <ColorPicker
+                                                        index={realIndex}
+                                                        name={color.name}
+                                                        color={color.value}
+                                                        isPrimary={realIndex === primaryColorIndex}
+                                                        onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                        onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                        onSetAsPrimary={
+                                                          realIndex !== primaryColorIndex
+                                                            ? () => handleSetAsPrimary(realIndex)
+                                                            : undefined
+                                                        }
+                                                        dragHandleProps={provided.dragHandleProps}
+                                                        colorRole={color.role}
+                                                      />
+                                                    ) : (
+                                                      <SimpleColorPicker
+                                                        index={realIndex}
+                                                        name={color.name}
+                                                        color={color.value}
+                                                        isPrimary={realIndex === primaryColorIndex}
+                                                        onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                        onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                        dragHandleProps={provided.dragHandleProps}
+                                                        colorRole={color.role}
+                                                      />
+                                                    )}
+                                                  </div>
+                                                )}
+                                              </Draggable>
+                                            )
+                                          })}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
-                                {/* グループ化されたカラーピッカー */}
-                                {Object.entries(groupedColors)
-                                  .filter(
-                                    ([group]) => group !== "default" && !colorData.find((c) => c.group === group)?.role,
-                                  )
-                                  .map(([group, colors]) => {
-                                    // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                                    const shouldScroll = colors.length >= 4
+                                  {/* グループ化されたカラーピッカー */}
+                                  {Object.entries(groupedColors)
+                                    .filter(
+                                      ([group]) => group !== "default" && !colorData.find((c) => c.group === group)?.role,
+                                    )
+                                    .map(([group, colors]) => {
+                                      // 同じグループ内のカラー数が4つ以上の場合は横スクロール
+                                      const shouldScroll = colors.length >= 4
 
-                                    return (
-                                      <div key={group} className="mb-4">
-                                        <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                                        <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                                          <div
-                                            className={
-                                              shouldScroll
-                                                ? "flex gap-3 min-w-max"
-                                                : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                                            }
-                                            style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                                          >
-                                            {colors.map((color) => {
-                                              const realIndex = colorData.findIndex((c) => c === color)
+                                      return (
+                                        <div key={group} className="mb-4">
+                                          <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
+                                          <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
+                                            <div
+                                              className={
+                                                shouldScroll
+                                                  ? "flex gap-3 min-w-max"
+                                                  : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                                              }
+                                              style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
+                                            >
+                                              {colors.map((color) => {
+                                                const realIndex = colorData.findIndex((c) => c === color)
 
-                                              // グループ化されたカラーは基本的にシンプルピッカーを使用
-                                              const useSimplePicker = !hasStandardVariations(color)
+                                                // グループ化されたカラーは基本的にシンプルピッカーを使用
+                                                const useSimplePicker = !hasStandardVariations(color)
 
-                                              return (
-                                                <Draggable
-                                                  key={`color-${realIndex}`}
-                                                  draggableId={`color-${realIndex}`}
-                                                  index={realIndex}
-                                                >
-                                                  {(provided) => (
-                                                    <div
-                                                      ref={provided.innerRef}
-                                                      {...provided.draggableProps}
-                                                      className={
-                                                        shouldScroll
-                                                          ? useSimplePicker
-                                                            ? "w-[200px]"
-                                                            : "w-[300px]"
-                                                          : "relative"
-                                                      }
-                                                    >
-                                                      {useSimplePicker ? (
-                                                        <SimpleColorPicker
-                                                          index={realIndex}
-                                                          name={color.name}
-                                                          color={color.value}
-                                                          isPrimary={realIndex === primaryColorIndex}
-                                                          onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                          onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                          dragHandleProps={provided.dragHandleProps}
-                                                          colorRole={color.role}
-                                                          group={color.group}
-                                                        />
-                                                      ) : (
-                                                        <ColorPicker
-                                                          index={realIndex}
-                                                          name={color.name}
-                                                          color={color.value}
-                                                          isPrimary={realIndex === primaryColorIndex}
-                                                          onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                          onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                          onSetAsPrimary={
-                                                            realIndex !== primaryColorIndex
-                                                              ? () => handleSetAsPrimary(realIndex)
-                                                              : undefined
-                                                          }
-                                                          dragHandleProps={provided.dragHandleProps}
-                                                          colorRole={color.role}
-                                                        />
-                                                      )}
-                                                    </div>
-                                                  )}
-                                                </Draggable>
-                                              )
-                                            })}
+                                                return (
+                                                  <Draggable
+                                                    key={`color-${realIndex}`}
+                                                    draggableId={`color-${realIndex}`}
+                                                    index={realIndex}
+                                                  >
+                                                    {(provided) => (
+                                                      <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        className={
+                                                          shouldScroll
+                                                            ? useSimplePicker
+                                                              ? "w-[200px]"
+                                                              : "w-[300px]"
+                                                            : "relative"
+                                                        }
+                                                      >
+                                                        {useSimplePicker ? (
+                                                          <SimpleColorPicker
+                                                            index={realIndex}
+                                                            name={color.name}
+                                                            color={color.value}
+                                                            isPrimary={realIndex === primaryColorIndex}
+                                                            onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                            onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                            dragHandleProps={provided.dragHandleProps}
+                                                            colorRole={color.role}
+                                                            group={color.group}
+                                                          />
+                                                        ) : (
+                                                          <ColorPicker
+                                                            index={realIndex}
+                                                            name={color.name}
+                                                            color={color.value}
+                                                            isPrimary={realIndex === primaryColorIndex}
+                                                            onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                            onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                            onSetAsPrimary={
+                                                              realIndex !== primaryColorIndex
+                                                                ? () => handleSetAsPrimary(realIndex)
+                                                                : undefined
+                                                            }
+                                                            dragHandleProps={provided.dragHandleProps}
+                                                            colorRole={color.role}
+                                                          />
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </Draggable>
+                                                )
+                                              })}
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    )
-                                  })}
+                                      )
+                                    })}
 
-                                {/* その他のカラーピッカー（ロールを持たないカラー、グループなし） */}
-                                {colorData.filter((color) => !color.role && (!color.group || color.group === "default"))
-                                  .length > 0 && (
-                                  <div>
-                                    <h3 className="text-md font-semibold mb-2">Other Colors</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                      {colorData
-                                        .filter((color) => !color.role && (!color.group || color.group === "default"))
-                                        .map((color) => {
-                                          const realIndex = colorData.findIndex((c) => c === color)
-                                          return (
-                                            <Draggable
-                                              key={`color-${realIndex}`}
-                                              draggableId={`color-${realIndex}`}
-                                              index={realIndex}
-                                            >
-                                              {(provided) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  className="relative"
-                                                >
-                                                  <ColorPicker
-                                                    index={realIndex}
-                                                    name={color.name}
-                                                    color={color.value}
-                                                    isPrimary={realIndex === primaryColorIndex}
-                                                    onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                    onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                    onSetAsPrimary={
-                                                      realIndex !== primaryColorIndex
-                                                        ? () => handleSetAsPrimary(realIndex)
-                                                        : undefined
-                                                    }
-                                                    dragHandleProps={provided.dragHandleProps}
-                                                    colorRole={color.role}
-                                                  />
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          )
-                                        })}
-                                    </div>
-                                  </div>
-                                )}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </DragDropContext>
-                      </div>
-                    </ResizablePanel>
-
-                    <ResizableHandle withHandle className="mt-10" />
-
-                    <ResizablePanel defaultSize={50} minSize={30}>
-                      <div className="pl-2">
-                        <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
-                        {isFigmaImportMode ? (
-                          // Figmaインポートモード：グループ化されたカラーを表示
-                          <div>
-                            {/* 標準のカラーパレット（main, dark, light, lighter, contrastTextの構造を持つカラー） */}
-                            {colorData.filter((color) => hasStandardVariations(color)).length > 0 && (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
-                                {colorData
-                                  .filter((color) => hasStandardVariations(color))
-                                  .map((color) => (
-                                    <ColorDisplay
-                                      key={color.name}
-                                      colorKey={color.name}
-                                      variations={colorVariations[color.name] || {}}
-                                      textColorSettings={textColorSettings}
-                                      isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                      colorMode={colorMode}
-                                      showTailwindClasses={showTailwindClasses}
-                                      showMaterialNames={showMaterialNames}
-                                      colorRole={color.role}
-                                      customVariations={color.variations}
-                                    />
-                                  ))}
-                              </div>
-                            )}
-
-                            {/* グループ化されたカラー */}
-                            {Object.entries(groupedColors)
-                              .filter(([group]) => group !== "default")
-                              .map(([group, colors]) => {
-                                // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                                const shouldScroll = colors.length >= 4
-
-                                return (
-                                  <div key={group} className="mb-6">
-                                    <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                                    <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                                      <div
-                                        className={
-                                          shouldScroll
-                                            ? "flex gap-3 min-w-max"
-                                            : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                                        }
-                                        style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                                      >
-                                        {colors
-                                          .filter((color) => !hasStandardVariations(color))
-                                          .map((color) => (
-                                            <div key={color.name} className={shouldScroll ? "w-[200px]" : ""}>
-                                              <ColorDisplay
-                                                colorKey={color.name}
-                                                variations={{ main: color.value }}
-                                                textColorSettings={textColorSettings}
-                                                isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                                colorMode={colorMode}
-                                                showTailwindClasses={showTailwindClasses}
-                                                showMaterialNames={showMaterialNames}
-                                                colorRole={color.role}
-                                                group={color.group}
-                                                disableVariationGeneration={true}
-                                              />
-                                            </div>
-                                          ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-
-                            {/* その他のカラー（グループなし、バリエーションなし） */}
-                            {colorData.filter(
-                              (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
-                            ).length > 0 && (
-                              <div className="mb-6">
-                                <h3 className="text-md font-semibold mb-2">Other Colors</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                  {colorData
-                                    .filter(
-                                      (color) =>
-                                        (!color.group || color.group === "default") && !hasStandardVariations(color),
-                                    )
-                                    .map((color) => (
-                                      <div key={color.name}>
-                                        <ColorDisplay
-                                          colorKey={color.name}
-                                          variations={{ main: color.value }}
-                                          textColorSettings={textColorSettings}
-                                          isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                          colorMode={colorMode}
-                                          showTailwindClasses={showTailwindClasses}
-                                          showMaterialNames={showMaterialNames}
-                                          colorRole={color.role}
-                                          disableVariationGeneration={true}
-                                        />
-                                      </div>
-                                    ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          // 標準モード：通常のカラーパレット
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                            {sortedColorVariations.map(([key, variations]) => {
-                              // カラー名からcolorDataの中での位置を特定
-                              const colorIndex = colorData.findIndex((c) => c.name === key)
-                              const color = colorData[colorIndex]
-
-                              // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                              const disableVariationGeneration = !hasStandardVariations(color)
-
-                              return (
-                                <ColorDisplay
-                                  key={key}
-                                  colorKey={key}
-                                  variations={variations}
-                                  textColorSettings={textColorSettings}
-                                  isPrimary={colorIndex === primaryColorIndex}
-                                  colorMode={colorMode}
-                                  showTailwindClasses={showTailwindClasses}
-                                  showMaterialNames={showMaterialNames}
-                                  colorRole={color?.role}
-                                  disableVariationGeneration={disableVariationGeneration}
-                                />
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
-
-                <div className="w-full md:w-1/2">
-                  {/* カラーパレット部分 */}
-                  <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
-                    <ResizablePanel defaultSize={50} minSize={30}>
-                      {/* カラーピッカーの横スクロール対応 */}
-                      <div className="pr-2">
-                        <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                          <Droppable droppableId="color-pickers" direction="horizontal">
-                            {(provided) => (
-                              <div className="space-y-6" {...provided.droppableProps} ref={provided.innerRef}>
-                                {/* 標準のカラーピッカー（ロールを持つカラー） */}
-                                {colorData.filter((color) => color.role).length > 0 && (
-                                  <div className="mb-4">
-                                    <h3 className="text-md font-semibold mb-2">Role Colors</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                      {colorData
-                                        .filter((color) => color.role)
-                                        .map((color, index) => {
-                                          const realIndex = colorData.findIndex((c) => c === color)
-                                          return (
-                                            <Draggable
-                                              key={`color-${realIndex}`}
-                                              draggableId={`color-${realIndex}`}
-                                              index={realIndex}
-                                            >
-                                              {(provided) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  className="relative"
-                                                >
-                                                  <ColorPicker
-                                                    index={realIndex}
-                                                    name={color.name}
-                                                    color={color.value}
-                                                    isPrimary={realIndex === primaryColorIndex}
-                                                    onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                    onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                    onSetAsPrimary={
-                                                      realIndex !== primaryColorIndex
-                                                        ? () => handleSetAsPrimary(realIndex)
-                                                        : undefined
-                                                    }
-                                                    dragHandleProps={provided.dragHandleProps}
-                                                    colorRole={color.role}
-                                                  />
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          )
-                                        })}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* グループ化されたカラーピッカー */}
-                                {Object.entries(groupedColors)
-                                  .filter(
-                                    ([group]) => group !== "default" && !colorData.find((c) => c.group === group)?.role,
-                                  )
-                                  .map(([group, colors]) => {
-                                    // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                                    const shouldScroll = colors.length >= 4
-
-                                    return (
-                                      <div key={group} className="mb-4">
-                                        <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                                        <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                                          <div
-                                            className={
-                                              shouldScroll
-                                                ? "flex gap-3 min-w-max"
-                                                : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                                            }
-                                            style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                                          >
-                                            {colors.map((color) => {
+                                  {/* その他のカラーピッカー（ロールを持たないカラー、グループなし） */}
+                                  {colorData.filter((color) => !color.role && (!color.group || color.group === "default"))
+                                    .length > 0 && (
+                                      <div>
+                                        <h3 className="text-md font-semibold mb-2">Other Colors</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                          {colorData
+                                            .filter((color) => !color.role && (!color.group || color.group === "default"))
+                                            .map((color) => {
                                               const realIndex = colorData.findIndex((c) => c === color)
                                               return (
                                                 <Draggable
@@ -1280,7 +1037,7 @@ function PaletteApp() {
                                                     <div
                                                       ref={provided.innerRef}
                                                       {...provided.draggableProps}
-                                                      className={shouldScroll ? "w-[300px]" : "relative"}
+                                                      className="relative"
                                                     >
                                                       <ColorPicker
                                                         index={realIndex}
@@ -1302,295 +1059,193 @@ function PaletteApp() {
                                                 </Draggable>
                                               )
                                             })}
-                                          </div>
                                         </div>
                                       </div>
-                                    )
-                                  })}
+                                    )}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </DragDropContext>
+                        </div>
+                      </ResizablePanel>
 
-                                {/* その他のカラーピッカー（ロールを持たないカラー、グループなし） */}
-                                {colorData.filter((color) => !color.role && (!color.group || color.group === "default"))
-                                  .length > 0 && (
-                                  <div>
+                      <ResizableHandle withHandle className="mt-10" />
+
+                      <ResizablePanel defaultSize={50} minSize={30}>
+                        <div className="pl-2">
+                          <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
+                          {isFigmaImportMode ? (
+                            // Figmaインポートモード：グループ化されたカラーを表示
+                            <div>
+                              {/* 標準のカラーパレット（main, dark, light, lighter, contrastTextの構造を持つカラー） */}
+                              {colorData.filter((color) => hasStandardVariations(color)).length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
+                                  {colorData
+                                    .filter((color) => hasStandardVariations(color))
+                                    .map((color) => (
+                                      <ColorDisplay
+                                        key={color.name}
+                                        colorKey={color.name}
+                                        variations={colorVariations[color.name] || {}}
+                                        textColorSettings={textColorSettings}
+                                        isPrimary={colorData.indexOf(color) === primaryColorIndex}
+                                        colorMode={colorMode}
+                                        showTailwindClasses={showTailwindClasses}
+                                        showMaterialNames={showMaterialNames}
+                                        colorRole={color.role}
+                                        customVariations={color.variations}
+                                      />
+                                    ))}
+                                </div>
+                              )}
+
+                              {/* グループ化されたカラー */}
+                              {Object.entries(groupedColors)
+                                .filter(([group]) => group !== "default")
+                                .map(([group, colors]) => {
+                                  // 同じグループ内のカラー数が4つ以上の場合は横スクロール
+                                  const shouldScroll = colors.length >= 4
+
+                                  return (
+                                    <div key={group} className="mb-6">
+                                      <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
+                                      <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
+                                        <div
+                                          className={
+                                            shouldScroll
+                                              ? "flex gap-3 min-w-max"
+                                              : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                                          }
+                                          style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
+                                        >
+                                          {colors
+                                            .filter((color) => !hasStandardVariations(color))
+                                            .map((color) => (
+                                              <div key={color.name} className={shouldScroll ? "w-[200px]" : ""}>
+                                                <ColorDisplay
+                                                  colorKey={color.name}
+                                                  variations={{ main: color.value }}
+                                                  textColorSettings={textColorSettings}
+                                                  isPrimary={colorData.indexOf(color) === primaryColorIndex}
+                                                  colorMode={colorMode}
+                                                  showTailwindClasses={showTailwindClasses}
+                                                  showMaterialNames={showMaterialNames}
+                                                  colorRole={color.role}
+                                                  group={color.group}
+                                                  disableVariationGeneration={true}
+                                                />
+                                              </div>
+                                            ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+
+                              {/* その他のカラー（グループなし、バリエーションなし） */}
+                              {colorData.filter(
+                                (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
+                              ).length > 0 && (
+                                  <div className="mb-6">
                                     <h3 className="text-md font-semibold mb-2">Other Colors</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                                       {colorData
-                                        .filter((color) => !color.role && (!color.group || color.group === "default"))
-                                        .map((color) => {
-                                          const realIndex = colorData.findIndex((c) => c === color)
-                                          return (
-                                            <Draggable
-                                              key={`color-${realIndex}`}
-                                              draggableId={`color-${realIndex}`}
-                                              index={realIndex}
-                                            >
-                                              {(provided) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  className="relative"
-                                                >
-                                                  <ColorPicker
-                                                    index={realIndex}
-                                                    name={color.name}
-                                                    color={color.value}
-                                                    isPrimary={realIndex === primaryColorIndex}
-                                                    onColorChange={(value) => handleColorChange(realIndex, value)}
-                                                    onNameChange={(name) => handleNameChange(realIndex, name)}
-                                                    onSetAsPrimary={
-                                                      realIndex !== primaryColorIndex
-                                                        ? () => handleSetAsPrimary(realIndex)
-                                                        : undefined
-                                                    }
-                                                    dragHandleProps={provided.dragHandleProps}
-                                                    colorRole={color.role}
-                                                  />
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          )
-                                        })}
+                                        .filter(
+                                          (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
+                                      )
+                                        .map((color) => (
+                                          <div key={color.name}>
+                                            <ColorDisplay
+                                              colorKey={color.name}
+                                              variations={{ main: color.value }}
+                                              textColorSettings={textColorSettings}
+                                              isPrimary={colorData.indexOf(color) === primaryColorIndex}
+                                              colorMode={colorMode}
+                                              showTailwindClasses={showTailwindClasses}
+                                              showMaterialNames={showMaterialNames}
+                                              colorRole={color.role}
+                                              disableVariationGeneration={true}
+                                            />
+                                          </div>
+                                        ))}
                                     </div>
                                   </div>
                                 )}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </DragDropContext>
-                      </div>
-                    </ResizablePanel>
+                            </div>
+                          ) : (
+                            // 標準モード：通常のカラーパレット
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                              {sortedColorVariations.map(([key, variations]) => {
+                                // カラー名からcolorDataの中での位置を特定
+                                const colorIndex = colorData.findIndex((c) => c.name === key)
+                                const color = colorData[colorIndex]
 
-                    <ResizableHandle withHandle className="mt-10" />
-
-                    <ResizablePanel defaultSize={50} minSize={30}>
-                      <div className="pl-2">
-                        <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
-                        {isFigmaImportMode ? (
-                          // Figmaインポートモード：グループ化されたカラーを表示
-                          <div>
-                            {/* 標準のカラーパレット（main, dark, light, lighter, contrastTextの構造を持つカラー） */}
-                            {colorData.filter((color) => hasStandardVariations(color)).length > 0 && (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
-                                {colorData
-                                  .filter((color) => hasStandardVariations(color))
-                                  .map((color) => (
-                                    <ColorDisplay
-                                      key={color.name}
-                                      colorKey={color.name}
-                                      variations={colorVariations[color.name] || {}}
-                                      textColorSettings={textColorSettings}
-                                      isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                      colorMode={colorMode}
-                                      showTailwindClasses={showTailwindClasses}
-                                      showMaterialNames={showMaterialNames}
-                                      colorRole={color.role}
-                                      customVariations={color.variations}
-                                    />
-                                  ))}
-                              </div>
-                            )}
-
-                            {/* グループ化されたカラー */}
-                            {Object.entries(groupedColors)
-                              .filter(([group]) => group !== "default")
-                              .map(([group, colors]) => {
-                                // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                                const shouldScroll = colors.length >= 4
+                                // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                                const disableVariationGeneration = !hasStandardVariations(color)
 
                                 return (
-                                  <div key={group} className="mb-6">
-                                    <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                                    <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                                      <div
-                                        className={
-                                          shouldScroll
-                                            ? "flex gap-3 min-w-max"
-                                            : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                                        }
-                                        style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                                      >
-                                        {colors
-                                          .filter((color) => !hasStandardVariations(color))
-                                          .map((color) => (
-                                            <div key={color.name} className={shouldScroll ? "w-[200px]" : ""}>
-                                              <ColorDisplay
-                                                colorKey={color.name}
-                                                variations={{ main: color.value }}
-                                                textColorSettings={textColorSettings}
-                                                isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                                colorMode={colorMode}
-                                                showTailwindClasses={showTailwindClasses}
-                                                showMaterialNames={showMaterialNames}
-                                                colorRole={color.role}
-                                                group={color.group}
-                                                disableVariationGeneration={true}
-                                              />
-                                            </div>
-                                          ))}
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <ColorDisplay
+                                    key={key}
+                                    colorKey={key}
+                                    variations={variations}
+                                    textColorSettings={textColorSettings}
+                                    isPrimary={colorIndex === primaryColorIndex}
+                                    colorMode={colorMode}
+                                    showTailwindClasses={showTailwindClasses}
+                                    showMaterialNames={showMaterialNames}
+                                    colorRole={color?.role}
+                                    disableVariationGeneration={disableVariationGeneration}
+                                  />
                                 )
                               })}
-
-                            {/* その他のカラー（グループなし、バリエーションなし） */}
-                            {colorData.filter(
-                              (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
-                            ).length > 0 && (
-                              <div className="mb-6">
-                                <h3 className="text-md font-semibold mb-2">Other Colors</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                  {colorData
-                                    .filter(
-                                      (color) =>
-                                        (!color.group || color.group === "default") && !hasStandardVariations(color),
-                                    )
-                                    .map((color) => (
-                                      <div key={color.name}>
-                                        <ColorDisplay
-                                          colorKey={color.name}
-                                          variations={{ main: color.value }}
-                                          textColorSettings={textColorSettings}
-                                          isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                          colorMode={colorMode}
-                                          showTailwindClasses={showTailwindClasses}
-                                          showMaterialNames={showMaterialNames}
-                                          colorRole={color.role}
-                                          disableVariationGeneration={true}
-                                        />
-                                      </div>
-                                    ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          // 標準モード：通常のカラーパレット
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                            {sortedColorVariations.map(([key, variations]) => {
-                              // カラー名からcolorDataの中での位置を特定
-                              const colorIndex = colorData.findIndex((c) => c.name === key)
-                              const color = colorData[colorIndex]
-
-                              // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                              const disableVariationGeneration = !hasStandardVariations(color)
-
-                              return (
-                                <ColorDisplay
-                                  key={key}
-                                  colorKey={key}
-                                  variations={variations}
-                                  textColorSettings={textColorSettings}
-                                  isPrimary={colorIndex === primaryColorIndex}
-                                  colorMode={colorMode}
-                                  showTailwindClasses={showTailwindClasses}
-                                  showMaterialNames={showMaterialNames}
-                                  colorRole={color?.role}
-                                  disableVariationGeneration={disableVariationGeneration}
-                                />
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
+                            </div>
+                          )}
+                        </div>
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  </div>
                 </div>
-              </div>
-            ) : (
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center p-8">
+                      <p className="text-muted-foreground">
+                        カラーデータがありません。Figmaトークンからカラーをインポートするか、カラーを追加してください。
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="typography" className="mt-0">
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-center p-8">
-                    <p className="text-muted-foreground">
-                      カラーデータがありません。Figmaトークンからカラーをインポートするか、カラーを追加してください。
-                    </p>
-                  </div>
+                  <TypographyPreview tokens={typographyTokens} />
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="typography" className="mt-0">
-            <Card>
-              <CardContent className="pt-6">
-                <TypographyPreview tokens={typographyTokens} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        // カラーのみの場合は通常表示
-        <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
-          <ResizablePanel defaultSize={50} minSize={30}>
-            {/* カラーピッカーの横スクロール対応 */}
-            <div className="pr-2">
-              <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="color-pickers" direction="horizontal">
-                  {(provided) => (
-                    <div className="space-y-6" {...provided.droppableProps} ref={provided.innerRef}>
-                      {/* 標準のカラーピッカー（ロールを持つカラー） */}
-                      {colorData.filter((color) => color.role).length > 0 && (
-                        <div className="mb-4">
-                          <h3 className="text-md font-semibold mb-2">Role Colors</h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                            {colorData
-                              .filter((color) => color.role)
-                              .map((color, index) => {
-                                const realIndex = colorData.findIndex((c) => c === color)
-                                return (
-                                  <Draggable
-                                    key={`color-${realIndex}`}
-                                    draggableId={`color-${realIndex}`}
-                                    index={realIndex}
-                                  >
-                                    {(provided) => (
-                                      <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
-                                        <ColorPicker
-                                          index={realIndex}
-                                          name={color.name}
-                                          color={color.value}
-                                          isPrimary={realIndex === primaryColorIndex}
-                                          onColorChange={(value) => handleColorChange(realIndex, value)}
-                                          onNameChange={(name) => handleNameChange(realIndex, name)}
-                                          onSetAsPrimary={
-                                            realIndex !== primaryColorIndex
-                                              ? () => handleSetAsPrimary(realIndex)
-                                              : undefined
-                                          }
-                                          dragHandleProps={provided.dragHandleProps}
-                                          colorRole={color.role}
-                                        />
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                )
-                              })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* グループ化されたカラーピッカー */}
-                      {Object.entries(groupedColors)
-                        .filter(([group]) => group !== "default" && !colorData.find((c) => c.group === group)?.role)
-                        .map(([group, colors]) => {
-                          // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                          const shouldScroll = colors.length >= 4
-
-                          return (
-                            <div key={group} className="mb-4">
-                              <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                              <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                                <div
-                                  className={
-                                    shouldScroll
-                                      ? "flex gap-3 min-w-max"
-                                      : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                                  }
-                                  style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                                >
-                                  {colors.map((color) => {
+            </TabsContent>
+          </Tabs>
+        ) : (
+          // カラーのみの場合は通常表示
+          <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
+            <ResizablePanel defaultSize={50} minSize={30}>
+              {/* カラーピッカーの横スクロール対応 */}
+              <div className="pr-2">
+                <h2 className="text-lg font-semibold mb-3">{t("section.colorPicker")}</h2>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="color-pickers" direction="horizontal" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
+                      {(provided) => (
+                        <div className="space-y-6" {...provided.droppableProps} ref={provided.innerRef}>
+                          {/* 標準のカラーピッカー（ロールを持つカラー） */}
+                          {colorData.filter((color) => color.role).length > 0 && (
+                            <div className="mb-4">
+                              <h3 className="text-md font-semibold mb-2">Role Colors</h3>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                {colorData
+                                  .filter((color) => color.role)
+                                  .map((color, index) => {
                                     const realIndex = colorData.findIndex((c) => c === color)
                                     return (
                                       <Draggable
@@ -1599,11 +1254,7 @@ function PaletteApp() {
                                         index={realIndex}
                                       >
                                         {(provided) => (
-                                          <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            className={shouldScroll ? "w-[300px]" : "relative"}
-                                          >
+                                          <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
                                             <ColorPicker
                                               index={realIndex}
                                               name={color.name}
@@ -1624,114 +1275,204 @@ function PaletteApp() {
                                       </Draggable>
                                     )
                                   })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* グループ化されたカラーピッカー */}
+                          {Object.entries(groupedColors)
+                            .filter(([group]) => group !== "default" && !colorData.find((c) => c.group === group)?.role)
+                            .map(([group, colors]) => {
+                              // 同じグループ内のカラー数が4つ以上の場合は横スクロール
+                              const shouldScroll = colors.length >= 4
+
+                              return (
+                                <div key={group} className="mb-4">
+                                  <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
+                                  <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
+                                    <div
+                                      className={
+                                        shouldScroll
+                                          ? "flex gap-3 min-w-max"
+                                          : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                                      }
+                                      style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
+                                    >
+                                      {colors.map((color) => {
+                                        const realIndex = colorData.findIndex((c) => c === color)
+                                        return (
+                                          <Draggable
+                                            key={`color-${realIndex}`}
+                                            draggableId={`color-${realIndex}`}
+                                            index={realIndex}
+                                          >
+                                            {(provided) => (
+                                              <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                className={shouldScroll ? "w-[300px]" : "relative"}
+                                              >
+                                                <ColorPicker
+                                                  index={realIndex}
+                                                  name={color.name}
+                                                  color={color.value}
+                                                  isPrimary={realIndex === primaryColorIndex}
+                                                  onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                  onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                  onSetAsPrimary={
+                                                    realIndex !== primaryColorIndex
+                                                      ? () => handleSetAsPrimary(realIndex)
+                                                      : undefined
+                                                  }
+                                                  dragHandleProps={provided.dragHandleProps}
+                                                  colorRole={color.role}
+                                                />
+                                              </div>
+                                            )}
+                                          </Draggable>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+
+                          {/* その他のカラーピッカー（ロールを持たないカラー、グループなし） */}
+                          {colorData.filter((color) => !color.role && (!color.group || color.group === "default")).length >
+                            0 && (
+                              <div>
+                                <h3 className="text-md font-semibold mb-2">Other Colors</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                  {colorData
+                                    .filter((color) => !color.role && (!color.group || color.group === "default"))
+                                    .map((color) => {
+                                      const realIndex = colorData.findIndex((c) => c === color)
+                                      return (
+                                        <Draggable
+                                          key={`color-${realIndex}`}
+                                          draggableId={`color-${realIndex}`}
+                                          index={realIndex}
+                                        >
+                                          {(provided) => (
+                                            <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
+                                              <ColorPicker
+                                                index={realIndex}
+                                                name={color.name}
+                                                color={color.value}
+                                                isPrimary={realIndex === primaryColorIndex}
+                                                onColorChange={(value) => handleColorChange(realIndex, value)}
+                                                onNameChange={(name) => handleNameChange(realIndex, name)}
+                                                onSetAsPrimary={
+                                                  realIndex !== primaryColorIndex
+                                                    ? () => handleSetAsPrimary(realIndex)
+                                                    : undefined
+                                                }
+                                                dragHandleProps={provided.dragHandleProps}
+                                                colorRole={color.role}
+                                              />
+                                            </div>
+                                          )}
+                                        </Draggable>
+                                      )
+                                    })}
+                                </div>
+                              </div>
+                            )}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle className="mt-10" />
+
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <div className="pl-2">
+                  <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
+                  {isFigmaImportMode ? (
+                    // Figmaインポートモード：グループ化されたカラーを表示
+                    <div>
+                      {/* 標準のカラーパレット（main, dark, light, lighter, contrastTextの構造を持つカラー） */}
+                      {colorData.filter((color) => hasStandardVariations(color)).length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
+                          {colorData
+                            .filter((color) => hasStandardVariations(color))
+                            .map((color) => (
+                              <ColorDisplay
+                                key={color.name}
+                                colorKey={color.name}
+                                variations={colorVariations[color.name] || {}}
+                                textColorSettings={textColorSettings}
+                                isPrimary={colorData.indexOf(color) === primaryColorIndex}
+                                colorMode={colorMode}
+                                showTailwindClasses={showTailwindClasses}
+                                showMaterialNames={showMaterialNames}
+                                colorRole={color.role}
+                                customVariations={color.variations}
+                              />
+                            ))}
+                        </div>
+                      )}
+
+                      {/* グループ化されたカラー */}
+                      {Object.entries(groupedColors)
+                        .filter(([group]) => group !== "default")
+                        .map(([group, colors]) => {
+                          // 同じグループ内のカラー数が4つ以上の場合は横スクロール
+                          const shouldScroll = colors.length >= 4
+
+                          return (
+                            <div key={group} className="mb-6">
+                              <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
+                              <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
+                                <div
+                                  className={
+                                    shouldScroll
+                                      ? "flex gap-3 min-w-max"
+                                      : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                                  }
+                                  style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
+                                >
+                                  {colors
+                                    .filter((color) => !hasStandardVariations(color))
+                                    .map((color) => (
+                                      <div key={color.name} className={shouldScroll ? "w-[200px]" : ""}>
+                                        <ColorDisplay
+                                          colorKey={color.name}
+                                          variations={{ main: color.value }}
+                                          textColorSettings={textColorSettings}
+                                          isPrimary={colorData.indexOf(color) === primaryColorIndex}
+                                          colorMode={colorMode}
+                                          showTailwindClasses={showTailwindClasses}
+                                          showMaterialNames={showMaterialNames}
+                                          colorRole={color.role}
+                                          group={color.group}
+                                          disableVariationGeneration={true}
+                                        />
+                                      </div>
+                                    ))}
                                 </div>
                               </div>
                             </div>
                           )
                         })}
 
-                      {/* その他のカラーピッカー（ロールを持たないカラー、グループなし） */}
-                      {colorData.filter((color) => !color.role && (!color.group || color.group === "default")).length >
-                        0 && (
-                        <div>
-                          <h3 className="text-md font-semibold mb-2">Other Colors</h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                            {colorData
-                              .filter((color) => !color.role && (!color.group || color.group === "default"))
-                              .map((color) => {
-                                const realIndex = colorData.findIndex((c) => c === color)
-                                return (
-                                  <Draggable
-                                    key={`color-${realIndex}`}
-                                    draggableId={`color-${realIndex}`}
-                                    index={realIndex}
-                                  >
-                                    {(provided) => (
-                                      <div ref={provided.innerRef} {...provided.draggableProps} className="relative">
-                                        <ColorPicker
-                                          index={realIndex}
-                                          name={color.name}
-                                          color={color.value}
-                                          isPrimary={realIndex === primaryColorIndex}
-                                          onColorChange={(value) => handleColorChange(realIndex, value)}
-                                          onNameChange={(name) => handleNameChange(realIndex, name)}
-                                          onSetAsPrimary={
-                                            realIndex !== primaryColorIndex
-                                              ? () => handleSetAsPrimary(realIndex)
-                                              : undefined
-                                          }
-                                          dragHandleProps={provided.dragHandleProps}
-                                          colorRole={color.role}
-                                        />
-                                      </div>
-                                    )}
-                                  </Draggable>
+                      {/* その他のカラー（グループなし、バリエーションなし） */}
+                      {colorData.filter(
+                        (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
+                      ).length > 0 && (
+                          <div className="mb-6">
+                            <h3 className="text-md font-semibold mb-2">Other Colors</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                              {colorData
+                                .filter(
+                                  (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
                                 )
-                              })}
-                          </div>
-                        </div>
-                      )}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle className="mt-10" />
-
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="pl-2">
-              <h2 className="text-lg font-semibold mb-3">{t("section.colorPalette")}</h2>
-              {isFigmaImportMode ? (
-                // Figmaインポートモード：グループ化されたカラーを表示
-                <div>
-                  {/* 標準のカラーパレット（main, dark, light, lighter, contrastTextの構造を持つカラー） */}
-                  {colorData.filter((color) => hasStandardVariations(color)).length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
-                      {colorData
-                        .filter((color) => hasStandardVariations(color))
-                        .map((color) => (
-                          <ColorDisplay
-                            key={color.name}
-                            colorKey={color.name}
-                            variations={colorVariations[color.name] || {}}
-                            textColorSettings={textColorSettings}
-                            isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                            colorMode={colorMode}
-                            showTailwindClasses={showTailwindClasses}
-                            showMaterialNames={showMaterialNames}
-                            colorRole={color.role}
-                            customVariations={color.variations}
-                          />
-                        ))}
-                    </div>
-                  )}
-
-                  {/* グループ化されたカラー */}
-                  {Object.entries(groupedColors)
-                    .filter(([group]) => group !== "default")
-                    .map(([group, colors]) => {
-                      // 同じグループ内のカラー数が4つ以上の場合は横スクロール
-                      const shouldScroll = colors.length >= 4
-
-                      return (
-                        <div key={group} className="mb-6">
-                          <h3 className="text-md font-semibold mb-2 capitalize">{group}</h3>
-                          <div className={shouldScroll ? "overflow-x-auto pb-2" : ""}>
-                            <div
-                              className={
-                                shouldScroll
-                                  ? "flex gap-3 min-w-max"
-                                  : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                              }
-                              style={shouldScroll ? { scrollBehavior: "smooth" } : {}}
-                            >
-                              {colors
-                                .filter((color) => !hasStandardVariations(color))
                                 .map((color) => (
-                                  <div key={color.name} className={shouldScroll ? "w-[200px]" : ""}>
+                                  <div key={color.name}>
                                     <ColorDisplay
                                       colorKey={color.name}
                                       variations={{ main: color.value }}
@@ -1741,79 +1482,46 @@ function PaletteApp() {
                                       showTailwindClasses={showTailwindClasses}
                                       showMaterialNames={showMaterialNames}
                                       colorRole={color.role}
-                                      group={color.group}
                                       disableVariationGeneration={true}
                                     />
                                   </div>
                                 ))}
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
-
-                  {/* その他のカラー（グループなし、バリエーションなし） */}
-                  {colorData.filter(
-                    (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
-                  ).length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-md font-semibold mb-2">Other Colors</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                        {colorData
-                          .filter(
-                            (color) => (!color.group || color.group === "default") && !hasStandardVariations(color),
-                          )
-                          .map((color) => (
-                            <div key={color.name}>
-                              <ColorDisplay
-                                colorKey={color.name}
-                                variations={{ main: color.value }}
-                                textColorSettings={textColorSettings}
-                                isPrimary={colorData.indexOf(color) === primaryColorIndex}
-                                colorMode={colorMode}
-                                showTailwindClasses={showTailwindClasses}
-                                showMaterialNames={showMaterialNames}
-                                colorRole={color.role}
-                                disableVariationGeneration={true}
-                              />
-                            </div>
-                          ))}
-                      </div>
+                        )}
                     </div>
-                  )}
-                </div>
-              ) : (
-                // 標準モード：通常のカラーパレット
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                  {sortedColorVariations.map(([key, variations]) => {
-                    // カラー名からcolorDataの中での位置を特定
-                    const colorIndex = colorData.findIndex((c) => c.name === key)
-                    const color = colorData[colorIndex]
+                  ) : (
+                    // 標準モード：通常のカラーパレット
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                      {sortedColorVariations.map(([key, variations]) => {
+                        // カラー名からcolorDataの中での位置を特定
+                        const colorIndex = colorData.findIndex((c) => c.name === key)
+                        const color = colorData[colorIndex]
 
-                    // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                    const disableVariationGeneration = !hasStandardVariations(color)
+                        // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                        const disableVariationGeneration = !hasStandardVariations(color)
 
-                    return (
-                      <ColorDisplay
-                        key={key}
-                        colorKey={key}
-                        variations={variations}
-                        textColorSettings={textColorSettings}
-                        isPrimary={colorIndex === primaryColorIndex}
-                        colorMode={colorMode}
-                        showTailwindClasses={showTailwindClasses}
-                        showMaterialNames={showMaterialNames}
-                        colorRole={color?.role}
-                        disableVariationGeneration={disableVariationGeneration}
-                      />
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      )}
+                        return (
+                          <ColorDisplay
+                            key={key}
+                            colorKey={key}
+                            variations={variations}
+                            textColorSettings={textColorSettings}
+                            isPrimary={colorIndex === primaryColorIndex}
+                            colorMode={colorMode}
+                            showTailwindClasses={showTailwindClasses}
+                            showMaterialNames={showMaterialNames}
+                            colorRole={color?.role}
+                            disableVariationGeneration={disableVariationGeneration}
+                          />
+                        )
+                      })}
+                  </div>
+                )}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
 
       <Toaster />
     </main>

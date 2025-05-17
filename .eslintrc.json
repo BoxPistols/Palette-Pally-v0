@@ -1,0 +1,18 @@
+{
+  "extends": "next",
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react/no-unknown-property": [
+      "error",
+      {
+        "ignore": ["css"]
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  }
+}
