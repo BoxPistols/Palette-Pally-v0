@@ -224,12 +224,15 @@ export function adjustColorInOklab(
   const newHue = (((hue + hueDelta) % 360) + 360) % 360;
   const newHueRad = (newHue * Math.PI) / 180;
 
-  // 新しい彩度を適用
+  // 新しい彩度を適用（乗数として適用）
   const newChroma = Math.max(0, chroma * chromaDelta);
 
   // 新しいa, b値を計算
   const newA = newChroma * Math.cos(newHueRad);
   const newB = newChroma * Math.sin(newHueRad);
+
+  // デバッグ用コンソールログ（問題診断に役立つ場合）
+  // console.log(`Adjusting color: ${color}, L: ${oklab.l} -> ${newL}, Chroma: ${chroma} -> ${newChroma}`);
 
   return oklabToHex(newL, newA, newB);
 }
@@ -244,12 +247,12 @@ export function generateColorVariations(
     dark: adjustColorInOklab(baseColor, { lightnessDelta: -0.15 }),
     // 明度を上げ、彩度をやや下げて明るい色を作成
     light: adjustColorInOklab(baseColor, {
-      lightnessDelta: 0.2,
+      lightnessDelta: 0.15,
       chromaDelta: 0.85,
     }),
     // 明度をさらに上げ、彩度をより下げて非常に明るい色を作成
     lighter: adjustColorInOklab(baseColor, {
-      lightnessDelta: 0.35,
+      lightnessDelta: 0.45,
       chromaDelta: 0.5,
     }),
   };

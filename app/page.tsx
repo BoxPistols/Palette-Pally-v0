@@ -3,11 +3,11 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { ColorPicker } from "@/components/color-picker"
+import { AdvancedColorPicker } from "@/components/advanced-color-picker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { generateColorVariations } from "@/lib/color-utils"
+import { generateColorVariations, adjustColorInOklab } from "@/lib/color-utils"
 import { ColorDisplay } from "@/components/color-display"
 import { ExportImportPanel } from "@/components/export-import-panel"
 import { Logo } from "@/components/logo"
@@ -15,29 +15,31 @@ import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { TextColorSettings } from "@/components/text-color-settings"
-import type { PaletteType, ColorData, TextColorSettings as TextColorSettingsType } from "@/types/palette"
+import { ColorVariationControls } from "@/components/color-variation-controls"
+import type {
+  PaletteType,
+  ColorData,
+  TextColorSettings as TextColorSettingsType,
+  ColorVariationSettings
+} from "@/types/palette"
+import { defaultVariationSettings } from "@/types/palette"
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
-const DEFAULT_COLOR_COUNT = 9
+const DEFAULT_COLOR_COUNT = 8
 
+// デザインシステムの標準カラー定義
 const colorSchemes = [
-  { name: "primary", value: "#42a5f5" },    // MUIのデフォルトプライマリ
-  { name: "secondary", value: "#3f495c" },  // MUIのデフォルトセカンダリ
-  { name: "success", value: "#2e9733" },    // 緑 - 成功状態
-  { name: "warning", value: "#ff9800" },    // オレンジ - 警告状態
-  { name: "error", value: "#ef5350" },      // 赤 - エラー状態
-  { name: "info", value: "#03a9f4" },       // 水色 - 情報状態
-  // text color
-  { name: "text", value: "#000000" },       // 黒 - デフォルトテキスト
-  // background color
-  { name: "background", value: "#ffffff" }, // 白 - デフォルト背景
-  // border color
-  { name: "border", value: "#cccccc" },     // 灰色 - デフォルトボーダー
+  { name: "primary", value: "#1976d2" },    // MUIのデフォルトプライマリ
+  { name: "secondary", value: "#9c27b0" },  // MUIのデフォルトセカンダリ
+  { name: "success", value: "#2e7d32" },    // 緑 - 成功状態
+  { name: "warning", value: "#ed6c02" },    // オレンジ - 警告状態
+  { name: "error", value: "#d32f2f" },      // 赤 - エラー状態
+  { name: "info", value: "#0288d1" },       // 水色 - 情報状態
 ]
 
 export default function Home() {
-  // カラー数の初期値は8に設定
+  // カラー数の初期値
   const [colorCount, setColorCount] = useState<number>(DEFAULT_COLOR_COUNT)
   // 初期状態では空の配列に設定（ハイドレーションエラー回避のため）
   const [colorData, setColorData] = useState<ColorData[]>([])
@@ -48,6 +50,12 @@ export default function Home() {
     light: "default",
     lighter: "default",
   })
+  const [variationSettings, setVariationSettings] = useState<ColorVariationSettings>(defaultVariationSettings)
+
+  // Toast表示のデバウンス用の状態
+  const [toastTimeout, setToastTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [lastToastTime, setLastToastTime] = useState<number>(0);
+
   // クライアントサイドのみでレンダリングする制御用
   const [isClient, setIsClient] = useState(false)
 
@@ -55,6 +63,33 @@ export default function Home() {
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // デバウンス付きToast表示関数
+  const showDebounceToast = (title: string, description: string, variant?: "default" | "destructive") => {
+    const now = Date.now();
+
+    // 前回のToastから1秒以上経過しているか確認
+    if (now - lastToastTime > 1000) {
+      // 既存のタイマーをクリア
+      if (toastTimeout) {
+        clearTimeout(toastTimeout);
+      }
+
+      // 遅延して表示（300ms後）
+      const newTimeout = setTimeout(() => {
+        toast({
+          title,
+          description,
+          variant,
+          // Toastのカスタムスタイル
+          className: "toast-small",
+        });
+        setLastToastTime(Date.now());
+      }, 300);
+
+      setToastTimeout(newTimeout);
+    }
+  };
 
   // 初期カラーデータ作成関数
   const createInitialColorData = (count: number) => {
@@ -87,50 +122,96 @@ export default function Home() {
         if (parsedData.textColorSettings) {
           setTextColorSettings(parsedData.textColorSettings)
         }
+
+        // Import variation settings if available
+        if (parsedData.variationSettings) {
+          setVariationSettings(parsedData.variationSettings)
+        } else {
+          // 必ず初期値を設定
+          setVariationSettings(defaultVariationSettings)
+        }
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
-        // エラー時は初期カラーを設定
+        // エラー時は初期値を確実にセット
         setColorData(createInitialColorData(colorCount))
+        setVariationSettings(defaultVariationSettings)
       }
     } else {
-      // 保存データがない場合は初期カラーを設定
+      // 保存データがない場合は初期カラーとデフォルト設定を設定
       setColorData(createInitialColorData(colorCount))
+      setVariationSettings(defaultVariationSettings)
     }
   }, []) // 空の依存配列で初回のみ実行
 
+  // カスタムバリエーション生成関数
+  const generateCustomVariations = (baseColor: string) => {
+    if (variationSettings.usePerceptualModel) {
+      // 全体の彩度調整係数 - 全てのカラーバリエーションに適用
+      const baseChromaFactor = variationSettings.chromaReduction;
+
+      return {
+        // main: 基本色に彩度調整を適用（mainChroma は相対乗数）
+        main: adjustColorInOklab(baseColor, {
+          chromaDelta: baseChromaFactor * variationSettings.mainChroma
+        }),
+
+        // dark: 暗くしつつ彩度も調整（暗い色は視認性のため若干彩度を高めに）
+        dark: adjustColorInOklab(baseColor, {
+          lightnessDelta: variationSettings.darkDelta,
+          chromaDelta: baseChromaFactor * 1.05 // 暗い色は彩度をやや強調
+        }),
+
+        // light: 明るくしつつ彩度も調整
+        light: adjustColorInOklab(baseColor, {
+          lightnessDelta: variationSettings.lightDelta,
+          chromaDelta: baseChromaFactor
+        }),
+
+        // lighter: より明るくしつつ彩度をさらに抑制
+        lighter: adjustColorInOklab(baseColor, {
+          lightnessDelta: variationSettings.lighterDelta,
+          chromaDelta: baseChromaFactor * 0.7 // 明るい色は彩度をより抑える
+        }),
+      }
+    } else {
+      // 従来の方法（互換性のため）
+      return generateColorVariations(baseColor)
+    }
+  }
+
   // Generate color variations when colors change
   useEffect(() => {
+    if (colorData.length === 0) return;
+
     const variations: Record<string, Record<string, string>> = {}
 
     colorData.forEach((color) => {
-      variations[color.name] = generateColorVariations(color.value)
+      variations[color.name] = generateCustomVariations(color.value)
     })
 
     setColorVariations(variations)
-  }, [colorData])
+  }, [colorData, variationSettings])
 
   // Save to localStorage function
-  const saveToLocalStorage = () => {
+  const saveToLocalStorage = (showToast = true) => {
     try {
       const dataToSave: PaletteType = {
         colors: colorData,
         variations: colorVariations,
         textColorSettings: textColorSettings,
+        variationSettings: variationSettings,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-      toast({
-        title: "保存完了",
-        description: "パレットデータをLocalStorageに保存しました",
-      })
+
+      // showToastフラグがtrueの場合のみToastを表示
+      if (showToast) {
+        showDebounceToast("保存完了", "パレットデータをLocalStorageに保存しました");
+      }
     } catch (error) {
       console.error("Error saving to localStorage:", error)
-      toast({
-        title: "保存エラー",
-        description: "データの保存中にエラーが発生しました",
-        variant: "destructive",
-      })
+      showDebounceToast("保存エラー", "データの保存中にエラーが発生しました", "destructive");
     }
-  }
+  };
 
   const handleColorChange = (index: number, value: string) => {
     const newColorData = [...colorData]
@@ -188,16 +269,17 @@ export default function Home() {
       lighter: "default",
     })
 
-    toast({
-      title: "リセット完了",
-      description: "パレットデータをリセットしました",
-    })
+    // Reset variation settings
+    setVariationSettings(defaultVariationSettings)
+
+    showDebounceToast("リセット完了", "パレットデータをリセットしました");
   }
 
   const exportData: PaletteType = {
     colors: colorData,
     variations: colorVariations,
     textColorSettings: textColorSettings,
+    variationSettings: variationSettings,
   }
 
   const handleImport = (importedData: PaletteType) => {
@@ -224,13 +306,15 @@ export default function Home() {
             setTextColorSettings(importedData.textColorSettings)
           }
 
-          toast({
-            title: "インポート完了",
-            description: `${validColors.length}色のパレットをインポートしました`,
-          })
+          // Import variation settings if available
+          if (importedData.variationSettings) {
+            setVariationSettings(importedData.variationSettings)
+          }
+
+          showDebounceToast("インポート完了", `${validColors.length}色のパレットをインポートしました`);
 
           // Save to localStorage immediately after import
-          setTimeout(saveToLocalStorage, 100)
+          saveToLocalStorage(false)
         } else {
           throw new Error("有効なカラーデータがありません")
         }
@@ -239,21 +323,27 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Import error:", error)
-      toast({
-        title: "インポートエラー",
-        description: error instanceof Error ? error.message : "不明なエラーが発生しました",
-        variant: "destructive",
-      })
+      showDebounceToast("インポートエラー", error instanceof Error ? error.message : "不明なエラーが発生しました", "destructive");
     }
   }
 
   const handleTextColorSettingsChange = (newSettings: TextColorSettingsType) => {
     setTextColorSettings(newSettings)
-    // 変更後に自動保存
-    setTimeout(() => {
-      saveToLocalStorage()
-    }, 100)
+    // 即時保存するが、Toastは表示しない
+    saveToLocalStorage(false)
   }
+
+  const handleVariationSettingsChange = (newSettings: ColorVariationSettings) => {
+    setVariationSettings(newSettings)
+    // 即時保存するが、Toastは表示しない
+    saveToLocalStorage(false)
+  }
+
+  // 保存ボタン用ハンドラ（明示的な保存アクション）
+  const handleSaveButtonClick = () => {
+    // 保存してToastを必ず表示
+    saveToLocalStorage(true);
+  };
 
   // クライアントサイドレンダリングが完了するまでは最小限の内容だけ表示
   if (!isClient || colorData.length === 0) {
@@ -261,50 +351,60 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-6">
+    <main className="container mx-auto px-4 py-6 max-w-screen-2xl">
       <Card className="mb-6">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div className="flex items-center gap-2">
-            <Logo />
-            <HelpModal />
-          </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
-              カラー数:
-            </label>
-            <Input
-              id="colorCount"
-              type="number"
-              min="1"
-              max={MAX_COLORS}
-              value={colorCount}
-              onChange={handleCountChange}
-              className="w-16"
-            />
-            <Button onClick={resetColors} variant="secondary" size="sm">
-              リセット
-            </Button>
-            <Button onClick={saveToLocalStorage} variant="outline" size="sm">
-              保存
-            </Button>
+        <CardHeader className="pb-2 px-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Logo />
+              <h1 className="text-lg font-semibold">Palette Pally</h1>
+              <HelpModal />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
+                  カラー数:
+                </label>
+                <Input
+                  id="colorCount"
+                  type="number"
+                  min="1"
+                  max={MAX_COLORS}
+                  value={colorCount}
+                  onChange={handleCountChange}
+                  className="w-16 h-8"
+                />
+              </div>
+              <Button onClick={resetColors} variant="secondary" size="sm">
+                リセット
+              </Button>
+              <Button onClick={handleSaveButtonClick} variant="outline" size="sm">
+                保存
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+        <CardContent className="px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ExportImportPanel data={exportData} onImport={handleImport} />
 
             <TextColorSettings settings={textColorSettings} onChange={handleTextColorSettingsChange} />
+
+            <ColorVariationControls
+              settings={variationSettings}
+              onChange={handleVariationSettingsChange}
+            />
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Color Pickers Section */}
         <div>
           <h2 className="text-lg font-semibold mb-3">カラーピッカー</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {colorData.map((color, index) => (
-              <ColorPicker
+              <AdvancedColorPicker
                 key={index}
                 index={index}
                 name={color.name}

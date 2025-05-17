@@ -120,7 +120,7 @@ importers:
         specifier: ^19
         version: 19.0.0
       react-colorful:
-        specifier: latest
+        specifier: ^5.6.1
         version: 5.6.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-day-picker:
         specifier: 8.10.1

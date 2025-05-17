@@ -20,7 +20,7 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 0 0% 32%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -91,4 +91,36 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* app/globals.css に追加 */
+@layer components {
+  .slider-gray [data-orientation="horizontal"] {
+    @apply h-2 bg-gray-200 dark:bg-gray-700;
+  }
+  
+  .slider-gray [data-orientation="horizontal"] .absolute {
+    @apply bg-gray-400 dark:bg-gray-500;
+  }
+  
+  .slider-gray [role="slider"] {
+    @apply bg-gray-500 border-2 border-white dark:border-gray-800;
+  }
+}
+
+/* app/globals.css に追加 */
+@layer components {
+  .toast-small {
+    @apply max-w-[280px] p-2 text-sm;
+  }
+  
+  .toast-small [role="status"] {
+    @apply gap-1;
+  }
+  
+  .toast-small .font-medium {
+    @apply text-sm;
+  }
+  
+
 }
