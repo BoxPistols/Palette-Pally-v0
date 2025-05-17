@@ -1,0 +1,5 @@
+name: New rule
+version: 0.0.1
+rules:
+  - always give concise responses
+  - 必ず日本語で答える

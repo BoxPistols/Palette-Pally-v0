@@ -1,0 +1,24 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/dist": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.continue/**/*": false
+  },
+  "files.watcherExclude": {
+    "**/.continue/**/*": true,
+    "**/.cursor/extensions/continue.continue-1.0.8-darwin-arm64/config-yaml-schema.json": true
+  },
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/Users/ai/.vscode/extensions/continue.continue-1.0.8-darwin-x64/config-yaml-schema.json"
+      ],
+      "url": "http://json.schemastore.org/continue.yaml"
+    }
+  ]
+}

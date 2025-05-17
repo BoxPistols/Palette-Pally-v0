@@ -16,24 +16,37 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
-import type { PaletteType } from "@/types/palette"
+import type { PaletteType, ColorData as PaletteColorData, ColorRole } from "@/types/palette"
+import type { ColorMode } from "@/lib/color-systems"
 
-// Define the missing types
-type ColorMode = "light" | "dark" | "system" // Example ColorMode type
-type ColorData = {
-  name: string
-  value: string
-  role?: string
-}
+// Remove local ColorData type, use imported PaletteColorData instead
+// type ColorData = {
+//   name: string
+//   value: string
+//   role?: string
+// }
 
-interface ExportImportPanelProps {
-  data: PaletteType & { primaryColorIndex?: number }
+export interface ExportImportPanelProps {
+  data: PaletteType & {
+    primaryColorIndex?: number
+    colorMode?: ColorMode // インポートした ColorMode を使用
+    showTailwindClasses?: boolean
+    showMaterialNames?: boolean
+    typographyTokens?: Record<string, any>
+    isFigmaImportMode?: boolean
+    isTypographyOnly?: boolean
+    activeTab?: "colors" | "typography"
+  }
   onImport: (
     importedData: PaletteType & {
       primaryColorIndex?: number
-      colorMode?: ColorMode
+      colorMode?: ColorMode // インポートした ColorMode を使用
       showTailwindClasses?: boolean
       showMaterialNames?: boolean
+      typographyTokens?: Record<string, any>
+      isFigmaImportMode?: boolean
+      isTypographyOnly?: boolean
+      activeTab?: "colors" | "typography"
     },
   ) => void
 }
@@ -174,6 +187,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       colorMode?: ColorMode
       showTailwindClasses?: boolean
       showMaterialNames?: boolean
+      [key: string]: any
     },
   ) => {
     try {
@@ -181,13 +195,13 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       if (importedData.global && importedData.global.colors) {
         // Figmaトークン形式からカラーデータに変換
         const figmaColors = importedData.global.colors
-        const extractedColors: ColorData[] = []
+        const extractedColors: PaletteColorData[] = []
 
         Object.entries(figmaColors).forEach(([category, tokens]) => {
           if (category === "common") return // common.white/blackはスキップ
 
           // カテゴリ内の基本色のみを抽出（バリエーションはスキップ）
-          Object.entries(tokens).forEach(([tokenName, token]: [string, any]) => {
+          Object.entries(tokens as Record<string, any>).forEach(([tokenName, token]: [string, any]) => {
             // バリエーション（例：primary-light）はスキップ
             if (tokenName.includes("-")) return
 
@@ -195,7 +209,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
               extractedColors.push({
                 name: tokenName,
                 value: token.$value,
-                role: tokenName === "primary" ? "primary" : undefined,
+                role: tokenName === "primary" ? "primary" as ColorRole : undefined,
               })
             }
           })
@@ -227,7 +241,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
           onImport({ colors: validColors })
 
           toast({
-            title: t.importComplete,
+            title: (t as any).importComplete || "Import Complete",
             description:
               language === "jp"
                 ? `${validColors.length}色のパレットをインポートしました`

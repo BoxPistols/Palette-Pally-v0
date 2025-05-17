@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/hooks/use-language"
 import { useTheme } from "@/contexts/theme-context"
-import type { ColorData } from "@/types/palette"
+import type { ColorData, ColorRole } from "@/types/palette"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
@@ -34,8 +34,6 @@ interface FigmaTokensPanelProps {
   onImport: (colors: ColorData[]) => void
   onTypographyImport?: (typography: Record<string, any>) => void
 }
-
-export type ColorRole = "primary" | "secondary" | "success" | "danger" | "warning" | "info"
 
 export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
@@ -323,18 +321,8 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
 
       // タイポグラフィデータのみの場合
       if (!importColorData && importTypographyData && Object.keys(flatTypography).length > 0) {
-        // デフォルトのカラーパレットを使用
-        if (colors.length === 0) {
-          const defaultColors = [
-            { name: "primary", value: "#3b82f6", role: "primary" },
-            { name: "secondary", value: "#8b5cf6", role: "secondary" },
-            { name: "success", value: "#22c55e", role: "success" },
-            { name: "danger", value: "#ef4444", role: "danger" },
-            { name: "warning", value: "#f59e0b", role: "warning" },
-            { name: "info", value: "#06b6d4", role: "info" },
-          ]
-          onImport(defaultColors)
-        }
+        // タイポグラフィデータのみの場合は何もしない
+        // デフォルトのカラーパレットは追加しない
       }
 
       setIsOpen(false)
