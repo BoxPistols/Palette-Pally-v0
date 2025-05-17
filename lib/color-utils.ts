@@ -254,33 +254,3 @@ export function getBetterContrastColor(bgColor: string): string {
 
   return whiteContrast > blackContrast ? "#FFFFFF" : "#000000"
 }
-
-// 色の明度と彩度に基づいて視覚的な重みを計算
-export function calculateVisualWeight(l: number, s: number): number {
-  // 明度が低く彩度が高いほど視覚的な重みが大きい
-  // 0-1の範囲で返す（0が最も軽い、1が最も重い）
-  const lWeight = 1 - l / 100 // 明度の逆数
-  const sWeight = s / 100 // 彩度
-
-  return lWeight * 0.7 + sWeight * 0.3 // 明度に70%、彩度に30%の重みを付ける
-}
-
-// 色の知覚的な距離を計算（Oklabカラースペースを使用）
-export function calculatePerceptualDistance(color1: string, color2: string): number {
-  const oklab1 = hexToOklab(color1)
-  const oklab2 = hexToOklab(color2)
-
-  if (!oklab1 || !oklab2) return 0
-
-  // ユークリッド距離を計算
-  const deltaL = oklab1.l - oklab2.l
-  const deltaA = oklab1.a - oklab2.a
-  const deltaB = oklab1.b - oklab2.b
-
-  return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
-}
-
-// getContrastText関数を追加
-export function getContrastText(backgroundColor: string): string {
-  return getBetterContrastColor(backgroundColor)
-}
