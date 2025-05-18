@@ -131,8 +131,8 @@ body {
 
 .dark {
   button {
-    color: #acb9b9 !important;
-    background-color: #4c4c4c !important;
-    border: 1px solid #393939 !important;
+    /* color: #acb9b9 !important; */
+    /* background-color: #4c4c4c !important; */
+    /* border: 1px solid #999  !important; */
   }
 }

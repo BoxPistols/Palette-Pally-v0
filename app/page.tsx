@@ -29,17 +29,18 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const MAX_COLORS = 24
 const STORAGE_KEY = 'palette-pally-data'
-const DEFAULT_COLOR_COUNT = 8
+const DEFAULT_COLOR_COUNT = 6
 
 // デザインシステムの標準カラー定義
 const colorSchemes = [
-    { name: 'primary', value: '#1976d2' }, // MUIのデフォルトプライマリ
-    { name: 'secondary', value: '#9c27b0' }, // MUIのデフォルトセカンダリ
-    { name: 'success', value: '#2e7d32' }, // 緑 - 成功状態
-    { name: 'warning', value: '#ed6c02' }, // オレンジ - 警告状態
-    { name: 'error', value: '#d32f2f' }, // 赤 - エラー状態
-    { name: 'info', value: '#0288d1' }, // 水色 - 情報状態
+    { name: "primary", value: "#42a5f5" },    // MUIのデフォルトプライマリ
+    { name: "secondary", value: "#3f495c" },  // MUIのデフォルトセカンダリ
+    { name: "success", value: "#2e9733" },    // 緑 - 成功状態
+    { name: "warning", value: "#ff9800" },    // オレンジ - 警告状態
+    { name: "error", value: "#ef5350" },      // 赤 - エラー状態
+    { name: "info", value: "#03a9f4" },       // 水色 - 情報状態
 ]
+
 
 export default function Home() {
     // カラー数の初期値
@@ -450,29 +451,13 @@ export default function Home() {
                             </div>
                             <button
                                 onClick={resetColors}
-                                style={{
-                                    padding: '.5em 1em',
-                                    marginLeft: 4,
-                                    marginRight: 4,
-                                    border: '1px solid #ccc',
-                                    borderRadius: 4,
-                                    background: '#f5f5f5',
-                                    cursor: 'pointer',
-                                }}
+                                className='text-sm font-medium dark:text-white border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700'
                             >
                                 {language === 'ja' ? 'リセット' : 'Reset'}
                             </button>
                             <button
+                                className='text-sm font-medium dark:text-white border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 onClick={handleSaveButtonClick}
-                                style={{
-                                    padding: '0.5em 1em',
-                                    marginLeft: 4,
-                                    marginRight: 4,
-                                    border: '1px solid #ccc',
-                                    borderRadius: 4,
-                                    background: '#fff',
-                                    cursor: 'pointer',
-                                }}
                             >
                                 {language === 'ja' ? '保存' : 'Save'}
                             </button>

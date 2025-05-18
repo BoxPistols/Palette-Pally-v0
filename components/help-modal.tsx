@@ -26,18 +26,7 @@ export function HelpModal() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <button
-          style={{
-            padding: '1.25em 1em',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            background: '#fff',
-            cursor: 'pointer',
-            height: 32,
-            minWidth: 32,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className='text-sm font-medium dark:text-white border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700'
           title={language === "ja" ? "ヘルプ" : "Help"}
         >
           {language === "ja" ? "ヘルプ" : "Help"}

@@ -140,9 +140,9 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
                 </div>
                 <div className="flex gap-2 mt-6
                   justify-end">
-                  <button onClick={resetToDefault} style={{ padding: '0.5em 1em', border: '1px solid #ccc', borderRadius: 4, background: '#fff', cursor: 'pointer' }}>
+                  <Button onClick={resetToDefault} >
                     {language === "ja" ? "デフォルトに戻す" : "Reset to Default"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </AccordionContent>
