@@ -14,6 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import type { ColorVariationSettings } from "@/types/palette"
+import { useLanguage } from "@/lib/language-context"
 
 import { defaultVariationSettings } from "@/types/palette"
 
@@ -27,6 +28,7 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
   // ローカルステート - ユーザー操作が終わるまで親コンポーネントに通知しない
   const [localSettings, setLocalSettings] = useState(settings)
   const [changeTimeout, setChangeTimeout] = useState<NodeJS.Timeout | null>(null)
+  const { language } = useLanguage()
 
   // 親コンポーネントからの設定変更を反映
   useEffect(() => {
@@ -36,20 +38,7 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
   // 変更をデバウンスして親コンポーネントに通知
   const handleChange = (newSettings: ColorVariationSettings) => {
     setLocalSettings(newSettings)
-
     onChange(newSettings);
-
-    // 以前のタイマーをクリア
-    // if (changeTimeout) {
-    //   clearTimeout(changeTimeout)
-    // }
-
-    // // 新しいタイマーをセット - 500ms後に親に通知
-    // const newTimeout = setTimeout(() => {
-    //   onChange(newSettings)
-    // }, 500)
-
-    // setChangeTimeout(newTimeout)
   }
 
   const handleMainChromaChange = (value: number[]) => {
@@ -131,20 +120,31 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">カラーバリエーション設定</CardTitle>
-      </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible defaultValue="">
           <AccordionItem value="settings">
-            <AccordionTrigger className="py-2 text-sm">詳細設定</AccordionTrigger>
+            <AccordionTrigger className="py-1 text-sm
+
+            ">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm">
+                  {language === "ja" ? "カラーバリエーション設定" : "Color Variation Settings"}
+                </CardTitle>
+              </CardHeader>
+              {/* {language === "ja" ? "詳細設定" : "Advanced Settings"} */}
+            </AccordionTrigger>
+
             <AccordionContent>
               <div className="space-y-3 pt-2">
                 <p className="text-xs text-muted-foreground mb-3">
-                  すべてのカラーバリエーションの彩度・明度を細かく調整できます。明るい色ほど彩度が低くなるよう自動調整されます。
+                  {language === "ja"
+                    ? "すべてのカラーバリエーションの彩度・明度を細かく調整できます。明るい色ほど彩度が低くなるよう自動調整されます。"
+                    : "You can fine-tune the saturation and brightness of all color variations. Brighter colors will automatically have lower saturation."}
                 </p>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="use-perceptual" className="text-sm">知覚均一モード (Oklab)</Label>
+                  <Label htmlFor="use-perceptual" className="text-sm">
+                    {language === "ja" ? "知覚均一モード (Oklab)" : "Perceptual Uniform Mode (Oklab)"}
+                  </Label>
                   <Switch
                     id="use-perceptual"
                     checked={localSettings.usePerceptualModel}
@@ -157,7 +157,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                     {/* 全体の彩度調整（これだけを残す） */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <Label className="text-xs">全体の彩度調整</Label>
+                        <Label className="text-xs">
+                          {language === "ja" ? "全体の彩度調整" : "Overall Saturation Adjustment"}
+                        </Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={Math.round(localSettings.chromaReduction * 100)}
@@ -183,7 +185,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                     {/* Main彩度比率（追加） */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <Label className="text-xs">Main彩度比率</Label>
+                        <Label className="text-xs">
+                          {language === "ja" ? "Main彩度比率" : "Main Saturation Ratio"}
+                        </Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={Math.round(localSettings.mainChroma * 100)}
@@ -207,7 +211,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <Label className="text-xs">Dark明度変化</Label>
+                        <Label className="text-xs">
+                          {language === "ja" ? "Dark明度変化" : "Dark Brightness Change"}
+                        </Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={Math.round(localSettings.darkDelta * 100)}
@@ -232,7 +238,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
 
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <Label className="text-xs">Light明度変化</Label>
+                        <Label className="text-xs">
+                          {language === "ja" ? "Light明度変化" : "Light Brightness Change"}
+                        </Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={Math.round(localSettings.lightDelta * 100)}
@@ -257,7 +265,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
 
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <Label className="text-xs">Lighter明度変化</Label>
+                        <Label className="text-xs">
+                          {language === "ja" ? "Lighter明度変化" : "Lighter Brightness Change"}
+                        </Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={Math.round(localSettings.lighterDelta * 100)}
@@ -286,6 +296,6 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
           </AccordionItem>
         </Accordion>
       </CardContent>
-    </Card >
+    </Card>
   )
 }
