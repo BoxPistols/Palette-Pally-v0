@@ -169,6 +169,13 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                             max={100}
                           />
                           <span className="text-xs">%</span>
+                          <button
+                            type="button"
+                            style={{ padding: '0.2em 0.7em', border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer', fontSize: '0.8em', marginLeft: 4 }}
+                            onClick={() => handleChange({ ...localSettings, chromaReduction: defaultVariationSettings.chromaReduction })}
+                          >
+                            {language === "ja" ? "リセット" : "Reset"}
+                          </button>
                         </div>
                       </div>
                       <Slider
@@ -197,6 +204,13 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                             max={150}
                           />
                           <span className="text-xs">%</span>
+                          <button
+                            type="button"
+                            style={{ padding: '0.2em 0.7em', border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer', fontSize: '0.8em', marginLeft: 4 }}
+                            onClick={() => handleChange({ ...localSettings, mainChroma: defaultVariationSettings.mainChroma })}
+                          >
+                            {language === "ja" ? "リセット" : "Reset"}
+                          </button>
                         </div>
                       </div>
                       <Slider
@@ -223,6 +237,13 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                             max={0}
                           />
                           <span className="text-xs">%</span>
+                          <button
+                            type="button"
+                            style={{ padding: '0.2em 0.7em', border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer', fontSize: '0.8em', marginLeft: 4 }}
+                            onClick={() => handleChange({ ...localSettings, darkDelta: defaultVariationSettings.darkDelta })}
+                          >
+                            {language === "ja" ? "リセット" : "Reset"}
+                          </button>
                         </div>
                       </div>
                       <Slider
@@ -250,6 +271,13 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                             max={50}
                           />
                           <span className="text-xs">%</span>
+                          <button
+                            type="button"
+                            style={{ padding: '0.2em 0.7em', border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer', fontSize: '0.8em', marginLeft: 4 }}
+                            onClick={() => handleChange({ ...localSettings, lightDelta: defaultVariationSettings.lightDelta })}
+                          >
+                            {language === "ja" ? "リセット" : "Reset"}
+                          </button>
                         </div>
                       </div>
                       <Slider
@@ -277,6 +305,13 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
                             max={70}
                           />
                           <span className="text-xs">%</span>
+                          <button
+                            type="button"
+                            style={{ padding: '0.2em 0.7em', border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer', fontSize: '0.8em', marginLeft: 4 }}
+                            onClick={() => handleChange({ ...localSettings, lighterDelta: defaultVariationSettings.lighterDelta })}
+                          >
+                            {language === "ja" ? "リセット" : "Reset"}
+                          </button>
                         </div>
                       </div>
                       <Slider
