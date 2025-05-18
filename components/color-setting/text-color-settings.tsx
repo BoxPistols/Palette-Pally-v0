@@ -11,7 +11,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import type { TextColorMode, TextColorSettings as TextColorSettingsType } from "@/types/palette"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { ChevronDownIcon } from "@radix-ui/react-icons"
+
 
 interface TextColorSettingsProps {
   settings: TextColorSettingsType
@@ -42,10 +44,13 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
           <AccordionItem value="text-color-settings">
             <AccordionTrigger className="py-1 text-sm flex gap-1">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">
+                <CardTitle className="text-sm flex items-center justify-between">
                   {language === "ja" ? "テキストカラー設定" : "Text Color Settings"}
+                  <ChevronDownIcon className="ml-2 h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CardTitle>
               </CardHeader>
+
+
             </AccordionTrigger>
             <AccordionContent className="px-2">
               <div className="py-2">
@@ -137,7 +142,7 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
                 </div>
                 <div className="flex gap-2 mt-6
                   justify-end">
-                  <button onClick={resetToDefault} style={{padding:'0.5em 1em',border:'1px solid #ccc',borderRadius:4,background:'#fff',cursor:'pointer'}}>
+                  <button onClick={resetToDefault} style={{ padding: '0.5em 1em', border: '1px solid #ccc', borderRadius: 4, background: '#fff', cursor: 'pointer' }}>
                     {language === "ja" ? "デフォルトに戻す" : "Reset to Default"}
                   </button>
                 </div>

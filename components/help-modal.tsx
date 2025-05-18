@@ -25,14 +25,23 @@ export function HelpModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex items-center p-1 h-8"
+        <button
+          style={{
+            padding: '1.25em 1em',
+            border: '1px solid #ccc',
+            borderRadius: 4,
+            background: '#fff',
+            cursor: 'pointer',
+            height: 32,
+            minWidth: 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
           title={language === "ja" ? "ヘルプ" : "Help"}
         >
-          {/* <HelpCircle className="h-5 w-5" /> */}
-        </Button>
+          {language === "ja" ? "ヘルプ" : "Help"}
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/accordion"
 import type { ColorVariationSettings } from "@/types/palette"
 import { useLanguage } from "@/lib/language-context"
-
+import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { defaultVariationSettings } from "@/types/palette"
 
 interface ColorVariationControlsProps {
@@ -125,8 +125,9 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
           <AccordionItem value="settings">
             <AccordionTrigger className="py-1 text-sm">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">
+                <CardTitle className="text-sm flex items-center justify-between">
                   {language === "ja" ? "カラーバリエーション設定" : "Color Variation Settings"}
+                  <ChevronDownIcon className="ml-2 h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CardTitle>
               </CardHeader>
               {/* {language === "ja" ? "詳細設定" : "Advanced Settings"} */}
