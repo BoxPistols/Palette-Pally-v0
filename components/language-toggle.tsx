@@ -11,7 +11,7 @@ export function LanguageToggle() {
       onClick={toggleLanguage}
       variant="outline"
       size="sm"
-      className="fixed top-4 right-4 z-50"
+      className="h-8 min-w-10"
     >
       {language === "ja" ? "EN" : "日本語"}
     </Button>

@@ -23,6 +23,8 @@ import type {
   ColorVariationSettings
 } from "@/types/palette"
 import { defaultVariationSettings } from "@/types/palette"
+import { useLanguage } from "@/lib/language-context"
+import { LanguageToggle } from "@/components/language-toggle"
 
 const MAX_COLORS = 24
 const STORAGE_KEY = "palette-pally-data"
@@ -58,6 +60,8 @@ export default function Home() {
 
   // クライアントサイドのみでレンダリングする制御用
   const [isClient, setIsClient] = useState(false)
+
+  const { language } = useLanguage()
 
   // クライアントサイドでのレンダリングフラグを設定
   useEffect(() => {
@@ -205,11 +209,19 @@ export default function Home() {
 
       // showToastフラグがtrueの場合のみToastを表示
       if (showToast) {
-        showDebounceToast("保存完了", "パレットデータをLocalStorageに保存しました");
+        const title = language === "ja" ? "保存完了" : "Saved";
+        const description = language === "ja" 
+          ? "パレットデータをLocalStorageに保存しました" 
+          : "Palette data saved to LocalStorage";
+        showDebounceToast(title, description);
       }
     } catch (error) {
       console.error("Error saving to localStorage:", error)
-      showDebounceToast("保存エラー", "データの保存中にエラーが発生しました", "destructive");
+      const title = language === "ja" ? "保存エラー" : "Save Error";
+      const description = language === "ja" 
+        ? "データの保存中にエラーが発生しました" 
+        : "An error occurred while saving data";
+      showDebounceToast(title, description, "destructive");
     }
   };
 
@@ -272,7 +284,11 @@ export default function Home() {
     // Reset variation settings
     setVariationSettings(defaultVariationSettings)
 
-    showDebounceToast("リセット完了", "パレットデータをリセットしました");
+    const title = language === "ja" ? "リセット完了" : "Reset Complete";
+    const description = language === "ja" 
+      ? "パレットデータをリセットしました" 
+      : "Palette data has been reset";
+    showDebounceToast(title, description);
   }
 
   const exportData: PaletteType = {
@@ -311,19 +327,29 @@ export default function Home() {
             setVariationSettings(importedData.variationSettings)
           }
 
-          showDebounceToast("インポート完了", `${validColors.length}色のパレットをインポートしました`);
+          const message = language === "ja" 
+            ? `${validColors.length}色のパレットをインポートしました` 
+            : `Imported a palette with ${validColors.length} colors`;
+          showDebounceToast(
+            language === "ja" ? "インポート完了" : "Import Complete", 
+            message
+          );
 
           // Save to localStorage immediately after import
           saveToLocalStorage(false)
         } else {
-          throw new Error("有効なカラーデータがありません")
+          throw new Error(language === "ja" ? "有効なカラーデータがありません" : "No valid color data found")
         }
       } else {
-        throw new Error("カラーデータが見つかりません")
+        throw new Error(language === "ja" ? "カラーデータが見つかりません" : "Color data not found")
       }
     } catch (error) {
       console.error("Import error:", error)
-      showDebounceToast("インポートエラー", error instanceof Error ? error.message : "不明なエラーが発生しました", "destructive");
+      showDebounceToast(
+        language === "ja" ? "インポートエラー" : "Import Error", 
+        error instanceof Error ? error.message : (language === "ja" ? "不明なエラーが発生しました" : "An unknown error occurred"), 
+        "destructive"
+      );
     }
   }
 
@@ -347,23 +373,21 @@ export default function Home() {
 
   // クライアントサイドレンダリングが完了するまでは最小限の内容だけ表示
   if (!isClient || colorData.length === 0) {
-    return <div className="container mx-auto px-4 py-6">Loading...</div>;
+    return <div className="container mx-auto px-6 py-6">Loading...</div>;
   }
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-screen-2xl">
-      <Card className="mb-6">
-        <CardHeader className="pb-2 px-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
+    <main className="container mx-auto sm:px-4 lg:px-6 py-2 max-w-screen-2xl">
+      <Card className="mb-5">
+        <CardHeader className="py-3 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center flex-col sm:flex-row sm:items-center sm:gap-2">
               <Logo />
-              <h1 className="text-lg font-semibold">Palette Pally</h1>
-              <HelpModal />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
                 <label htmlFor="colorCount" className="text-sm font-medium whitespace-nowrap">
-                  カラー数:
+                  {language === "ja" ? "カラー数:" : "Colors:"}
                 </label>
                 <Input
                   id="colorCount"
@@ -375,21 +399,21 @@ export default function Home() {
                   className="w-16 h-8"
                 />
               </div>
-              <Button onClick={resetColors} variant="secondary" size="sm">
-                リセット
+              <Button onClick={resetColors} variant="secondary" size="sm" className="h-8">
+                {language === "ja" ? "リセット" : "Reset"}
               </Button>
-              <Button onClick={handleSaveButtonClick} variant="outline" size="sm">
-                保存
+              <Button onClick={handleSaveButtonClick} variant="outline" size="sm" className="h-8">
+                {language === "ja" ? "保存" : "Save"}
               </Button>
+              <LanguageToggle />
+              <HelpModal />
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-4">
+        <CardContent className="px-4 py-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ExportImportPanel data={exportData} onImport={handleImport} />
-
             <TextColorSettings settings={textColorSettings} onChange={handleTextColorSettingsChange} />
-
             <ColorVariationControls
               settings={variationSettings}
               onChange={handleVariationSettingsChange}
@@ -401,7 +425,9 @@ export default function Home() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Color Pickers Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">カラーピッカー</h2>
+          <h2 className="text-lg font-semibold mb-3">
+            {language === "ja" ? "カラーピッカー" : "Color Picker"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {colorData.map((color, index) => (
               <AdvancedColorPicker
@@ -418,7 +444,9 @@ export default function Home() {
 
         {/* Color Palette Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-3">カラーパレット</h2>
+          <h2 className="text-lg font-semibold mb-3">
+            {language === "ja" ? "カラーパレット" : "Color Palette"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {Object.entries(colorVariations).map(([key, variations], index) => (
               <ColorDisplay key={key} colorKey={key} variations={variations} textColorSettings={textColorSettings} />
