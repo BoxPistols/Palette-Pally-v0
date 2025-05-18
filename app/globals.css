@@ -47,13 +47,16 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --button-color: 0 0% 100%;
+    --button-color-foreground: 0 0% 3.9%;
+    --button-color-hover: 0 0% 96.1%;
   }
-  .dark {
-    --background: 0 0% 3.9%;
+  html.dark {
+    --background: 0 0% 18%; /* 黒すぎたのでダークグレーに調整 */
+    --card: 0 0% 22%; /* 黒すぎたのでダークグレーに調整 */
+    --popover: 0 0% 16.7%; /* 黒すぎたのでダークグレーに調整 */
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
@@ -81,6 +84,9 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --button-color: 0 0% 3.9%;
+    --button-color-foreground: 0 0% 98%;
+    --button-color-hover: 0 0% 14.9%;
   }
 }
 
@@ -98,11 +104,11 @@ body {
   .slider-gray [data-orientation="horizontal"] {
     @apply h-2 bg-gray-200 dark:bg-gray-700;
   }
-  
+
   .slider-gray [data-orientation="horizontal"] .absolute {
     @apply bg-gray-400 dark:bg-gray-500;
   }
-  
+
   .slider-gray [role="slider"] {
     @apply bg-gray-500 border-2 border-white dark:border-gray-800;
   }
@@ -113,14 +119,20 @@ body {
   .toast-small {
     @apply max-w-[280px] p-2 text-sm;
   }
-  
+
   .toast-small [role="status"] {
     @apply gap-1;
   }
-  
+
   .toast-small .font-medium {
     @apply text-sm;
   }
-  
+}
 
+.dark {
+  button {
+    color: #acb9b9 !important;
+    background-color: #4c4c4c !important;
+    border: 1px solid #393939 !important;
+  }
 }

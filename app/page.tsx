@@ -25,6 +25,7 @@ import type {
 import { defaultVariationSettings } from '@/types/palette'
 import { useLanguage } from '@/lib/language-context'
 import { LanguageToggle } from '@/components/language-toggle'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const MAX_COLORS = 24
 const STORAGE_KEY = 'palette-pally-data'
@@ -266,7 +267,6 @@ export default function Home() {
                 // Add more colors
                 const newColorData = [...colorData]
                 for (let i = colorData.length; i < count; i++) {
-                    // Generate random color
                     const randomColor = `#${Math.floor(Math.random() * 16777215)
                         .toString(16)
                         .padStart(6, '0')}`
@@ -384,8 +384,8 @@ export default function Home() {
                 error instanceof Error
                     ? error.message
                     : language === 'ja'
-                    ? '不明なエラーが発生しました'
-                    : 'An unknown error occurred',
+                        ? '不明なエラーが発生しました'
+                        : 'An unknown error occurred',
                 'destructive'
             )
         }
@@ -404,7 +404,7 @@ export default function Home() {
     ) => {
         setVariationSettings(newSettings)
         // 即時保存するが、Toastは表示しない
-        saveToLocalStorage(false)
+        saveToStorage(false)
     }
 
     // 保存ボタン用ハンドラ（明示的な保存アクション）
@@ -443,10 +443,8 @@ export default function Home() {
                                     max={MAX_COLORS}
                                     value={colorCount}
                                     onChange={handleCountChange}
-                                    className='w-18 h-10 '
                                     style={{
-                                        fontSize: '1.15em',
-                                        color: '#121212',
+                                        fontSize: '1.05em',
                                     }}
                                 />
                             </div>
@@ -480,6 +478,7 @@ export default function Home() {
                             </button>
                             <LanguageToggle />
                             <HelpModal />
+                            <ThemeToggle />
                         </div>
                     </div>
                 </CardHeader>
@@ -549,3 +548,8 @@ export default function Home() {
         </main>
     )
 }
+
+function saveToStorage(arg0: boolean) {
+    throw new Error('Function not implemented.')
+}
+

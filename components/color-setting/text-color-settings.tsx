@@ -40,17 +40,15 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
   return (
     <Card className="w-full max-w-md">
       <CardContent >
-        <Accordion type="single" collapsible defaultValue="text-color-settings">
+        <Accordion type="single" collapsible defaultValue="">
           <AccordionItem value="text-color-settings">
             <AccordionTrigger className="py-1 text-sm flex gap-1">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center justify-between mt-[-8px]">
                   {language === "ja" ? "テキストカラー設定" : "Text Color Settings"}
                   <ChevronDownIcon className="ml-2 h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CardTitle>
               </CardHeader>
-
-
             </AccordionTrigger>
             <AccordionContent className="px-2">
               <div className="py-2">

@@ -125,7 +125,7 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
           <AccordionItem value="settings">
             <AccordionTrigger className="py-1 text-sm">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center justify-between mt-[-8px]">
                   {language === "ja" ? "カラーバリエーション設定" : "Color Variation Settings"}
                   <ChevronDownIcon className="ml-2 h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CardTitle>
