@@ -123,9 +123,7 @@ export function ColorVariationControls({ settings = defaultVariationSettings,
       <CardContent>
         <Accordion type="single" collapsible defaultValue="">
           <AccordionItem value="settings">
-            <AccordionTrigger className="py-1 text-sm
-
-            ">
+            <AccordionTrigger className="py-1 text-sm">
               <CardHeader className="pb-1">
                 <CardTitle className="text-sm">
                   {language === "ja" ? "カラーバリエーション設定" : "Color Variation Settings"}
