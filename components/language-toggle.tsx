@@ -1,19 +1,16 @@
 "use client"
 
 import { useLanguage } from "@/lib/language-context"
-import { Button } from "@/components/ui/button"
 
 export function LanguageToggle() {
   const { language, toggleLanguage } = useLanguage()
 
   return (
-    <Button
+    <button
       onClick={toggleLanguage}
-      variant="outline"
-      size="sm"
-      className="h-8 min-w-10"
+      style={{ padding: '0.5em 1em', border: '1px solid #ccc', borderRadius: 4, background: '#fff', cursor: 'pointer' }}
     >
       {language === "ja" ? "EN" : "日本語"}
-    </Button>
+    </button>
   )
 } 

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HelpCircle, Palette, Sliders, Save, FileJson, Contrast, Type } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 
 export function HelpModal() {
@@ -32,7 +31,7 @@ export function HelpModal() {
           className="flex items-center p-1 h-8"
           title={language === "ja" ? "ヘルプ" : "Help"}
         >
-          <HelpCircle className="h-5 w-5" />
+          {/* <HelpCircle className="h-5 w-5" /> */}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -63,7 +62,7 @@ export function HelpModal() {
           <TabsContent value="basic" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "カラーピッカー" : "Color Picker"}
@@ -77,7 +76,7 @@ export function HelpModal() {
               </div>
 
               <div className="flex items-start gap-2">
-                <Sliders className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Sliders className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "カラー数の調整" : "Adjusting Number of Colors"}
@@ -91,7 +90,7 @@ export function HelpModal() {
               </div>
 
               <div className="flex items-start gap-2">
-                <Save className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Save className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "保存とリセット" : "Save and Reset"}
@@ -109,7 +108,7 @@ export function HelpModal() {
           <TabsContent value="accessibility" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                <Contrast className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Contrast className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "コントラスト比とWCAGレベル" : "Contrast Ratio and WCAG Levels"}
@@ -137,7 +136,7 @@ export function HelpModal() {
               </div>
 
               <div className="flex items-start gap-2">
-                <Type className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Type className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "テキストカラー設定" : "Text Color Settings"}
@@ -171,7 +170,7 @@ export function HelpModal() {
           <TabsContent value="advanced" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "インポート/エクスポート" : "Import/Export"}
@@ -185,7 +184,7 @@ export function HelpModal() {
               </div>
 
               <div className="flex items-start gap-2">
-                <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                {/* <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
                 <div>
                   <h3 className="text-sm font-semibold">
                     {language === "ja" ? "カラーバリエーション" : "Color Variations"}

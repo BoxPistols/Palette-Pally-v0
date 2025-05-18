@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { AdvancedColorPicker } from "@/components/advanced-color-picker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -84,7 +84,7 @@ export default function Home() {
         toast({
           title,
           description,
-          variant,
+          ...(variant && { intent: variant }),
           // Toastのカスタムスタイル
           className: "toast-small",
         });
@@ -145,10 +145,10 @@ export default function Home() {
       setColorData(createInitialColorData(colorCount))
       setVariationSettings(defaultVariationSettings)
     }
-  }, []) // 空の依存配列で初回のみ実行
+  }, [colorCount]) // colorCountを依存配列に追加
 
   // カスタムバリエーション生成関数
-  const generateCustomVariations = (baseColor: string) => {
+  const generateCustomVariations = useCallback((baseColor: string) => {
     if (variationSettings.usePerceptualModel) {
       // 全体の彩度調整係数 - 全てのカラーバリエーションに適用
       const baseChromaFactor = variationSettings.chromaReduction;
@@ -181,7 +181,7 @@ export default function Home() {
       // 従来の方法（互換性のため）
       return generateColorVariations(baseColor)
     }
-  }
+  }, [variationSettings])
 
   // Generate color variations when colors change
   useEffect(() => {
@@ -194,7 +194,7 @@ export default function Home() {
     })
 
     setColorVariations(variations)
-  }, [colorData, variationSettings])
+  }, [colorData, variationSettings, generateCustomVariations])
 
   // Save to localStorage function
   const saveToLocalStorage = (showToast = true) => {
@@ -210,16 +210,16 @@ export default function Home() {
       // showToastフラグがtrueの場合のみToastを表示
       if (showToast) {
         const title = language === "ja" ? "保存完了" : "Saved";
-        const description = language === "ja" 
-          ? "パレットデータをLocalStorageに保存しました" 
+        const description = language === "ja"
+          ? "パレットデータをLocalStorageに保存しました"
           : "Palette data saved to LocalStorage";
         showDebounceToast(title, description);
       }
     } catch (error) {
       console.error("Error saving to localStorage:", error)
       const title = language === "ja" ? "保存エラー" : "Save Error";
-      const description = language === "ja" 
-        ? "データの保存中にエラーが発生しました" 
+      const description = language === "ja"
+        ? "データの保存中にエラーが発生しました"
         : "An error occurred while saving data";
       showDebounceToast(title, description, "destructive");
     }
@@ -285,8 +285,8 @@ export default function Home() {
     setVariationSettings(defaultVariationSettings)
 
     const title = language === "ja" ? "リセット完了" : "Reset Complete";
-    const description = language === "ja" 
-      ? "パレットデータをリセットしました" 
+    const description = language === "ja"
+      ? "パレットデータをリセットしました"
       : "Palette data has been reset";
     showDebounceToast(title, description);
   }
@@ -327,11 +327,11 @@ export default function Home() {
             setVariationSettings(importedData.variationSettings)
           }
 
-          const message = language === "ja" 
-            ? `${validColors.length}色のパレットをインポートしました` 
+          const message = language === "ja"
+            ? `${validColors.length}色のパレットをインポートしました`
             : `Imported a palette with ${validColors.length} colors`;
           showDebounceToast(
-            language === "ja" ? "インポート完了" : "Import Complete", 
+            language === "ja" ? "インポート完了" : "Import Complete",
             message
           );
 
@@ -346,8 +346,8 @@ export default function Home() {
     } catch (error) {
       console.error("Import error:", error)
       showDebounceToast(
-        language === "ja" ? "インポートエラー" : "Import Error", 
-        error instanceof Error ? error.message : (language === "ja" ? "不明なエラーが発生しました" : "An unknown error occurred"), 
+        language === "ja" ? "インポートエラー" : "Import Error",
+        error instanceof Error ? error.message : (language === "ja" ? "不明なエラーが発生しました" : "An unknown error occurred"),
         "destructive"
       );
     }
@@ -399,12 +399,12 @@ export default function Home() {
                   className="w-16 h-8"
                 />
               </div>
-              <Button onClick={resetColors} variant="secondary" size="sm" className="h-8">
+              <button onClick={resetColors} style={{ padding: '0.5em 1em', marginLeft: 4, marginRight: 4, border: '1px solid #ccc', borderRadius: 4, background: '#f5f5f5', cursor: 'pointer' }}>
                 {language === "ja" ? "リセット" : "Reset"}
-              </Button>
-              <Button onClick={handleSaveButtonClick} variant="outline" size="sm" className="h-8">
+              </button>
+              <button onClick={handleSaveButtonClick} style={{ padding: '0.5em 1em', marginLeft: 4, marginRight: 4, border: '1px solid #ccc', borderRadius: 4, background: '#fff', cursor: 'pointer' }}>
                 {language === "ja" ? "保存" : "Save"}
-              </Button>
+              </button>
               <LanguageToggle />
               <HelpModal />
             </div>

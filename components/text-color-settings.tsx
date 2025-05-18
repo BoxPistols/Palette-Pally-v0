@@ -4,7 +4,6 @@ import { useLanguage } from "@/lib/language-context"
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Settings2 } from "lucide-react"
 import {
   Accordion,
   AccordionContent,
@@ -50,7 +49,7 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
             </AccordionTrigger>
             <AccordionContent className="px-2">
               <div className="py-2">
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-xs text-gray-500 mb-4">
                   {language === "ja"
                     ? "各カラーバリエーションのテキストカラーを個別に設定できます。"
                     : "You can set text colors individually for each color variation."}
@@ -138,10 +137,9 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
                 </div>
                 <div className="flex gap-2 mt-6
                   justify-end">
-                  <Button variant="default"
-                    size="sm" onClick={resetToDefault}>
+                  <button onClick={resetToDefault} style={{padding:'0.5em 1em',border:'1px solid #ccc',borderRadius:4,background:'#fff',cursor:'pointer'}}>
                     {language === "ja" ? "デフォルトに戻す" : "Reset to Default"}
-                  </Button>
+                  </button>
                 </div>
               </div>
             </AccordionContent>
