@@ -42,26 +42,37 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
 
   const exportJSON = () => {
     try {
-      const blob = new Blob([jsonPreview], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
+      // 現在の日時を取得してフォーマット (YYMMDD形式)
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2); // 年の下2桁
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月（01-12）
+      const day = String(now.getDate()).padStart(2, '0'); // 日（01-31）
+      const formattedDate = `${year}${month}${day}`;
 
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "palette-pally-export.json"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      setError(null)
-      setIsDialogOpen(false)
+      // 日時を含むファイル名を生成
+      const fileName = `palette-pally-${formattedDate}.json`;
+
+      const blob = new Blob([jsonPreview], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName; // 日時を含むファイル名を使用
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setError(null);
+      setIsDialogOpen(false);
 
       toast({
         title: "エクスポート完了",
-        description: "JSONファイルのダウンロードを開始しました",
-      })
+        description: `${fileName} のダウンロードを開始しました`,
+        className: "toast-small",
+      });
     } catch (err) {
-      setError("エクスポート中にエラーが発生しました。")
-      console.error("Export error:", err)
+      setError("エクスポート中にエラーが発生しました。");
+      console.error("Export error:", err);
     }
   }
 
@@ -92,6 +103,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
           title: "インポートエラー",
           description: "JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。",
           variant: "destructive",
+          className: "toast-small",
         })
       }
     }
@@ -101,6 +113,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
         title: "インポートエラー",
         description: "ファイルの読み込みに失敗しました。",
         variant: "destructive",
+        className: "toast-small",
       })
     }
     reader.readAsText(file)
