@@ -399,3 +399,44 @@ export function getBetterContrastColor(bgColor: string): string {
   // Oklabの明度（L）に基づいて判断（より知覚的に正確）
   return oklab.l > 0.6 ? "#000000" : "#FFFFFF";
 }
+
+// ======== グレースケール10段階ジェネレーター ========
+
+/**
+ * MUIのカラースキーマに合わせた10段階のグレースケールHEXカラーを生成
+ * (50, 100, 200, 300, 400, 500, 600, 700, 800, 900)
+ * @returns {string[]} HEXカラー配列（長さ10）
+ */
+export function generateGreyScale10(): string[] {
+  // MUIの公式グレースケール値を参考にRGB値を定義 (明るい順: 50 -> 900)
+  // 50:  #fafafa (250)
+  // 100: #f5f5f5 (245)
+  // 200: #eeeeee (238)
+  // 300: #e0e0e0 (224)
+  // 400: #bdbdbd (189)
+  // 500: #9e9e9e (158)
+  // 600: #757575 (117)
+  // 700: #616161 (97)
+  // 800: #424242 (66)
+  // 900: #212121 (33)
+  const greyValuesRgb = [
+    250, // 50
+    245, // 100
+    238, // 200
+    224, // 300
+    189, // 400
+    158, // 500
+    117, // 600
+    97,  // 700
+    66,  // 800
+    33,  // 900
+  ];
+
+  const greys: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const v = greyValuesRgb[i];
+    greys.push(rgbToHex(v, v, v));
+  }
+  // 返される配列は [色50 (明), 色100, ..., 色800, 色900 (暗)] の順になる
+  return greys;
+}

@@ -7,7 +7,11 @@ import { AdvancedColorPicker } from '@/components/advanced-color-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { generateColorVariations, adjustColorInOklab } from '@/lib/color-utils'
+import {
+    generateColorVariations,
+    adjustColorInOklab,
+    generateGreyScale10, // 追加
+} from '@/lib/color-utils'
 import { ColorDisplay } from '@/components/color-display'
 import { ExportImportPanel } from '@/components/export-import-panel'
 import { Logo } from '@/components/logo'
@@ -59,6 +63,9 @@ export default function Home() {
         })
     const [variationSettings, setVariationSettings] =
         useState<ColorVariationSettings>(defaultVariationSettings)
+    
+    // グレースケールの状態
+    const [greyScale, setGreyScale] = useState<string[]>([])
 
     // Toast表示のデバウンス用の状態
     const [toastTimeout, setToastTimeout] = useState<NodeJS.Timeout | null>(
@@ -160,6 +167,8 @@ export default function Home() {
             setColorData(createInitialColorData(colorCount))
             setVariationSettings(defaultVariationSettings)
         }
+        // グレースケールを生成
+        setGreyScale(generateGreyScale10())
     }, [colorCount]) // colorCountを依存配列に追加
 
     // カスタムバリエーション生成関数
@@ -528,6 +537,35 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+
+            {/* グレースケール表示セクション */}
+            <Card className='mt-6'>
+                <CardHeader className='py-3 px-4'>
+                    <h2 className='text-lg font-semibold'>
+                        {language === 'ja' ? 'グレースケール (Example)' : 'Greyscale (MUI-like)'}
+                    </h2>
+                </CardHeader>
+                <CardContent className='px-4 py-3'>
+                    <div className='grid grid-cols-5 sm:grid-cols-10 gap-3'>
+                        {greyScale.map((color, index) => {
+                            // ラベルの修正: index 0 が 50, index 1 が 100, ..., index 9 が 900
+                            const label = index === 0 ? '50' : `${(index) * 100}`;
+                            return (
+                                <div key={`grey-${index}`} className='flex flex-col items-center p-2 rounded-lg shadow-md bg-gray-50 dark:bg-gray-800 hover:shadow-lg transition-shadow'>
+                                    <div
+                                        style={{ backgroundColor: color }}
+                                        className='w-full h-16 rounded-md mb-2 border border-gray-300 dark:border-gray-600 shadow-inner'
+                                    />
+                                    <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                        {label}
+                                    </span>
+                                    <span className='text-xs text-gray-500 dark:text-gray-400'>{color}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
 
             <Toaster />
         </main>
