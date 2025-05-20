@@ -2,7 +2,7 @@
 
 import type React from 'react'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdvancedColorPicker } from '@/components/advanced-color-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
     generateColorVariations,
     adjustColorInOklab,
-    generateGreyScale10, // 追加
+    generateGreyScale10,
+    generateGreyScaleWithAdjustments,
+    adjustGreyScaleColor,
 } from '@/lib/color-utils'
 import { ColorDisplay } from '@/components/color-display'
 import { ExportImportPanel } from '@/components/export-import-panel'
@@ -25,6 +27,8 @@ import type {
     ColorData,
     TextColorSettings as TextColorSettingsType,
     ColorVariationSettings,
+    GreyScaleColor,
+    GreyScalePalette,
 } from '@/types/palette'
 import { defaultVariationSettings } from '@/types/palette'
 import { useLanguage } from '@/lib/language-context'
@@ -64,8 +68,11 @@ export default function Home() {
     const [variationSettings, setVariationSettings] =
         useState<ColorVariationSettings>(defaultVariationSettings)
     
-    // グレースケールの状態
-    const [greyScale, setGreyScale] = useState<string[]>([])
+    // グレースケール調整用の状態
+    const [greyScaleAdjustments, setGreyScaleAdjustments] = useState<Record<string, number>>({});
+
+    // greyScaleはuseMemoで計算
+    const greyScale = useMemo(() => generateGreyScaleWithAdjustments(greyScaleAdjustments), [greyScaleAdjustments])
 
     // Toast表示のデバウンス用の状態
     const [toastTimeout, setToastTimeout] = useState<NodeJS.Timeout | null>(
@@ -156,6 +163,15 @@ export default function Home() {
                     // 必ず初期値を設定
                     setVariationSettings(defaultVariationSettings)
                 }
+                
+                // Import grey scale adjustments if available
+                if (parsedData.greyScale) {
+                    const adjustments: Record<string, number> = {};
+                    parsedData.greyScale.forEach(color => {
+                        adjustments[color.id] = color.lightnessAdjustment;
+                    });
+                    setGreyScaleAdjustments(adjustments);
+                }
             } catch (error) {
                 console.error('Error loading data from localStorage:', error)
                 // エラー時は初期値を確実にセット
@@ -167,9 +183,8 @@ export default function Home() {
             setColorData(createInitialColorData(colorCount))
             setVariationSettings(defaultVariationSettings)
         }
-        // グレースケールを生成
-        setGreyScale(generateGreyScale10())
-    }, [colorCount]) // colorCountを依存配列に追加
+        // setGreyScaleは不要
+    }, [colorCount]) // greyScaleAdjustmentsは依存配列から削除
 
     // カスタムバリエーション生成関数
     const generateCustomVariations = useCallback(
@@ -232,6 +247,7 @@ export default function Home() {
                 variations: colorVariations,
                 textColorSettings: textColorSettings,
                 variationSettings: variationSettings,
+                greyScale: greyScale, // グレースケールデータを保存
             }
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
 
@@ -315,6 +331,9 @@ export default function Home() {
 
         // Reset variation settings
         setVariationSettings(defaultVariationSettings)
+        
+        // Reset grey scale adjustments
+        setGreyScaleAdjustments({})
 
         const title = language === 'ja' ? 'リセット完了' : 'Reset Complete'
         const description =
@@ -329,6 +348,7 @@ export default function Home() {
         variations: colorVariations,
         textColorSettings: textColorSettings,
         variationSettings: variationSettings,
+        greyScale: greyScale, // グレースケールデータを追加
     }
 
     const handleImport = (importedData: PaletteType) => {
@@ -358,6 +378,21 @@ export default function Home() {
                     // Import variation settings if available
                     if (importedData.variationSettings) {
                         setVariationSettings(importedData.variationSettings)
+                    }
+                    
+                    // Import grey scale adjustments if available
+                    if (importedData.greyScale && Array.isArray(importedData.greyScale)) {
+                        // グレースケールの調整値を抽出
+                        const adjustments: Record<string, number> = {};
+                        importedData.greyScale.forEach(color => {
+                            if (color && typeof color === 'object' && 'id' in color && 'lightnessAdjustment' in color) {
+                                adjustments[color.id] = color.lightnessAdjustment;
+                            }
+                        });
+                        // グレースケール調整値を設定
+                        if (Object.keys(adjustments).length > 0) {
+                            setGreyScaleAdjustments(adjustments);
+                        }
                     }
 
                     const message =
@@ -414,8 +449,35 @@ export default function Home() {
     ) => {
         setVariationSettings(newSettings)
         // 即時保存するが、Toastは表示しない
-        saveToStorage(false)
+        saveToLocalStorage(false)
     }
+
+    // グレースケールだけをリセットする関数
+    const resetGreyScaleOnly = () => {
+        // グレースケール調整値をリセット
+        setGreyScaleAdjustments({});
+        
+        // 保存して小さいToastを表示
+        saveToLocalStorage(false);
+        
+        const title = language === 'ja' ? 'グレースケールリセット完了' : 'Greyscale Reset';
+        const description = language === 'ja' 
+            ? 'グレースケールをデフォルト値にリセットしました' 
+            : 'Greyscale values have been reset to default';
+        showDebounceToast(title, description);
+    };
+
+    // グレースケールカラーの明暗調整値を変更するハンドラー
+    const handleGreyScaleAdjustment = (id: string, value: number) => {
+        // 調整値の範囲を-100〜100に制限
+        const adjustedValue = Math.max(-100, Math.min(100, value));
+        // グレースケール調整値を更新
+        const newAdjustments = { ...greyScaleAdjustments, [id]: adjustedValue };
+        setGreyScaleAdjustments(newAdjustments);
+        // setGreyScaleは呼ばない
+        // 即時保存（Toastは表示しない）
+        saveToLocalStorage(false);
+    };
 
     // 保存ボタン用ハンドラ（明示的な保存アクション）
     const handleSaveButtonClick = () => {
@@ -547,23 +609,57 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className='px-4 py-3'>
                     <div className='grid grid-cols-5 sm:grid-cols-10 gap-3'>
-                        {greyScale.map((color, index) => {
-                            // ラベルの修正: index 0 が 50, index 1 が 100, ..., index 9 が 900
-                            const label = index === 0 ? '50' : `${(index) * 100}`;
+                        {greyScale.map((colorItem, index) => {
+                            // MUIのカラースキーマに合わせたラベル
+                            const labelMap = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
+                            const label = labelMap[index];
+                            
                             return (
-                                <div key={`grey-${index}`} className='flex flex-col items-center p-2 rounded-lg shadow-md bg-gray-50 dark:bg-gray-800 hover:shadow-lg transition-shadow'>
+                                <div key={`grey-${label}`} className='flex flex-col items-center p-2 rounded-lg shadow-md bg-gray-50 dark:bg-gray-800 hover:shadow-lg transition-shadow'>
                                     <div
-                                        style={{ backgroundColor: color }}
+                                        style={{ backgroundColor: colorItem.adjustedHex }}
                                         className='w-full h-16 rounded-md mb-2 border border-gray-300 dark:border-gray-600 shadow-inner'
                                     />
                                     <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                                         {label}
                                     </span>
-                                    <span className='text-xs text-gray-500 dark:text-gray-400'>{color}</span>
+                                    <span className='text-xs text-gray-500 dark:text-gray-400'>
+                                        {colorItem.adjustedHex}
+                                    </span>
+                                    
+                                    {/* 明暗調整スライダー */}
+                                    <div className='w-full mt-2 px-1'>
+                                        <input
+                                            type="range"
+                                            min="-100"
+                                            max="100"
+                                            value={colorItem.lightnessAdjustment}
+                                            onChange={(e) => handleGreyScaleAdjustment(
+                                                colorItem.id, 
+                                                parseInt(e.target.value)
+                                            )}
+                                            className='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
+                                        />
+                                        <div className='flex justify-between text-xs text-gray-500 mt-1'>
+                                            <span>-</span>
+                                            <span>{colorItem.lightnessAdjustment}</span>
+                                            <span>+</span>
+                                        </div>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
+                </CardContent>
+                <CardContent className='border-t pt-3 px-4 flex justify-end'>
+                    <Button
+                        onClick={resetGreyScaleOnly}
+                        variant='outline'
+                        size='sm'
+                        className='text-sm'
+                    >
+                        {language === 'ja' ? 'グレースケールリセット' : 'Reset Greyscale'}
+                    </Button>
                 </CardContent>
             </Card>
 

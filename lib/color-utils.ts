@@ -440,3 +440,65 @@ export function generateGreyScale10(): string[] {
   // 返される配列は [色50 (明), 色100, ..., 色800, 色900 (暗)] の順になる
   return greys;
 }
+
+import type { GreyScaleColor, GreyScalePalette } from '@/types/palette';
+
+/**
+ * MUIのカラースキーマに合わせた10段階のグレースケールオブジェクトを生成
+ * @param {Record<string, number>} adjustments - 各グレースケールカラーの明暗調整値 (-100〜100)
+ * @returns {GreyScalePalette} グレースケールオブジェクト配列
+ */
+export function generateGreyScaleWithAdjustments(
+  adjustments: Record<string, number> = {}
+): GreyScalePalette {
+  const baseGreys = generateGreyScale10();
+  const greyLabels = [
+    "50", "100", "200", "300", "400", 
+    "500", "600", "700", "800", "900"
+  ];
+  
+  return baseGreys.map((hex, index) => {
+    const id = `grey-${greyLabels[index]}`;
+    const lightnessAdjustment = adjustments[id] || 0;
+    
+    // 明暗調整（明暗調整値を-0.5〜0.5の範囲にマッピング）
+    const adjustedHex = lightnessAdjustment !== 0 
+      ? adjustColorInOklab(hex, { 
+          lightnessDelta: lightnessAdjustment / 200  // -100〜100 を -0.5〜0.5 にマッピング
+        })
+      : hex;
+    
+    return {
+      id,
+      originalHex: hex,
+      adjustedHex,
+      lightnessAdjustment
+    };
+  });
+}
+
+/**
+ * グレースケールカラーの明暗を調整する
+ * @param {GreyScaleColor} color - 調整するグレースケールカラー
+ * @param {number} newAdjustment - 新しい調整値 (-100〜100)
+ * @returns {GreyScaleColor} 調整後のグレースケールカラー
+ */
+export function adjustGreyScaleColor(
+  color: GreyScaleColor, 
+  newAdjustment: number
+): GreyScaleColor {
+  // 調整値を -0.5〜0.5 の範囲にマッピング
+  const lightnessDelta = newAdjustment / 200;
+  
+  // 元のHEXカラーを基に調整
+  const adjustedHex = adjustColorInOklab(
+    color.originalHex, 
+    { lightnessDelta }
+  );
+  
+  return {
+    ...color,
+    adjustedHex,
+    lightnessAdjustment: newAdjustment
+  };
+}
