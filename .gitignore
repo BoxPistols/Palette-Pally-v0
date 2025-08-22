@@ -25,6 +25,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-# SpecStory explanation file
-.specstory
-.specstory/.what-is-this.md

@@ -13,4 +13,4 @@ export function LanguageToggle() {
       {language === "ja" ? "EN" : "日本語"}
     </button>
   )
-} 
+}

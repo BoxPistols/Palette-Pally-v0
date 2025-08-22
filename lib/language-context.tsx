@@ -66,4 +66,4 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 // カスタムフック
 export function useLanguage() {
   return useContext(LanguageContext)
-} 
+}

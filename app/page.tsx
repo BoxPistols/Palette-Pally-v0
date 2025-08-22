@@ -671,4 +671,3 @@ export default function Home() {
 function saveToStorage(arg0: boolean) {
     throw new Error('Function not implemented.')
 }
-
