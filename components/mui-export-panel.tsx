@@ -52,6 +52,12 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
     if (data.divider) {
       paletteObj.divider = data.divider
     }
+    if (data.action) {
+      paletteObj.action = data.action
+    }
+    if (data.common) {
+      paletteObj.common = data.common
+    }
     if (data.grey) {
       paletteObj.grey = data.grey
     }

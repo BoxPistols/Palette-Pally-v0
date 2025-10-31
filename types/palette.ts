@@ -27,6 +27,20 @@ export interface BackgroundColors {
   paper: string
 }
 
+export interface ActionColors {
+  active: string
+  hover: string
+  selected: string
+  disabled: string
+  disabledBackground: string
+  focus: string
+}
+
+export interface CommonColors {
+  black: string
+  white: string
+}
+
 export interface GreyPalette {
   50: string
   100: string
@@ -51,6 +65,8 @@ export interface PaletteType {
   background?: BackgroundColors
   divider?: string
   grey?: GreyPalette
+  action?: ActionColors
+  common?: CommonColors
 }
 
 export const MUI_DEFAULT_COLORS: MUIColorData[] = [
@@ -148,6 +164,29 @@ export const MUI_DEFAULT_DIVIDER_LIGHT = "rgba(0, 0, 0, 0.12)"
 
 export const MUI_DEFAULT_DIVIDER_DARK = "rgba(255, 255, 255, 0.12)"
 
+export const MUI_DEFAULT_ACTION_LIGHT: ActionColors = {
+  active: "rgba(0, 0, 0, 0.54)",
+  hover: "rgba(0, 0, 0, 0.04)",
+  selected: "rgba(0, 0, 0, 0.08)",
+  disabled: "rgba(0, 0, 0, 0.26)",
+  disabledBackground: "rgba(0, 0, 0, 0.12)",
+  focus: "rgba(0, 0, 0, 0.12)",
+}
+
+export const MUI_DEFAULT_ACTION_DARK: ActionColors = {
+  active: "#fff",
+  hover: "rgba(255, 255, 255, 0.08)",
+  selected: "rgba(255, 255, 255, 0.16)",
+  disabled: "rgba(255, 255, 255, 0.3)",
+  disabledBackground: "rgba(255, 255, 255, 0.12)",
+  focus: "rgba(255, 255, 255, 0.12)",
+}
+
+export const MUI_DEFAULT_COMMON: CommonColors = {
+  black: "#000",
+  white: "#fff",
+}
+
 export const MUI_DEFAULT_GREY: GreyPalette = {
   50: "#fafafa",
   100: "#f5f5f5",
@@ -168,3 +207,4 @@ export const MUI_DEFAULT_GREY: GreyPalette = {
 export const MUI_DEFAULT_TEXT = MUI_DEFAULT_TEXT_LIGHT
 export const MUI_DEFAULT_BACKGROUND = MUI_DEFAULT_BACKGROUND_LIGHT
 export const MUI_DEFAULT_DIVIDER = MUI_DEFAULT_DIVIDER_LIGHT
+export const MUI_DEFAULT_ACTION = MUI_DEFAULT_ACTION_LIGHT
