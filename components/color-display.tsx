@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { isLightColor, calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
-// import { AlertTriangle } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
 import type { TextColorSettings } from "@/types/palette"
 
 interface ColorDisplayProps {
@@ -63,7 +63,9 @@ export function ColorDisplay({ colorKey, variations, textColorSettings }: ColorD
                 <div style={{ color: textColor }} className="text-xs font-medium">
                   {name}: {color}
                 </div>
-                {showWarning && null}
+                {showWarning && (
+                  <AlertTriangle size={14} className="text-red-500" title="コントラスト比が低すぎます（AA未満）" />
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <span

@@ -12,11 +12,10 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useLanguage } from "@/lib/language-context"
+import { HelpCircle, Palette, Save, FileJson, Contrast, Sparkles } from "lucide-react"
 
 export function HelpModal() {
   const [isOpen, setIsOpen] = useState(false)
-  const { language } = useLanguage()
 
   const handleClose = () => {
     setIsOpen(false)
@@ -25,172 +24,141 @@ export function HelpModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button
-          className='text-sm font-medium dark:text-white border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700'
-          title={language === "ja" ? "ヘルプ" : "Help"}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100"
+          title="ヘルプ"
         >
-          {language === "ja" ? "ヘルプ" : "Help"}
-        </button>
+          <HelpCircle className="h-4 w-4 text-blue-500" />
+          <span className="text-blue-600">ヘルプ</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {language === "ja" ? "Palette Pally の使い方" : "How to use Palette Pally"}
-          </DialogTitle>
-          <DialogDescription>
-            {language === "ja" 
-              ? "カラーパレットの作成・管理・アクセシビリティチェックを簡単に行えるツールです"
-              : "A tool for easily creating, managing, and checking the accessibility of color palettes"}
-          </DialogDescription>
+          <DialogTitle>Palette Pally - MUI Color Generator</DialogTitle>
+          <DialogDescription>Material-UI公式のカラーシステムに準拠したカラーパレットジェネレーター</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="basic">
+        <Tabs defaultValue="mui-system">
           <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="basic">
-              {language === "ja" ? "基本機能" : "Basic Features"}
-            </TabsTrigger>
-            <TabsTrigger value="accessibility">
-              {language === "ja" ? "アクセシビリティ" : "Accessibility"}
-            </TabsTrigger>
-            <TabsTrigger value="advanced">
-              {language === "ja" ? "高度な機能" : "Advanced Features"}
-            </TabsTrigger>
+            <TabsTrigger value="mui-system">MUIシステム</TabsTrigger>
+            <TabsTrigger value="usage">使い方</TabsTrigger>
+            <TabsTrigger value="export">エクスポート</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-4">
+          <TabsContent value="mui-system" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                {/* <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "カラーピッカー" : "Color Picker"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">6つのカラーロール</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja"
-                      ? "左側のパネルでカラーを選択・編集できます。カラー名を変更したり、HEX、RGB、HSLの値を直接入力することも可能です。"
-                      : "You can select and edit colors in the left panel. You can also change color names or directly input HEX, RGB, and HSL values."}
+                    MUIの標準カラーシステムに基づく6つの役割：
+                    <br />• <strong>Primary</strong>: 主要なUI要素
+                    <br />• <strong>Secondary</strong>: 副次的なUI要素
+                    <br />• <strong>Error</strong>: エラーや警告すべき要素
+                    <br />• <strong>Warning</strong>: 潜在的に危険なアクション
+                    <br />• <strong>Info</strong>: 中立的な情報
+                    <br />• <strong>Success</strong>: 成功の表示
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-2">
-                {/* <Sliders className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <Sparkles className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "カラー数の調整" : "Adjusting Number of Colors"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">4つのカラートークン</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja"
-                      ? "画面上部の「カラー数」入力欄で、パレットに含めるカラーの数を1〜24の間で調整できます。"
-                      : "You can adjust the number of colors in the palette between 1 and 24 using the 'Colors' input field at the top of the screen."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                {/* <Save className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
-                <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "保存とリセット" : "Save and Reset"}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {language === "ja"
-                      ? "「保存」ボタンでパレットをブラウザのLocalStorageに保存できます。「リセット」ボタンでデフォルトのカラーに戻せます。"
-                      : "You can save the palette to your browser's LocalStorage using the 'Save' button. Use the 'Reset' button to return to the default colors."}
+                    各カラーロールには4つのバリエーションが自動生成されます：
+                    <br />• <strong>main</strong>: メインの色調（あなたが選択）
+                    <br />• <strong>light</strong>: mainより明るい色調（自動生成）
+                    <br />• <strong>dark</strong>: mainより暗い色調（自動生成）
+                    <br />• <strong>contrastText</strong>: mainに対して最適なコントラストを持つテキスト色（自動計算）
                   </p>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="accessibility" className="space-y-4">
+          <TabsContent value="usage" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                {/* <Contrast className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "コントラスト比とWCAGレベル" : "Contrast Ratio and WCAG Levels"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">カラーの選択</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja" ? (
-                      <>
-                        各カラーのコントラスト比とWCAGアクセシビリティレベル（AAA、AA、A、Fail）が表示されます。
-                        <br />• AAA（7.0:1以上）: 最高レベルのアクセシビリティ
-                        <br />• AA（4.5:1以上）: 標準的なアクセシビリティ要件
-                        <br />• A（3.0:1以上）: 最低限のアクセシビリティ要件
-                        <br />• Fail（3.0:1未満）: アクセシビリティ要件を満たさない
-                      </>
-                    ) : (
-                      <>
-                        The contrast ratio and WCAG accessibility level (AAA, AA, A, Fail) are displayed for each color.
-                        <br />• AAA (7.0:1 or higher): Highest level of accessibility
-                        <br />• AA (4.5:1 or higher): Standard accessibility requirement
-                        <br />• A (3.0:1 or higher): Minimum accessibility requirement
-                        <br />• Fail (less than 3.0:1): Does not meet accessibility requirements
-                      </>
-                    )}
+                    左側のパネルで各カラーロールのmain色を選択・編集できます。
+                    カラーピッカーを使用するか、HEX、RGB、HSLの値を直接入力できます。
+                    light、dark、contrastTextは自動的に生成されます。
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-2">
-                {/* <Type className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <Contrast className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "テキストカラー設定" : "Text Color Settings"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">アクセシビリティチェック</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja" ? (
-                      <>
-                        各カラーバリエーション（main、dark、light、lighter）ごとにテキストカラーを設定できます。
-                        <br />• Default: 背景色に応じて自動的にテキスト色を調整
-                        <br />• White: 強制的に白色のテキストを使用
-                        <br />• Black: 強制的に黒色のテキストを使用
-                        <br />
-                        コントラスト比がAA未満の場合は警告アイコンが表示されます。
-                      </>
-                    ) : (
-                      <>
-                        You can set text colors for each color variation (main, dark, light, lighter).
-                        <br />• Default: Automatically adjusts text color based on background color
-                        <br />• White: Forces white text
-                        <br />• Black: Forces black text
-                        <br />
-                        A warning icon is displayed if the contrast ratio is less than AA.
-                      </>
-                    )}
+                    各カラーのコントラスト比とWCAGレベル（AAA、AA、A、Fail）が自動的に表示されます。
+                    <br />• AAA（7.0:1以上）: 最高レベル
+                    <br />• AA（4.5:1以上）: 標準要件
+                    <br />• A（3.0:1以上）: 最低限の要件
+                    <br />• Fail（3.0:1未満）: 要件を満たさない
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Save className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
+                <div>
+                  <h3 className="text-sm font-semibold">保存とリセット</h3>
+                  <p className="text-sm text-gray-500">
+                    「Save」ボタンでパレットをブラウザのLocalStorageに保存できます。 「Reset to MUI
+                    Defaults」ボタンでMUIのデフォルトカラーに戻せます。
                   </p>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="advanced" className="space-y-4">
+          <TabsContent value="export" className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                {/* <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "インポート/エクスポート" : "Import/Export"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">MUIテーマとしてエクスポート</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja"
-                      ? "「Export JSON」ボタンでパレットをJSONファイルとしてエクスポートできます。「Import JSON」ボタンで以前保存したパレットをインポートできます。"
-                      : "You can export the palette as a JSON file using the 'Export JSON' button. You can import previously saved palettes using the 'Import JSON' button."}
+                    「Export」ボタンをクリックすると、2つの形式でエクスポートできます：
+                    <br />• <strong>MUI Theme</strong>: createTheme()で使用できるJavaScript/TypeScriptファイル
+                    <br />• <strong>JSON</strong>: 汎用的なJSON形式
                   </p>
                 </div>
               </div>
 
+              <div className="bg-gray-50 p-3 rounded text-xs font-mono">
+                <pre>{`import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+      contrastText: '#fff',
+    },
+    // ... other colors
+  },
+});`}</pre>
+              </div>
+
               <div className="flex items-start gap-2">
-                {/* <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" /> */}
+                <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
-                  <h3 className="text-sm font-semibold">
-                    {language === "ja" ? "カラーバリエーション" : "Color Variations"}
-                  </h3>
+                  <h3 className="text-sm font-semibold">インポート</h3>
                   <p className="text-sm text-gray-500">
-                    {language === "ja"
-                      ? "右側のパネルには、各カラーの4つのバリエーション（main、dark、light、lighter）が表示されます。これらは自動的に生成され、コントラスト比とアクセシビリティレベルも確認できます。"
-                      : "The right panel displays four variations (main, dark, light, lighter) for each color. These are automatically generated, and you can also check the contrast ratio and accessibility level."}
+                    「Import JSON」ボタンで以前エクスポートしたJSONファイルをインポートできます。
+                    MUIの6つのカラーロールすべてを含むJSONファイルが必要です。
                   </p>
                 </div>
               </div>
@@ -199,9 +167,7 @@ export function HelpModal() {
         </Tabs>
 
         <DialogFooter>
-          <Button onClick={handleClose}>
-            {language === "ja" ? "閉じる" : "Close"}
-          </Button>
+          <Button onClick={handleClose}>閉じる</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

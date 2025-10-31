@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import type { PaletteType } from "@/types/palette"
-import { useLanguage } from "@/lib/language-context"
 
 interface ExportImportPanelProps {
   data: PaletteType
@@ -28,7 +27,6 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
   const [jsonPreview, setJsonPreview] = useState<string>("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { language } = useLanguage()
 
   const prepareExport = () => {
     try {
@@ -37,52 +35,33 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       setError(null)
       setIsDialogOpen(true)
     } catch (err) {
-      setError(language === "ja" 
-        ? "エクスポート準備中にエラーが発生しました。" 
-        : "An error occurred while preparing the export."
-      )
+      setError("エクスポート準備中にエラーが発生しました。")
       console.error("Export preparation error:", err)
     }
   }
 
   const exportJSON = () => {
     try {
-      // 現在の日時を取得してフォーマット (YYMMDD形式)
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2); // 年の下2桁
-      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月（01-12）
-      const day = String(now.getDate()).padStart(2, '0'); // 日（01-31）
-      const formattedDate = `${year}${month}${day}`;
+      const blob = new Blob([jsonPreview], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
 
-      // 日時を含むファイル名を生成
-      const fileName = `palette-pally-${formattedDate}.json`;
-
-      const blob = new Blob([jsonPreview], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName; // 日時を含むファイル名を使用
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setError(null);
-      setIsDialogOpen(false);
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "palette-pally-export.json"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setError(null)
+      setIsDialogOpen(false)
 
       toast({
-        title: language === "ja" ? "エクスポート完了" : "Export Complete",
-        description: language === "ja" 
-          ? `${fileName} のダウンロードを開始しました` 
-          : `Download of ${fileName} has started`,
-        className: "toast-small",
-      });
+        title: "エクスポート完了",
+        description: "JSONファイルのダウンロードを開始しました",
+      })
     } catch (err) {
-      setError(language === "ja" 
-        ? "エクスポート中にエラーが発生しました。" 
-        : "An error occurred during export."
-      );
-      console.error("Export error:", err);
+      setError("エクスポート中にエラーが発生しました。")
+      console.error("Export error:", err)
     }
   }
 
@@ -94,10 +73,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
     reader.onload = (event) => {
       try {
         if (typeof event.target?.result !== "string") {
-          throw new Error(language === "ja" 
-            ? "ファイルの読み込みに失敗しました" 
-            : "Failed to read the file"
-          )
+          throw new Error("ファイルの読み込みに失敗しました")
         }
 
         const json = JSON.parse(event.target.result) as PaletteType
@@ -109,30 +85,22 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
           fileInputRef.current.value = ""
         }
       } catch (err) {
-        const errorMsg = language === "ja" 
-          ? "JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。"
-          : "Failed to parse JSON file. Please check if the format is correct."
-        setError(errorMsg)
+        setError("JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。")
         console.error("Error parsing JSON:", err)
 
         toast({
-          title: language === "ja" ? "インポートエラー" : "Import Error",
-          description: errorMsg,
+          title: "インポートエラー",
+          description: "JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。",
           variant: "destructive",
-          className: "toast-small",
         })
       }
     }
     reader.onerror = () => {
-      const errorMsg = language === "ja" 
-        ? "ファイルの読み込みに失敗しました。"
-        : "Failed to read the file."
-      setError(errorMsg)
+      setError("ファイルの読み込みに失敗しました。")
       toast({
-        title: language === "ja" ? "インポートエラー" : "Import Error",
-        description: errorMsg,
+        title: "インポートエラー",
+        description: "ファイルの読み込みに失敗しました。",
         variant: "destructive",
-        className: "toast-small",
       })
     }
     reader.readAsText(file)
@@ -144,24 +112,20 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={prepareExport} variant="default" size="sm">
-              {language === "ja" ? "JSON出力" : "Export JSON"}
+              Export JSON
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{language === "ja" ? "JSON出力" : "Export JSON"}</DialogTitle>
-              <DialogDescription>
-                {language === "ja" 
-                  ? "以下のJSONデータをエクスポートします。" 
-                  : "Export the following JSON data."}
-              </DialogDescription>
+              <DialogTitle>Export JSON</DialogTitle>
+              <DialogDescription>以下のJSONデータをエクスポートします。</DialogDescription>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-auto bg-gray-50 p-4 rounded text-xs font-mono">
+            <div className="max-h-[300px] overflow-auto bg-gray-50 p-2 rounded text-xs font-mono">
               <pre>{jsonPreview}</pre>
             </div>
             <DialogFooter>
               <Button onClick={exportJSON} type="submit">
-                {language === "ja" ? "ダウンロード" : "Download"}
+                ダウンロード
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -169,7 +133,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
 
         <div className="relative">
           <Button variant="outline" size="sm" className="relative">
-            {language === "ja" ? "JSON取込" : "Import JSON"}
+            Import JSON
             <input
               ref={fileInputRef}
               type="file"
