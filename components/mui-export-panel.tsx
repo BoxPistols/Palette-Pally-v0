@@ -29,13 +29,15 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const generateMUIThemeCode = () => {
-    const paletteObj: Record<string, any> = {}
+    const paletteObj: Record<string, any> = {
+      mode: data.mode,
+    }
 
     data.colors.forEach((color) => {
-      paletteObj[color.role] = {
+      const key = color.name.toLowerCase()
+      paletteObj[key] = {
         main: color.main,
         light: color.light,
-        lighter: color.lighter,
         dark: color.dark,
         contrastText: color.contrastText,
       }
