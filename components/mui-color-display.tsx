@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { calculateContrastRatio, getWCAGLevel } from "@/lib/color-utils"
+import { getWCAGLevelBadgeClass } from "@/lib/ui-utils"
 import type { MUIColorData } from "@/types/palette"
 
 interface MUIColorDisplayProps {
@@ -14,14 +15,7 @@ export function MUIColorDisplay({ colorData }: MUIColorDisplayProps) {
     const contrast = calculateContrastRatio(colorData.main, textColor)
     const wcagLevel = getWCAGLevel(contrast)
 
-    const levelColor =
-      wcagLevel.level === "AAA"
-        ? "bg-green-100 text-green-800"
-        : wcagLevel.level === "AA"
-          ? "bg-blue-100 text-blue-800"
-          : wcagLevel.level === "A"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-red-100 text-red-800"
+    const levelColor = getWCAGLevelBadgeClass(wcagLevel.level)
 
     return (
       <Card className="overflow-hidden">
@@ -84,14 +78,7 @@ export function MUIColorDisplay({ colorData }: MUIColorDisplayProps) {
           const contrast = calculateContrastRatio(color, textColor)
           const wcagLevel = getWCAGLevel(contrast)
 
-          const levelColor =
-            wcagLevel.level === "AAA"
-              ? "bg-green-100 text-green-800"
-              : wcagLevel.level === "AA"
-                ? "bg-blue-100 text-blue-800"
-                : wcagLevel.level === "A"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
+          const levelColor = getWCAGLevelBadgeClass(wcagLevel.level)
 
           return (
             <div

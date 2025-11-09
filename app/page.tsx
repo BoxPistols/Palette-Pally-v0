@@ -35,8 +35,7 @@ import {
   MUI_DEFAULT_GREY,
   MUI_DEFAULT_COMMON,
 } from "@/types/palette"
-
-const STORAGE_KEY = "palette-pally-mui-data"
+import { STORAGE_KEY } from "@/constants/app-constants"
 
 export default function Home() {
   const [mode, setMode] = useState<PaletteMode>("light")
@@ -206,40 +205,47 @@ export default function Home() {
 
   const handleImport = (importedData: PaletteType) => {
     try {
-      if (importedData.colors && Array.isArray(importedData.colors)) {
-        const validColors = importedData.colors.filter(
-          (color) =>
-            color &&
-            typeof color === "object" &&
-            "name" in color &&
-            "main" in color &&
-            typeof color.main === "string" &&
-            /^#[0-9A-F]{6}$/i.test(color.main),
-        )
-
-        if (validColors.length > 0) {
-          if (importedData.mode) setMode(importedData.mode)
-          setColorData(validColors)
-          if (importedData.text) setTextColors(importedData.text)
-          if (importedData.background) setBackgroundColors(importedData.background)
-          if (importedData.action) setActionColors(importedData.action)
-          if (importedData.divider) setDividerColor(importedData.divider)
-          if (importedData.grey) setGreyPalette(importedData.grey)
-          if (importedData.common) setCommonColors(importedData.common)
-          if (importedData.tonalOffset) setTonalOffset(importedData.tonalOffset)
-
-          toast({
-            title: "Import Complete",
-            description: "MUI palette imported successfully",
-          })
-
-          setTimeout(saveToLocalStorage, 100)
-        } else {
-          throw new Error("Invalid color data")
-        }
-      } else {
+      if (!importedData.colors || !Array.isArray(importedData.colors)) {
         throw new Error("Color data not found")
       }
+
+      const validColors = importedData.colors.filter(
+        (color) =>
+          color &&
+          typeof color === "object" &&
+          "name" in color &&
+          "main" in color &&
+          typeof color.main === "string" &&
+          /^#[0-9A-F]{6}$/i.test(color.main),
+      )
+
+      if (validColors.length === 0) {
+        throw new Error("Invalid color data")
+      }
+
+      // Update all state values from imported data
+      const stateUpdates = {
+        mode: { value: importedData.mode, setter: setMode },
+        text: { value: importedData.text, setter: setTextColors },
+        background: { value: importedData.background, setter: setBackgroundColors },
+        action: { value: importedData.action, setter: setActionColors },
+        divider: { value: importedData.divider, setter: setDividerColor },
+        grey: { value: importedData.grey, setter: setGreyPalette },
+        common: { value: importedData.common, setter: setCommonColors },
+        tonalOffset: { value: importedData.tonalOffset, setter: setTonalOffset },
+      }
+
+      setColorData(validColors)
+      Object.values(stateUpdates).forEach(({ value, setter }) => {
+        if (value !== undefined) setter(value as never)
+      })
+
+      toast({
+        title: "Import Complete",
+        description: "MUI palette imported successfully",
+      })
+
+      setTimeout(saveToLocalStorage, 100)
     } catch (error) {
       console.error("Import error:", error)
       toast({

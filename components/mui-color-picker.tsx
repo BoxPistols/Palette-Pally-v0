@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { HexColorPicker } from "react-colorful"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import {
   getWCAGLevel,
   getBetterContrastColor,
 } from "@/lib/color-utils"
+import { getWCAGLevelBadgeClass } from "@/lib/ui-utils"
 import type { MUIColorData } from "@/types/palette"
 
 interface MUIColorPickerProps {
@@ -32,35 +33,19 @@ interface MUIColorPickerProps {
 export function MUIColorPicker({ colorData, onColorChange, onDelete, onNameChange }: MUIColorPickerProps) {
   const [inputValue, setInputValue] = useState(colorData.main)
   const [nameValue, setNameValue] = useState(colorData.name)
-  const [rgbValues, setRgbValues] = useState({ r: 0, g: 0, b: 0 })
-  const [hslValues, setHslValues] = useState({ h: 0, s: 0, l: 0 })
-  const [oklabValues, setOklabValues] = useState({ l: 0, a: 0, b: 0 })
+
+  // Compute color values using useMemo instead of storing in state
+  const rgbValues = useMemo(() => hexToRgb(colorData.main) || { r: 0, g: 0, b: 0 }, [colorData.main])
+  const hslValues = useMemo(() => hexToHsl(colorData.main) || { h: 0, s: 0, l: 0 }, [colorData.main])
+  const oklabValues = useMemo(() => hexToOklab(colorData.main) || { l: 0, a: 0, b: 0 }, [colorData.main])
 
   useEffect(() => {
     setInputValue(colorData.main)
-    updateColorValues(colorData.main)
   }, [colorData.main])
 
   useEffect(() => {
     setNameValue(colorData.name)
   }, [colorData.name])
-
-  const updateColorValues = (hexColor: string) => {
-    const rgb = hexToRgb(hexColor)
-    if (rgb) {
-      setRgbValues(rgb)
-    }
-
-    const hsl = hexToHsl(hexColor)
-    if (hsl) {
-      setHslValues(hsl)
-    }
-
-    const oklab = hexToOklab(hexColor)
-    if (oklab) {
-      setOklabValues(oklab)
-    }
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -172,14 +157,7 @@ export function MUIColorPicker({ colorData, onColorChange, onDelete, onNameChang
           {(() => {
             const { contrast, level } = getContrastInfo(colorData.main)
 
-            const levelColor =
-              level === "AAA"
-                ? "bg-green-100 text-green-800"
-                : level === "AA"
-                  ? "bg-blue-100 text-blue-800"
-                  : level === "A"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
+            const levelColor = getWCAGLevelBadgeClass(level)
 
             return (
               <>

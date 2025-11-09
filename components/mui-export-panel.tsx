@@ -18,6 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import type { PaletteType } from "@/types/palette"
 import { paletteToFigmaTokens, figmaTokensToPalette, validateFigmaTokens } from "@/lib/figma-tokens"
+import { downloadFile } from "@/lib/file-utils"
+import { FILE_NAMES, MIME_TYPES, TOAST_MESSAGES } from "@/constants/app-constants"
 
 interface MUIExportPanelProps {
   data: PaletteType
@@ -92,25 +94,16 @@ export default theme;`
   const exportJSON = () => {
     try {
       const jsonString = generateJSONExport()
-      const blob = new Blob([jsonString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "mui-palette.json"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(jsonString, FILE_NAMES.MUI_PALETTE)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "Export Complete",
-        description: "JSON file download started",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.JSON,
       })
     } catch (err) {
-      setError("Export error occurred")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
       console.error("Export error:", err)
     }
   }
@@ -118,25 +111,16 @@ export default theme;`
   const exportMUITheme = () => {
     try {
       const themeCode = generateMUIThemeCode()
-      const blob = new Blob([themeCode], { type: "text/javascript" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "theme.js"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(themeCode, FILE_NAMES.MUI_THEME, MIME_TYPES.JAVASCRIPT)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "Export Complete",
-        description: "MUI theme file download started",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.MUI_THEME,
       })
     } catch (err) {
-      setError("Export error occurred")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
       console.error("Export error:", err)
     }
   }
@@ -144,25 +128,16 @@ export default theme;`
   const exportFigmaTokens = () => {
     try {
       const tokensString = generateFigmaTokens()
-      const blob = new Blob([tokensString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "design-tokens.json"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(tokensString, FILE_NAMES.FIGMA_TOKENS)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "Export Complete",
-        description: "Figma Design Tokens file download started",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.FIGMA_TOKENS,
       })
     } catch (err) {
-      setError("Export error occurred")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
       console.error("Export error:", err)
     }
   }
