@@ -15,6 +15,7 @@ import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
+import { MUI_DEFAULT_TONAL_OFFSET } from "@/lib/color-constants"
 import type {
   PaletteType,
   MUIColorData,
@@ -187,7 +188,7 @@ export default function Home() {
     setDividerColor(MUI_DEFAULT_DIVIDER)
     setGreyPalette(MUI_DEFAULT_GREY)
     setCommonColors(MUI_DEFAULT_COMMON)
-    setTonalOffset(0.2)
+    setTonalOffset(MUI_DEFAULT_TONAL_OFFSET)
 
     toast({
       title: "Reset Complete",

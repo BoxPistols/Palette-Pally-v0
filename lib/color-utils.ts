@@ -294,32 +294,98 @@ export function emphasize(color: string, coefficient: number = MUI_LIGHTEN_COEFF
   return brightness > BRIGHTNESS_THRESHOLD ? darken(color, coefficient) : lighten(color, coefficient)
 }
 
-// MUI augmentColor implementation
+// Options interface for color augmentation
+export interface ColorAugmentOptions {
+  tonalOffset?: number
+  contrastThreshold?: number
+}
+
+// MUI augmentColor implementation with function overloads
 // Generates light and dark variations based on the main color
+
+// Overload 1: Options object (recommended)
+export function augmentColor(mainColor: string, options?: ColorAugmentOptions): {
+  light: string
+  main: string
+  dark: string
+  contrastText: string
+}
+
+// Overload 2: Positional parameters (backward compatibility)
 export function augmentColor(
   mainColor: string,
-  tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET,
-  contrastThreshold: number = MUI_DEFAULT_CONTRAST_THRESHOLD,
+  tonalOffset?: number,
+  contrastThreshold?: number,
+): {
+  light: string
+  main: string
+  dark: string
+  contrastText: string
+}
+
+// Implementation
+export function augmentColor(
+  mainColor: string,
+  tonalOffsetOrOptions?: number | ColorAugmentOptions,
+  contrastThreshold?: number,
 ): {
   light: string
   main: string
   dark: string
   contrastText: string
 } {
+  // Parse arguments - support both old and new API
+  let tonalOffset: number
+  let threshold: number
+
+  if (typeof tonalOffsetOrOptions === "object") {
+    // New options object API
+    tonalOffset = tonalOffsetOrOptions.tonalOffset ?? MUI_DEFAULT_TONAL_OFFSET
+    threshold = tonalOffsetOrOptions.contrastThreshold ?? MUI_DEFAULT_CONTRAST_THRESHOLD
+  } else {
+    // Old positional parameters API
+    tonalOffset = tonalOffsetOrOptions ?? MUI_DEFAULT_TONAL_OFFSET
+    threshold = contrastThreshold ?? MUI_DEFAULT_CONTRAST_THRESHOLD
+  }
+
   return {
     light: lighten(mainColor, tonalOffset),
     main: mainColor,
     dark: darken(mainColor, tonalOffset),
-    contrastText: getContrastText(mainColor, contrastThreshold),
+    contrastText: getContrastText(mainColor, threshold),
   }
 }
 
-// Generate MUI color variations with additional "lighter" shade
+// Generate MUI color variations with additional "lighter" shade with function overloads
 // This function provides compatibility with the existing codebase
+
+// Overload 1: Options object (recommended)
+export function generateMUIColorVariations(mainColor: string, options?: ColorAugmentOptions): {
+  main: string
+  light: string
+  lighter: string
+  dark: string
+  contrastText: string
+}
+
+// Overload 2: Positional parameters (backward compatibility)
 export function generateMUIColorVariations(
   mainColor: string,
-  tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET,
-  contrastThreshold: number = MUI_DEFAULT_CONTRAST_THRESHOLD,
+  tonalOffset?: number,
+  contrastThreshold?: number,
+): {
+  main: string
+  light: string
+  lighter: string
+  dark: string
+  contrastText: string
+}
+
+// Implementation
+export function generateMUIColorVariations(
+  mainColor: string,
+  tonalOffsetOrOptions?: number | ColorAugmentOptions,
+  contrastThreshold?: number,
 ): {
   main: string
   light: string
@@ -327,7 +393,21 @@ export function generateMUIColorVariations(
   dark: string
   contrastText: string
 } {
-  const baseVariations = augmentColor(mainColor, tonalOffset, contrastThreshold)
+  // Parse arguments - support both old and new API
+  let tonalOffset: number
+  let threshold: number
+
+  if (typeof tonalOffsetOrOptions === "object") {
+    // New options object API
+    tonalOffset = tonalOffsetOrOptions.tonalOffset ?? MUI_DEFAULT_TONAL_OFFSET
+    threshold = tonalOffsetOrOptions.contrastThreshold ?? MUI_DEFAULT_CONTRAST_THRESHOLD
+  } else {
+    // Old positional parameters API
+    tonalOffset = tonalOffsetOrOptions ?? MUI_DEFAULT_TONAL_OFFSET
+    threshold = contrastThreshold ?? MUI_DEFAULT_CONTRAST_THRESHOLD
+  }
+
+  const baseVariations = augmentColor(mainColor, { tonalOffset, contrastThreshold: threshold })
 
   return {
     main: mainColor,

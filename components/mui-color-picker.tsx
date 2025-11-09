@@ -88,7 +88,6 @@ export function MUIColorPicker({ colorData, onColorChange, onDelete, onNameChang
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 255) {
       const newRgb = { ...rgbValues, [channel]: numValue }
       const newHex = rgbToHex(newRgb.r, newRgb.g, newRgb.b)
-      setRgbValues(newRgb)
       setInputValue(newHex)
       onColorChange(newHex)
     }
@@ -106,7 +105,6 @@ export function MUIColorPicker({ colorData, onColorChange, onDelete, onNameChang
 
       const newHsl = { ...hslValues, [channel]: validValue }
       const newHex = hslToHex(newHsl.h, newHsl.s, newHsl.l)
-      setHslValues(newHsl)
       setInputValue(newHex)
       onColorChange(newHex)
     }
