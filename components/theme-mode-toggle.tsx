@@ -19,18 +19,18 @@ export function ThemeModeToggle({ mode, onModeChange }: ThemeModeToggleProps) {
       variant="outline"
       size="sm"
       onClick={toggleMode}
-      className="gap-2"
+      className="gap-2 bg-transparent"
       title={`Switch to ${mode === "light" ? "dark" : "light"} mode`}
     >
       {mode === "light" ? (
         <>
           <Sun className="h-4 w-4" />
-          Light
+          Light Mode
         </>
       ) : (
         <>
           <Moon className="h-4 w-4" />
-          Dark
+          Dark Mode
         </>
       )}
     </Button>

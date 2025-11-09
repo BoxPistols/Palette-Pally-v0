@@ -45,7 +45,6 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
       paletteObj[colorId] = {
         main: color.main,
         light: color.light,
-        lighter: color.lighter,
         dark: color.dark,
         contrastText: color.contrastText,
       }
@@ -63,11 +62,11 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
     if (data.divider) {
       paletteObj.divider = data.divider
     }
-    if (data.grey) {
-      paletteObj.grey = data.grey
-    }
     if (data.common) {
       paletteObj.common = data.common
+    }
+    if (data.grey) {
+      paletteObj.grey = data.grey
     }
     if (data.tonalOffset) {
       paletteObj.tonalOffset = data.tonalOffset

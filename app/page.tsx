@@ -5,14 +5,16 @@ import { MUIColorPicker } from "@/components/mui-color-picker"
 import { MUIColorDisplay } from "@/components/mui-color-display"
 import { MUIExportPanel } from "@/components/mui-export-panel"
 import { AdditionalColorsEditor } from "@/components/additional-colors-editor"
+import { ActionColorsEditor } from "@/components/action-colors-editor"
+import { CommonColorsEditor } from "@/components/common-colors-editor"
 import { GreyPaletteEditor } from "@/components/grey-palette-editor"
 import { AddColorDialog } from "@/components/add-color-dialog"
+import { ThemeModeToggle } from "@/components/theme-mode-toggle"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Logo } from "@/components/logo"
 import { HelpModal } from "@/components/help-modal"
-import { ThemeModeToggle } from "@/components/theme-mode-toggle"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
@@ -23,19 +25,23 @@ import type {
   TextColors,
   BackgroundColors,
   ActionColors,
-  GreyPalette,
   CommonColors,
+  GreyPalette,
   ColorType,
   PaletteMode,
 } from "@/types/palette"
 import {
   MUI_DEFAULT_COLORS,
-  MUI_DEFAULT_TEXT,
-  MUI_DEFAULT_BACKGROUND,
-  MUI_DEFAULT_ACTION,
-  MUI_DEFAULT_DIVIDER,
-  MUI_DEFAULT_GREY,
+  MUI_DEFAULT_TEXT_LIGHT,
+  MUI_DEFAULT_TEXT_DARK,
+  MUI_DEFAULT_BACKGROUND_LIGHT,
+  MUI_DEFAULT_BACKGROUND_DARK,
+  MUI_DEFAULT_DIVIDER_LIGHT,
+  MUI_DEFAULT_DIVIDER_DARK,
+  MUI_DEFAULT_ACTION_LIGHT,
+  MUI_DEFAULT_ACTION_DARK,
   MUI_DEFAULT_COMMON,
+  MUI_DEFAULT_GREY,
   MUI_DEFAULT_CONTRAST_THRESHOLD,
 } from "@/types/palette"
 import { STORAGE_KEY } from "@/constants/app-constants"
@@ -43,16 +49,15 @@ import { STORAGE_KEY } from "@/constants/app-constants"
 export default function Home() {
   const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorData[]>(MUI_DEFAULT_COLORS)
-  const [textColors, setTextColors] = useState<TextColors>(MUI_DEFAULT_TEXT)
-  const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>(MUI_DEFAULT_BACKGROUND)
-  const [actionColors, setActionColors] = useState<ActionColors>(MUI_DEFAULT_ACTION)
-  const [dividerColor, setDividerColor] = useState<string>(MUI_DEFAULT_DIVIDER)
-  const [greyPalette, setGreyPalette] = useState<GreyPalette>(MUI_DEFAULT_GREY)
+  const [textColors, setTextColors] = useState<TextColors>(MUI_DEFAULT_TEXT_LIGHT)
+  const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>(MUI_DEFAULT_BACKGROUND_LIGHT)
+  const [dividerColor, setDividerColor] = useState<string>(MUI_DEFAULT_DIVIDER_LIGHT)
+  const [actionColors, setActionColors] = useState<ActionColors>(MUI_DEFAULT_ACTION_LIGHT)
   const [commonColors, setCommonColors] = useState<CommonColors>(MUI_DEFAULT_COMMON)
-  const [tonalOffset, setTonalOffset] = useState<number>(0.2)
+  const [greyPalette, setGreyPalette] = useState<GreyPalette>(MUI_DEFAULT_GREY)
+  const [tonalOffset, setTonalOffset] = useState<number>(MUI_DEFAULT_TONAL_OFFSET)
   const [contrastThreshold, setContrastThreshold] = useState<number>(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
-  // Load data from localStorage on initial render
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
@@ -66,8 +71,8 @@ export default function Home() {
         if (parsedData.background) setBackgroundColors(parsedData.background)
         if (parsedData.action) setActionColors(parsedData.action)
         if (parsedData.divider) setDividerColor(parsedData.divider)
-        if (parsedData.grey) setGreyPalette(parsedData.grey)
         if (parsedData.common) setCommonColors(parsedData.common)
+        if (parsedData.grey) setGreyPalette(parsedData.grey)
         if (parsedData.tonalOffset) setTonalOffset(parsedData.tonalOffset)
         if (parsedData.contrastThreshold) setContrastThreshold(parsedData.contrastThreshold)
       } catch (error) {
@@ -76,7 +81,20 @@ export default function Home() {
     }
   }, [])
 
-  // Save to localStorage function
+  useEffect(() => {
+    if (mode === "light") {
+      setTextColors(MUI_DEFAULT_TEXT_LIGHT)
+      setBackgroundColors(MUI_DEFAULT_BACKGROUND_LIGHT)
+      setDividerColor(MUI_DEFAULT_DIVIDER_LIGHT)
+      setActionColors(MUI_DEFAULT_ACTION_LIGHT)
+    } else {
+      setTextColors(MUI_DEFAULT_TEXT_DARK)
+      setBackgroundColors(MUI_DEFAULT_BACKGROUND_DARK)
+      setDividerColor(MUI_DEFAULT_DIVIDER_DARK)
+      setActionColors(MUI_DEFAULT_ACTION_DARK)
+    }
+  }, [mode])
+
   const saveToLocalStorage = () => {
     try {
       const dataToSave: PaletteType = {
@@ -86,8 +104,8 @@ export default function Home() {
         background: backgroundColors,
         action: actionColors,
         divider: dividerColor,
-        grey: greyPalette,
         common: commonColors,
+        grey: greyPalette,
         tonalOffset,
         contrastThreshold,
       }
@@ -115,12 +133,10 @@ export default function Home() {
       isDefault: false,
     }
 
-    // Generate variations for theme colors
     if (type === "theme") {
       const variations = generateMUIColorVariations(newColor.main)
       Object.assign(newColor, variations)
     } else {
-      // For simple colors, just set contrastText
       newColor.contrastText = "#FFFFFF"
     }
 
@@ -160,7 +176,6 @@ export default function Home() {
         ...variations,
       }
     } else {
-      // For simple colors, just update main
       newColorData[index] = {
         ...currentColor,
         main: mainColor,
@@ -189,12 +204,12 @@ export default function Home() {
     localStorage.removeItem(STORAGE_KEY)
     setMode("light")
     setColorData(MUI_DEFAULT_COLORS)
-    setTextColors(MUI_DEFAULT_TEXT)
-    setBackgroundColors(MUI_DEFAULT_BACKGROUND)
-    setActionColors(MUI_DEFAULT_ACTION)
-    setDividerColor(MUI_DEFAULT_DIVIDER)
-    setGreyPalette(MUI_DEFAULT_GREY)
+    setTextColors(MUI_DEFAULT_TEXT_LIGHT)
+    setBackgroundColors(MUI_DEFAULT_BACKGROUND_LIGHT)
+    setDividerColor(MUI_DEFAULT_DIVIDER_LIGHT)
+    setActionColors(MUI_DEFAULT_ACTION_LIGHT)
     setCommonColors(MUI_DEFAULT_COMMON)
+    setGreyPalette(MUI_DEFAULT_GREY)
     setTonalOffset(MUI_DEFAULT_TONAL_OFFSET)
     setContrastThreshold(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
@@ -211,8 +226,8 @@ export default function Home() {
     background: backgroundColors,
     action: actionColors,
     divider: dividerColor,
-    grey: greyPalette,
     common: commonColors,
+    grey: greyPalette,
     tonalOffset,
     contrastThreshold,
   }
@@ -297,9 +312,10 @@ export default function Home() {
       </Card>
 
       <Tabs defaultValue="theme-colors" className="mb-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="theme-colors">Theme Colors</TabsTrigger>
           <TabsTrigger value="additional-colors">Additional Colors</TabsTrigger>
+          <TabsTrigger value="system-colors">System Colors</TabsTrigger>
         </TabsList>
 
         <TabsContent value="theme-colors">
@@ -308,7 +324,6 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Color Pickers Section */}
             <div>
               <h2 className="text-lg font-semibold mb-3">MUI Color Roles</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -324,7 +339,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Color Palette Section */}
             <div>
               <h2 className="text-lg font-semibold mb-3">MUI Color Palette</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -350,6 +364,17 @@ export default function Home() {
             </div>
             <div>
               <GreyPaletteEditor grey={greyPalette} onGreyChange={setGreyPalette} />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="system-colors">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <ActionColorsEditor action={actionColors} onActionChange={setActionColors} />
+            </div>
+            <div>
+              <CommonColorsEditor common={commonColors} onCommonChange={setCommonColors} />
             </div>
           </div>
         </TabsContent>
