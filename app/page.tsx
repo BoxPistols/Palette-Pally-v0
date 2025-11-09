@@ -34,6 +34,7 @@ import {
   MUI_DEFAULT_DIVIDER,
   MUI_DEFAULT_GREY,
   MUI_DEFAULT_COMMON,
+  MUI_DEFAULT_CONTRAST_THRESHOLD,
 } from "@/types/palette"
 import { STORAGE_KEY } from "@/constants/app-constants"
 
@@ -47,6 +48,7 @@ export default function Home() {
   const [greyPalette, setGreyPalette] = useState<GreyPalette>(MUI_DEFAULT_GREY)
   const [commonColors, setCommonColors] = useState<CommonColors>(MUI_DEFAULT_COMMON)
   const [tonalOffset, setTonalOffset] = useState<number>(0.2)
+  const [contrastThreshold, setContrastThreshold] = useState<number>(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -65,6 +67,7 @@ export default function Home() {
         if (parsedData.grey) setGreyPalette(parsedData.grey)
         if (parsedData.common) setCommonColors(parsedData.common)
         if (parsedData.tonalOffset) setTonalOffset(parsedData.tonalOffset)
+        if (parsedData.contrastThreshold) setContrastThreshold(parsedData.contrastThreshold)
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
       }
@@ -84,6 +87,7 @@ export default function Home() {
         grey: greyPalette,
         common: commonColors,
         tonalOffset,
+        contrastThreshold,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -201,6 +205,7 @@ export default function Home() {
     grey: greyPalette,
     common: commonColors,
     tonalOffset,
+    contrastThreshold,
   }
 
   const handleImport = (importedData: PaletteType) => {
@@ -233,6 +238,7 @@ export default function Home() {
         grey: { value: importedData.grey, setter: setGreyPalette },
         common: { value: importedData.common, setter: setCommonColors },
         tonalOffset: { value: importedData.tonalOffset, setter: setTonalOffset },
+        contrastThreshold: { value: importedData.contrastThreshold, setter: setContrastThreshold },
       }
 
       setColorData(validColors)

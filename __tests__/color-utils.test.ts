@@ -14,6 +14,7 @@ import {
   calculateContrastRatio,
   getWCAGLevel,
   getBetterContrastColor,
+  getContrastText,
 } from "@/lib/color-utils"
 
 describe("Color Conversion Functions", () => {
@@ -205,6 +206,18 @@ describe("MUI augmentColor", () => {
       expect(darkHsl.l).toBeLessThan(mainHsl.l)
     }
   })
+
+  it("should respect custom contrastThreshold", () => {
+    // Medium gray where different thresholds produce different results
+    const mediumGray = "#888888"
+
+    const resultLowThreshold = augmentColor(mediumGray, 0.2, 3)
+    const resultHighThreshold = augmentColor(mediumGray, 0.2, 8)
+
+    // Low threshold should prefer white, high threshold should use black
+    expect(resultLowThreshold.contrastText).toBe("#FFFFFF")
+    expect(resultHighThreshold.contrastText).toBe("#000000")
+  })
 })
 
 describe("generateMUIColorVariations", () => {
@@ -245,6 +258,18 @@ describe("generateMUIColorVariations", () => {
     if (lightHsl && lighterHsl) {
       expect(lighterHsl.l).toBeGreaterThan(lightHsl.l)
     }
+  })
+
+  it("should respect custom contrastThreshold", () => {
+    // Medium gray where different thresholds produce different results
+    const mediumGray = "#888888"
+
+    const resultLowThreshold = generateMUIColorVariations(mediumGray, 0.2, 3)
+    const resultHighThreshold = generateMUIColorVariations(mediumGray, 0.2, 8)
+
+    // Low threshold should prefer white, high threshold should use black
+    expect(resultLowThreshold.contrastText).toBe("#FFFFFF")
+    expect(resultHighThreshold.contrastText).toBe("#000000")
   })
 })
 
@@ -305,6 +330,50 @@ describe("Contrast and Accessibility Functions", () => {
     it("should return white for MUI primary blue", () => {
       const result = getBetterContrastColor("#1976d2")
       expect(result).toBe("#FFFFFF")
+    })
+  })
+
+  describe("getContrastText", () => {
+    it("should use default threshold of 3", () => {
+      // For black background, white contrast is 21
+      const result = getContrastText("#000000")
+      expect(result).toBe("#FFFFFF")
+    })
+
+    it("should respect custom threshold", () => {
+      // Gray background where white has contrast ~7.5, black has ~2.8
+      const gray = "#777777"
+
+      // With threshold 3 (default), should use white (7.5 >= 3)
+      expect(getContrastText(gray, 3)).toBe("#FFFFFF")
+
+      // With threshold 8, should use black (7.5 < 8, falls back to black)
+      expect(getContrastText(gray, 8)).toBe("#000000")
+    })
+
+    it("should return white for dark backgrounds", () => {
+      const result = getContrastText("#000000", 3)
+      expect(result).toBe("#FFFFFF")
+    })
+
+    it("should return black for light backgrounds", () => {
+      const result = getContrastText("#ffffff", 3)
+      expect(result).toBe("#000000")
+    })
+
+    it("should match getBetterContrastColor with default threshold", () => {
+      const testColors = ["#1976d2", "#f44336", "#4caf50", "#ff9800", "#9c27b0"]
+      testColors.forEach((color) => {
+        expect(getContrastText(color)).toBe(getBetterContrastColor(color))
+      })
+    })
+
+    it("should work with higher thresholds", () => {
+      // Very light gray
+      const lightGray = "#f0f0f0"
+      // With low threshold, might choose white, but with higher threshold, should use black
+      expect(getContrastText(lightGray, 3)).toBe("#000000")
+      expect(getContrastText(lightGray, 4.5)).toBe("#000000")
     })
   })
 })

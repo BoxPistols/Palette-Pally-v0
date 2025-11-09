@@ -13,6 +13,7 @@ import {
   MUI_DARKEN_COEFFICIENT,
   MUI_DEFAULT_TONAL_OFFSET,
   MUI_LIGHTER_MULTIPLIER,
+  MUI_DEFAULT_CONTRAST_THRESHOLD,
   SRGB_GAMMA_THRESHOLD,
   SRGB_GAMMA_DIVISOR,
   SRGB_GAMMA_OFFSET,
@@ -295,7 +296,11 @@ export function emphasize(color: string, coefficient: number = MUI_LIGHTEN_COEFF
 
 // MUI augmentColor implementation
 // Generates light and dark variations based on the main color
-export function augmentColor(mainColor: string, tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET): {
+export function augmentColor(
+  mainColor: string,
+  tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET,
+  contrastThreshold: number = MUI_DEFAULT_CONTRAST_THRESHOLD,
+): {
   light: string
   main: string
   dark: string
@@ -305,20 +310,24 @@ export function augmentColor(mainColor: string, tonalOffset: number = MUI_DEFAUL
     light: lighten(mainColor, tonalOffset),
     main: mainColor,
     dark: darken(mainColor, tonalOffset),
-    contrastText: getBetterContrastColor(mainColor),
+    contrastText: getContrastText(mainColor, contrastThreshold),
   }
 }
 
 // Generate MUI color variations with additional "lighter" shade
 // This function provides compatibility with the existing codebase
-export function generateMUIColorVariations(mainColor: string, tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET): {
+export function generateMUIColorVariations(
+  mainColor: string,
+  tonalOffset: number = MUI_DEFAULT_TONAL_OFFSET,
+  contrastThreshold: number = MUI_DEFAULT_CONTRAST_THRESHOLD,
+): {
   main: string
   light: string
   lighter: string
   dark: string
   contrastText: string
 } {
-  const baseVariations = augmentColor(mainColor, tonalOffset)
+  const baseVariations = augmentColor(mainColor, tonalOffset, contrastThreshold)
 
   return {
     main: mainColor,
@@ -403,10 +412,20 @@ export function getWCAGLevel(contrastRatio: number): {
   }
 }
 
+// MUI-compatible getContrastText function
+// Returns white or black text color based on background color and contrast threshold
+export function getContrastText(
+  bgColor: string,
+  contrastThreshold: number = MUI_DEFAULT_CONTRAST_THRESHOLD,
+): string {
+  const whiteContrast = calculateContrastRatio(bgColor, CONTRAST_COLOR_WHITE)
+
+  // If white text meets the threshold, use white; otherwise use black
+  return whiteContrast >= contrastThreshold ? CONTRAST_COLOR_WHITE : CONTRAST_COLOR_BLACK
+}
+
+// Legacy function for backward compatibility
 // 白と黒のどちらがより良いコントラストを持つか判定
 export function getBetterContrastColor(bgColor: string): string {
-  const whiteContrast = calculateContrastRatio(bgColor, CONTRAST_COLOR_WHITE)
-  const blackContrast = calculateContrastRatio(bgColor, CONTRAST_COLOR_BLACK)
-
-  return whiteContrast > blackContrast ? CONTRAST_COLOR_WHITE : CONTRAST_COLOR_BLACK
+  return getContrastText(bgColor, MUI_DEFAULT_CONTRAST_THRESHOLD)
 }

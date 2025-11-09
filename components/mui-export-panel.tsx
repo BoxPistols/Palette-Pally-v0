@@ -72,6 +72,9 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
     if (data.tonalOffset) {
       paletteObj.tonalOffset = data.tonalOffset
     }
+    if (data.contrastThreshold) {
+      paletteObj.contrastThreshold = data.contrastThreshold
+    }
 
     return `import { createTheme } from '@mui/material/styles';
 
