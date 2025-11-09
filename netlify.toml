@@ -1,0 +1,15 @@
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+# Only deploy production builds from main branch
+[context.production]
+  branch = "main"
+
+# Disable deploy previews for all other branches
+[context.deploy-preview]
+  command = "echo 'Deploy preview disabled for non-main branches' && exit 0"
+
+# Disable branch deploys
+[context.branch-deploy]
+  command = "echo 'Branch deploy disabled for non-main branches' && exit 0"
