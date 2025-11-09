@@ -30,6 +30,7 @@ export const MUI_LIGHTEN_COEFFICIENT = 0.15
 export const MUI_DARKEN_COEFFICIENT = 0.15
 export const MUI_EMPHASIZE_COEFFICIENT = 0.15
 export const MUI_LIGHTER_MULTIPLIER = 1.5 // For "lighter" variant (tonalOffset * 1.5)
+export const MUI_DEFAULT_CONTRAST_THRESHOLD = 3 // Minimum contrast ratio for determining light/dark text
 
 // Legacy RGB adjustment values (for backward compatibility)
 export const LEGACY_LIGHT_ADJUSTMENT = 60

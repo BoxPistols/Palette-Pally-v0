@@ -69,6 +69,7 @@ export interface PaletteType {
   grey?: GreyPalette
   common?: CommonColors
   tonalOffset?: number // Coefficient for light/dark variations (default: 0.2)
+  contrastThreshold?: number // Contrast ratio threshold for determining light/dark text (default: 3)
 }
 
 // MUI default color values
@@ -173,6 +174,8 @@ export const MUI_DEFAULT_COMMON: CommonColors = {
   black: "#000",
   white: "#fff",
 }
+
+export const MUI_DEFAULT_CONTRAST_THRESHOLD = 3
 
 // Dark mode defaults
 export const MUI_DARK_TEXT: TextColors = {
