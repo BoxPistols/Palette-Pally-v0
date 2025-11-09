@@ -196,6 +196,7 @@ export default function Home() {
     setGreyPalette(MUI_DEFAULT_GREY)
     setCommonColors(MUI_DEFAULT_COMMON)
     setTonalOffset(MUI_DEFAULT_TONAL_OFFSET)
+    setContrastThreshold(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
     toast({
       title: "Reset Complete",
