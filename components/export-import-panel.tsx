@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import type { PaletteType } from "@/types/palette"
+import { downloadFile } from "@/lib/file-utils"
+import { FILE_NAMES, TOAST_MESSAGES } from "@/constants/app-constants"
 
 interface ExportImportPanelProps {
   data: PaletteType
@@ -42,25 +44,16 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
 
   const exportJSON = () => {
     try {
-      const blob = new Blob([jsonPreview], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "palette-pally-export.json"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(jsonPreview, FILE_NAMES.PALETTE_EXPORT)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "エクスポート完了",
-        description: "JSONファイルのダウンロードを開始しました",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.JA.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.JA.description,
       })
     } catch (err) {
-      setError("エクスポート中にエラーが発生しました。")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.JA)
       console.error("Export error:", err)
     }
   }

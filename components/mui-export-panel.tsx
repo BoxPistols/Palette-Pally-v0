@@ -17,6 +17,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import type { PaletteType } from "@/types/palette"
+import { paletteToFigmaTokens, figmaTokensToPalette, validateFigmaTokens } from "@/lib/figma-tokens"
+import { downloadFile } from "@/lib/file-utils"
+import { FILE_NAMES, MIME_TYPES, TOAST_MESSAGES } from "@/constants/app-constants"
 
 interface MUIExportPanelProps {
   data: PaletteType
@@ -29,13 +32,17 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const generateMUIThemeCode = () => {
-    const paletteObj: Record<string, any> = {
-      mode: data.mode,
+    const paletteObj: Record<string, any> = {}
+
+    // Add mode if specified
+    if (data.mode) {
+      paletteObj.mode = data.mode
     }
 
+    // Add theme colors
     data.colors.forEach((color) => {
-      const key = color.name.toLowerCase()
-      paletteObj[key] = {
+      const colorId = color.name.replace(/\s+/g, "").replace(/^(.)/, (c) => c.toLowerCase())
+      paletteObj[colorId] = {
         main: color.main,
         light: color.light,
         dark: color.dark,
@@ -49,17 +56,23 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
     if (data.background) {
       paletteObj.background = data.background
     }
-    if (data.divider) {
-      paletteObj.divider = data.divider
-    }
     if (data.action) {
       paletteObj.action = data.action
+    }
+    if (data.divider) {
+      paletteObj.divider = data.divider
     }
     if (data.common) {
       paletteObj.common = data.common
     }
     if (data.grey) {
       paletteObj.grey = data.grey
+    }
+    if (data.tonalOffset) {
+      paletteObj.tonalOffset = data.tonalOffset
+    }
+    if (data.contrastThreshold) {
+      paletteObj.contrastThreshold = data.contrastThreshold
     }
 
     return `import { createTheme } from '@mui/material/styles';
@@ -75,28 +88,24 @@ export default theme;`
     return JSON.stringify(data, null, 2)
   }
 
+  const generateFigmaTokens = () => {
+    const tokens = paletteToFigmaTokens(data)
+    return JSON.stringify(tokens, null, 2)
+  }
+
   const exportJSON = () => {
     try {
       const jsonString = generateJSONExport()
-      const blob = new Blob([jsonString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "mui-palette.json"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(jsonString, FILE_NAMES.MUI_PALETTE)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "Export Complete",
-        description: "JSON file download started",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.JSON,
       })
     } catch (err) {
-      setError("Export error occurred")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
       console.error("Export error:", err)
     }
   }
@@ -104,25 +113,33 @@ export default theme;`
   const exportMUITheme = () => {
     try {
       const themeCode = generateMUIThemeCode()
-      const blob = new Blob([themeCode], { type: "text/javascript" })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "theme.js"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile(themeCode, FILE_NAMES.MUI_THEME, MIME_TYPES.JAVASCRIPT)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: "Export Complete",
-        description: "MUI theme file download started",
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.MUI_THEME,
       })
     } catch (err) {
-      setError("Export error occurred")
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
+      console.error("Export error:", err)
+    }
+  }
+
+  const exportFigmaTokens = () => {
+    try {
+      const tokensString = generateFigmaTokens()
+      downloadFile(tokensString, FILE_NAMES.FIGMA_TOKENS)
+      setError(null)
+      setIsDialogOpen(false)
+
+      toast({
+        title: TOAST_MESSAGES.EXPORT_COMPLETE.EN.title,
+        description: TOAST_MESSAGES.EXPORT_COMPLETE.EN.description.FIGMA_TOKENS,
+      })
+    } catch (err) {
+      setError(TOAST_MESSAGES.EXPORT_ERROR.EN)
       console.error("Export error:", err)
     }
   }
@@ -138,8 +155,26 @@ export default theme;`
           throw new Error("Failed to read file")
         }
 
-        const json = JSON.parse(event.target.result) as PaletteType
-        onImport(json)
+        const json = JSON.parse(event.target.result)
+
+        // Check if it's Figma Design Tokens format
+        if (validateFigmaTokens(json)) {
+          const palette = figmaTokensToPalette(json)
+          onImport(palette as PaletteType)
+          toast({
+            title: "Import Success",
+            description: "Figma Design Tokens imported successfully",
+          })
+        } else {
+          // Try as regular JSON format
+          const palette = json as PaletteType
+          onImport(palette)
+          toast({
+            title: "Import Success",
+            description: "Palette imported successfully",
+          })
+        }
+
         setError(null)
 
         if (fileInputRef.current) {
@@ -183,9 +218,10 @@ export default theme;`
             </DialogHeader>
 
             <Tabs defaultValue="mui-theme">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="mui-theme">MUI Theme</TabsTrigger>
                 <TabsTrigger value="json">JSON</TabsTrigger>
+                <TabsTrigger value="figma">Figma Tokens</TabsTrigger>
               </TabsList>
 
               <TabsContent value="mui-theme" className="space-y-4">
@@ -203,6 +239,15 @@ export default theme;`
                 </div>
                 <Button onClick={exportJSON} className="w-full">
                   Download JSON
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="figma" className="space-y-4">
+                <div className="max-h-[400px] overflow-auto bg-gray-50 p-4 rounded text-xs font-mono">
+                  <pre>{generateFigmaTokens()}</pre>
+                </div>
+                <Button onClick={exportFigmaTokens} className="w-full">
+                  Download design-tokens.json
                 </Button>
               </TabsContent>
             </Tabs>

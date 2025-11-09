@@ -1,12 +1,12 @@
 "use client"
 
-import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { ThemeMode } from "@/types/palette"
+import { Sun, Moon } from "lucide-react"
+import type { PaletteMode } from "@/types/palette"
 
 interface ThemeModeToggleProps {
-  mode: ThemeMode
-  onModeChange: (mode: ThemeMode) => void
+  mode: PaletteMode
+  onModeChange: (mode: PaletteMode) => void
 }
 
 export function ThemeModeToggle({ mode, onModeChange }: ThemeModeToggleProps) {
@@ -15,7 +15,13 @@ export function ThemeModeToggle({ mode, onModeChange }: ThemeModeToggleProps) {
   }
 
   return (
-    <Button onClick={toggleMode} variant="outline" size="sm" className="gap-2 bg-transparent">
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={toggleMode}
+      className="gap-2 bg-transparent"
+      title={`Switch to ${mode === "light" ? "dark" : "light"} mode`}
+    >
       {mode === "light" ? (
         <>
           <Sun className="h-4 w-4" />

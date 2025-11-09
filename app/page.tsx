@@ -18,6 +18,7 @@ import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
+import { MUI_DEFAULT_TONAL_OFFSET } from "@/lib/color-constants"
 import type {
   PaletteType,
   MUIColorData,
@@ -27,7 +28,7 @@ import type {
   CommonColors,
   GreyPalette,
   ColorType,
-  ThemeMode,
+  PaletteMode,
 } from "@/types/palette"
 import {
   MUI_DEFAULT_COLORS,
@@ -41,12 +42,12 @@ import {
   MUI_DEFAULT_ACTION_DARK,
   MUI_DEFAULT_COMMON,
   MUI_DEFAULT_GREY,
+  MUI_DEFAULT_CONTRAST_THRESHOLD,
 } from "@/types/palette"
-
-const STORAGE_KEY = "palette-pally-mui-data"
+import { STORAGE_KEY } from "@/constants/app-constants"
 
 export default function Home() {
-  const [mode, setMode] = useState<ThemeMode>("light")
+  const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorData[]>(MUI_DEFAULT_COLORS)
   const [textColors, setTextColors] = useState<TextColors>(MUI_DEFAULT_TEXT_LIGHT)
   const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>(MUI_DEFAULT_BACKGROUND_LIGHT)
@@ -54,6 +55,8 @@ export default function Home() {
   const [actionColors, setActionColors] = useState<ActionColors>(MUI_DEFAULT_ACTION_LIGHT)
   const [commonColors, setCommonColors] = useState<CommonColors>(MUI_DEFAULT_COMMON)
   const [greyPalette, setGreyPalette] = useState<GreyPalette>(MUI_DEFAULT_GREY)
+  const [tonalOffset, setTonalOffset] = useState<number>(MUI_DEFAULT_TONAL_OFFSET)
+  const [contrastThreshold, setContrastThreshold] = useState<number>(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY)
@@ -66,10 +69,12 @@ export default function Home() {
         }
         if (parsedData.text) setTextColors(parsedData.text)
         if (parsedData.background) setBackgroundColors(parsedData.background)
-        if (parsedData.divider) setDividerColor(parsedData.divider)
         if (parsedData.action) setActionColors(parsedData.action)
+        if (parsedData.divider) setDividerColor(parsedData.divider)
         if (parsedData.common) setCommonColors(parsedData.common)
         if (parsedData.grey) setGreyPalette(parsedData.grey)
+        if (parsedData.tonalOffset) setTonalOffset(parsedData.tonalOffset)
+        if (parsedData.contrastThreshold) setContrastThreshold(parsedData.contrastThreshold)
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
       }
@@ -97,10 +102,12 @@ export default function Home() {
         colors: colorData,
         text: textColors,
         background: backgroundColors,
-        divider: dividerColor,
         action: actionColors,
+        divider: dividerColor,
         common: commonColors,
         grey: greyPalette,
+        tonalOffset,
+        contrastThreshold,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -187,6 +194,12 @@ export default function Home() {
     setColorData(newColorData)
   }
 
+  const handleModeChange = (newMode: PaletteMode) => {
+    setMode(newMode)
+    // Note: User's custom colors are preserved when switching modes
+    // To reset to defaults for the new mode, use the "Reset to MUI Defaults" button
+  }
+
   const resetColors = () => {
     localStorage.removeItem(STORAGE_KEY)
     setMode("light")
@@ -197,6 +210,8 @@ export default function Home() {
     setActionColors(MUI_DEFAULT_ACTION_LIGHT)
     setCommonColors(MUI_DEFAULT_COMMON)
     setGreyPalette(MUI_DEFAULT_GREY)
+    setTonalOffset(MUI_DEFAULT_TONAL_OFFSET)
+    setContrastThreshold(MUI_DEFAULT_CONTRAST_THRESHOLD)
 
     toast({
       title: "Reset Complete",
@@ -209,47 +224,58 @@ export default function Home() {
     colors: colorData,
     text: textColors,
     background: backgroundColors,
-    divider: dividerColor,
     action: actionColors,
+    divider: dividerColor,
     common: commonColors,
     grey: greyPalette,
+    tonalOffset,
+    contrastThreshold,
   }
 
   const handleImport = (importedData: PaletteType) => {
     try {
-      if (importedData.colors && Array.isArray(importedData.colors)) {
-        const validColors = importedData.colors.filter(
-          (color) =>
-            color &&
-            typeof color === "object" &&
-            "name" in color &&
-            "main" in color &&
-            typeof color.main === "string" &&
-            /^#[0-9A-F]{6}$/i.test(color.main),
-        )
-
-        if (validColors.length > 0) {
-          if (importedData.mode) setMode(importedData.mode)
-          setColorData(validColors)
-          if (importedData.text) setTextColors(importedData.text)
-          if (importedData.background) setBackgroundColors(importedData.background)
-          if (importedData.divider) setDividerColor(importedData.divider)
-          if (importedData.action) setActionColors(importedData.action)
-          if (importedData.common) setCommonColors(importedData.common)
-          if (importedData.grey) setGreyPalette(importedData.grey)
-
-          toast({
-            title: "Import Complete",
-            description: "MUI palette imported successfully",
-          })
-
-          setTimeout(saveToLocalStorage, 100)
-        } else {
-          throw new Error("Invalid color data")
-        }
-      } else {
+      if (!importedData.colors || !Array.isArray(importedData.colors)) {
         throw new Error("Color data not found")
       }
+
+      const validColors = importedData.colors.filter(
+        (color) =>
+          color &&
+          typeof color === "object" &&
+          "name" in color &&
+          "main" in color &&
+          typeof color.main === "string" &&
+          /^#[0-9A-F]{6}$/i.test(color.main),
+      )
+
+      if (validColors.length === 0) {
+        throw new Error("Invalid color data")
+      }
+
+      // Update all state values from imported data
+      const stateUpdates = {
+        mode: { value: importedData.mode, setter: setMode },
+        text: { value: importedData.text, setter: setTextColors },
+        background: { value: importedData.background, setter: setBackgroundColors },
+        action: { value: importedData.action, setter: setActionColors },
+        divider: { value: importedData.divider, setter: setDividerColor },
+        grey: { value: importedData.grey, setter: setGreyPalette },
+        common: { value: importedData.common, setter: setCommonColors },
+        tonalOffset: { value: importedData.tonalOffset, setter: setTonalOffset },
+        contrastThreshold: { value: importedData.contrastThreshold, setter: setContrastThreshold },
+      }
+
+      setColorData(validColors)
+      Object.values(stateUpdates).forEach(({ value, setter }) => {
+        if (value !== undefined) setter(value as never)
+      })
+
+      toast({
+        title: "Import Complete",
+        description: "MUI palette imported successfully",
+      })
+
+      setTimeout(saveToLocalStorage, 100)
     } catch (error) {
       console.error("Import error:", error)
       toast({
@@ -269,7 +295,7 @@ export default function Home() {
             <HelpModal />
           </div>
           <div className="flex items-center gap-2">
-            <ThemeModeToggle mode={mode} onModeChange={setMode} />
+            <ThemeModeToggle mode={mode} onModeChange={handleModeChange} />
             <Button onClick={resetColors} variant="secondary" size="sm">
               Reset to MUI Defaults
             </Button>

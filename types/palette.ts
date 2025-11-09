@@ -2,7 +2,7 @@ export type ColorRole = "primary" | "secondary" | "error" | "warning" | "info" |
 
 export type ColorType = "theme" | "simple"
 
-export type ThemeMode = "light" | "dark"
+export type PaletteMode = "light" | "dark"
 
 export interface MUIColorData {
   id: string
@@ -30,15 +30,15 @@ export interface BackgroundColors {
 export interface ActionColors {
   active: string
   hover: string
+  hoverOpacity: number
   selected: string
+  selectedOpacity: number
   disabled: string
   disabledBackground: string
+  disabledOpacity: number
   focus: string
-}
-
-export interface CommonColors {
-  black: string
-  white: string
+  focusOpacity: number
+  activatedOpacity: number
 }
 
 export interface GreyPalette {
@@ -58,15 +58,22 @@ export interface GreyPalette {
   A700: string
 }
 
+export interface CommonColors {
+  black: string
+  white: string
+}
+
 export interface PaletteType {
-  mode: ThemeMode
+  mode?: PaletteMode
   colors: MUIColorData[]
   text?: TextColors
   background?: BackgroundColors
+  action?: ActionColors
   divider?: string
   grey?: GreyPalette
-  action?: ActionColors
   common?: CommonColors
+  tonalOffset?: number // Coefficient for light/dark variations (default: 0.2)
+  contrastThreshold?: number // Contrast ratio threshold for determining light/dark text (default: 3)
 }
 
 export const MUI_DEFAULT_COLORS: MUIColorData[] = [
@@ -138,6 +145,7 @@ export const MUI_DEFAULT_COLORS: MUIColorData[] = [
   },
 ]
 
+// Light mode defaults
 export const MUI_DEFAULT_TEXT_LIGHT: TextColors = {
   primary: "rgba(0, 0, 0, 0.87)",
   secondary: "rgba(0, 0, 0, 0.6)",
@@ -167,19 +175,29 @@ export const MUI_DEFAULT_DIVIDER_DARK = "rgba(255, 255, 255, 0.12)"
 export const MUI_DEFAULT_ACTION_LIGHT: ActionColors = {
   active: "rgba(0, 0, 0, 0.54)",
   hover: "rgba(0, 0, 0, 0.04)",
+  hoverOpacity: 0.04,
   selected: "rgba(0, 0, 0, 0.08)",
+  selectedOpacity: 0.08,
   disabled: "rgba(0, 0, 0, 0.26)",
   disabledBackground: "rgba(0, 0, 0, 0.12)",
+  disabledOpacity: 0.38,
   focus: "rgba(0, 0, 0, 0.12)",
+  focusOpacity: 0.12,
+  activatedOpacity: 0.12,
 }
 
 export const MUI_DEFAULT_ACTION_DARK: ActionColors = {
   active: "#fff",
   hover: "rgba(255, 255, 255, 0.08)",
+  hoverOpacity: 0.08,
   selected: "rgba(255, 255, 255, 0.16)",
+  selectedOpacity: 0.16,
   disabled: "rgba(255, 255, 255, 0.3)",
   disabledBackground: "rgba(255, 255, 255, 0.12)",
+  disabledOpacity: 0.38,
   focus: "rgba(255, 255, 255, 0.12)",
+  focusOpacity: 0.12,
+  activatedOpacity: 0.24,
 }
 
 export const MUI_DEFAULT_COMMON: CommonColors = {
@@ -204,6 +222,9 @@ export const MUI_DEFAULT_GREY: GreyPalette = {
   A700: "#616161",
 }
 
+export const MUI_DEFAULT_CONTRAST_THRESHOLD = 3
+
+// Default exports (light mode)
 export const MUI_DEFAULT_TEXT = MUI_DEFAULT_TEXT_LIGHT
 export const MUI_DEFAULT_BACKGROUND = MUI_DEFAULT_BACKGROUND_LIGHT
 export const MUI_DEFAULT_DIVIDER = MUI_DEFAULT_DIVIDER_LIGHT
