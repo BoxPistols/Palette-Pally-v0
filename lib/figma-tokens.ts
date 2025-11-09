@@ -32,7 +32,7 @@ export function paletteToFigmaTokens(palette: PaletteType): FigmaTokens {
 
   // Convert theme colors
   palette.colors.forEach((color: MUIColorData) => {
-    const colorId = color.id.replace(/^custom-\d+-/, "").toLowerCase()
+    const colorId = color.name.replace(/\s+/g, "").toLowerCase()
 
     tokens.color[colorId] = {
       main: {
