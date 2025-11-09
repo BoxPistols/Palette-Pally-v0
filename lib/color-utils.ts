@@ -160,7 +160,7 @@ export function oklabToHex(l: number, a: number, b: number): string {
   return rgbToHex(r8, g8, b8)
 }
 
-// Function to lighten or darken a color
+// Function to lighten or darken a color (legacy RGB-based method)
 function adjustColor(color: string, amount: number): string {
   const rgb = hexToRgb(color)
   if (!rgb) return color
@@ -176,19 +176,83 @@ function adjustColor(color: string, amount: number): string {
   return rgbToHex(Math.round(newR), Math.round(newG), Math.round(newB))
 }
 
-export function generateMUIColorVariations(mainColor: string): {
+// MUI-compatible color adjustment using HSL color space
+// This provides more perceptually accurate color variations
+export function adjustColorHSL(color: string, lightnessDelta: number, saturationDelta: number = 0): string {
+  const hsl = hexToHsl(color)
+  if (!hsl) return color
+
+  // Adjust lightness (0-100 scale)
+  let newL = hsl.l + lightnessDelta
+  newL = Math.max(0, Math.min(100, newL))
+
+  // Adjust saturation (0-100 scale)
+  let newS = hsl.s + saturationDelta
+  newS = Math.max(0, Math.min(100, newS))
+
+  return hslToHex(hsl.h, newS, newL)
+}
+
+// Lighten a color by increasing lightness in HSL space
+export function lighten(color: string, coefficient: number = 0.15): string {
+  const hsl = hexToHsl(color)
+  if (!hsl) return color
+
+  // MUI-style lightening: increase lightness by coefficient
+  const newL = hsl.l + (100 - hsl.l) * coefficient
+  return hslToHex(hsl.h, hsl.s, newL)
+}
+
+// Darken a color by decreasing lightness in HSL space
+export function darken(color: string, coefficient: number = 0.15): string {
+  const hsl = hexToHsl(color)
+  if (!hsl) return color
+
+  // MUI-style darkening: decrease lightness by coefficient
+  const newL = hsl.l * (1 - coefficient)
+  return hslToHex(hsl.h, hsl.s, newL)
+}
+
+// Emphasize a color (used for hover states, etc.)
+export function emphasize(color: string, coefficient: number = 0.15): string {
+  const brightness = getColorBrightness(color)
+  // For dark colors, lighten; for light colors, darken
+  return brightness > 128 ? darken(color, coefficient) : lighten(color, coefficient)
+}
+
+// MUI augmentColor implementation
+// Generates light and dark variations based on the main color
+export function augmentColor(mainColor: string, tonalOffset: number = 0.2): {
+  light: string
+  main: string
+  dark: string
+  contrastText: string
+} {
+  return {
+    light: lighten(mainColor, tonalOffset),
+    main: mainColor,
+    dark: darken(mainColor, tonalOffset),
+    contrastText: getBetterContrastColor(mainColor),
+  }
+}
+
+// Generate MUI color variations with additional "lighter" shade
+// This function provides compatibility with the existing codebase
+export function generateMUIColorVariations(mainColor: string, tonalOffset: number = 0.2): {
   main: string
   light: string
   lighter: string
   dark: string
   contrastText: string
 } {
+  const baseVariations = augmentColor(mainColor, tonalOffset)
+
   return {
     main: mainColor,
-    light: adjustColor(mainColor, 60),
-    lighter: adjustColor(mainColor, 90),
-    dark: adjustColor(mainColor, -40),
-    contrastText: getBetterContrastColor(mainColor),
+    light: baseVariations.light,
+    lighter: lighten(mainColor, tonalOffset * 1.5), // Extra light variation
+    dark: baseVariations.dark,
+    contrastText: baseVariations.contrastText,
   }
 }
 

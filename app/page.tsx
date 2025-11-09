@@ -15,23 +15,39 @@ import { HelpModal } from "@/components/help-modal"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
-import type { PaletteType, MUIColorData, TextColors, BackgroundColors, GreyPalette, ColorType } from "@/types/palette"
+import type {
+  PaletteType,
+  MUIColorData,
+  TextColors,
+  BackgroundColors,
+  ActionColors,
+  GreyPalette,
+  CommonColors,
+  ColorType,
+  PaletteMode,
+} from "@/types/palette"
 import {
   MUI_DEFAULT_COLORS,
   MUI_DEFAULT_TEXT,
   MUI_DEFAULT_BACKGROUND,
+  MUI_DEFAULT_ACTION,
   MUI_DEFAULT_DIVIDER,
   MUI_DEFAULT_GREY,
+  MUI_DEFAULT_COMMON,
 } from "@/types/palette"
 
 const STORAGE_KEY = "palette-pally-mui-data"
 
 export default function Home() {
+  const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorData[]>(MUI_DEFAULT_COLORS)
   const [textColors, setTextColors] = useState<TextColors>(MUI_DEFAULT_TEXT)
   const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>(MUI_DEFAULT_BACKGROUND)
+  const [actionColors, setActionColors] = useState<ActionColors>(MUI_DEFAULT_ACTION)
   const [dividerColor, setDividerColor] = useState<string>(MUI_DEFAULT_DIVIDER)
   const [greyPalette, setGreyPalette] = useState<GreyPalette>(MUI_DEFAULT_GREY)
+  const [commonColors, setCommonColors] = useState<CommonColors>(MUI_DEFAULT_COMMON)
+  const [tonalOffset, setTonalOffset] = useState<number>(0.2)
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -39,13 +55,17 @@ export default function Home() {
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData) as PaletteType
+        if (parsedData.mode) setMode(parsedData.mode)
         if (parsedData.colors && Array.isArray(parsedData.colors)) {
           setColorData(parsedData.colors)
         }
         if (parsedData.text) setTextColors(parsedData.text)
         if (parsedData.background) setBackgroundColors(parsedData.background)
+        if (parsedData.action) setActionColors(parsedData.action)
         if (parsedData.divider) setDividerColor(parsedData.divider)
         if (parsedData.grey) setGreyPalette(parsedData.grey)
+        if (parsedData.common) setCommonColors(parsedData.common)
+        if (parsedData.tonalOffset) setTonalOffset(parsedData.tonalOffset)
       } catch (error) {
         console.error("Error loading data from localStorage:", error)
       }
@@ -56,11 +76,15 @@ export default function Home() {
   const saveToLocalStorage = () => {
     try {
       const dataToSave: PaletteType = {
+        mode,
         colors: colorData,
         text: textColors,
         background: backgroundColors,
+        action: actionColors,
         divider: dividerColor,
         grey: greyPalette,
+        common: commonColors,
+        tonalOffset,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
       toast({
@@ -152,11 +176,15 @@ export default function Home() {
 
   const resetColors = () => {
     localStorage.removeItem(STORAGE_KEY)
+    setMode("light")
     setColorData(MUI_DEFAULT_COLORS)
     setTextColors(MUI_DEFAULT_TEXT)
     setBackgroundColors(MUI_DEFAULT_BACKGROUND)
+    setActionColors(MUI_DEFAULT_ACTION)
     setDividerColor(MUI_DEFAULT_DIVIDER)
     setGreyPalette(MUI_DEFAULT_GREY)
+    setCommonColors(MUI_DEFAULT_COMMON)
+    setTonalOffset(0.2)
 
     toast({
       title: "Reset Complete",
@@ -165,11 +193,15 @@ export default function Home() {
   }
 
   const exportData: PaletteType = {
+    mode,
     colors: colorData,
     text: textColors,
     background: backgroundColors,
+    action: actionColors,
     divider: dividerColor,
     grey: greyPalette,
+    common: commonColors,
+    tonalOffset,
   }
 
   const handleImport = (importedData: PaletteType) => {
@@ -186,11 +218,15 @@ export default function Home() {
         )
 
         if (validColors.length > 0) {
+          if (importedData.mode) setMode(importedData.mode)
           setColorData(validColors)
           if (importedData.text) setTextColors(importedData.text)
           if (importedData.background) setBackgroundColors(importedData.background)
+          if (importedData.action) setActionColors(importedData.action)
           if (importedData.divider) setDividerColor(importedData.divider)
           if (importedData.grey) setGreyPalette(importedData.grey)
+          if (importedData.common) setCommonColors(importedData.common)
+          if (importedData.tonalOffset) setTonalOffset(importedData.tonalOffset)
 
           toast({
             title: "Import Complete",
