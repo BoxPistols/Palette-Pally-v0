@@ -41,7 +41,7 @@ export function MUIExportPanel({ data, onImport }: MUIExportPanelProps) {
 
     // Add theme colors
     data.colors.forEach((color) => {
-      const colorId = color.id.replace(/^custom-\d+-/, "")
+      const colorId = color.name.replace(/\s+/g, "").replace(/^(.)/, (c) => c.toLowerCase())
       paletteObj[colorId] = {
         main: color.main,
         light: color.light,
