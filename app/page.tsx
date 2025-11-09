@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Logo } from "@/components/logo"
 import { HelpModal } from "@/components/help-modal"
+import { ThemeModeToggle } from "@/components/theme-mode-toggle"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
@@ -178,6 +179,12 @@ export default function Home() {
     setColorData(newColorData)
   }
 
+  const handleModeChange = (newMode: PaletteMode) => {
+    setMode(newMode)
+    // Note: User's custom colors are preserved when switching modes
+    // To reset to defaults for the new mode, use the "Reset to MUI Defaults" button
+  }
+
   const resetColors = () => {
     localStorage.removeItem(STORAGE_KEY)
     setMode("light")
@@ -272,6 +279,7 @@ export default function Home() {
             <HelpModal />
           </div>
           <div className="flex items-center gap-2">
+            <ThemeModeToggle mode={mode} onModeChange={handleModeChange} />
             <Button onClick={resetColors} variant="secondary" size="sm">
               Reset to MUI Defaults
             </Button>
