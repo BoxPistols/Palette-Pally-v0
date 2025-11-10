@@ -40,23 +40,21 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
     }
   }
 
-  const renderShadeInput = (shade: GreyShade, mode: PaletteMode) => {
-    const color = greyPalette[shade][mode]
-    const ModeIcon = mode === "light" ? Sun : Moon
+  const renderShadeInput = (shade: GreyShade) => {
+    const color = greyPalette[shade][currentMode]
 
     return (
       <div className="flex items-center gap-1">
-        <ModeIcon className="w-3 h-3 flex-shrink-0 opacity-60" />
         <button
           type="button"
-          className="w-6 h-6 rounded border border-gray-300 cursor-pointer transition-transform hover:scale-110 flex-shrink-0"
+          className="w-8 h-8 rounded border border-gray-300 cursor-pointer transition-transform hover:scale-110 flex-shrink-0"
           style={{ backgroundColor: color }}
-          onClick={() => handleColorClick(shade, mode)}
-          title={`Grey ${shade} (${mode})`}
+          onClick={() => handleColorClick(shade, currentMode)}
+          title={`Grey ${shade}`}
         />
         <Input
           value={color}
-          onChange={(e) => handleHexInputChange(shade, mode, e.target.value)}
+          onChange={(e) => handleHexInputChange(shade, currentMode, e.target.value)}
           placeholder="#000000"
           className="font-mono text-xs flex-1 h-7 px-1"
         />
@@ -72,18 +70,31 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
     <Card className="flex-shrink-0 w-[320px] relative" style={{ backgroundColor: cardBgColor, color: textColor }}>
       <CardHeader className="pb-3">
         <CardTitle>Greyscale Palette</CardTitle>
+        {/* Mode Indicator */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+          {currentMode === "light" ? (
+            <>
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span className="text-xs font-semibold">Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-4 h-4 text-blue-500" />
+              <span className="text-xs font-semibold">Dark Mode</span>
+            </>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-3 max-h-[600px] overflow-y-auto">
         {/* Main Shades */}
         <div className="space-y-1">
           <div className="text-sm font-semibold text-gray-700 sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Main Shades</div>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-2">
             {mainShades.map((shade) => (
-              <div key={shade} className="space-y-0.5">
+              <div key={shade} className="space-y-1">
                 <div className="text-xs font-medium text-gray-600">{shade}</div>
-                {renderShadeInput(shade, "light")}
-                {renderShadeInput(shade, "dark")}
+                {renderShadeInput(shade)}
               </div>
             ))}
           </div>
@@ -92,12 +103,11 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
         {/* Accent Shades */}
         <div className="space-y-1">
           <div className="text-sm font-semibold text-gray-700 sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Accent Shades</div>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-2">
             {accentShades.map((shade) => (
-              <div key={shade} className="space-y-0.5">
+              <div key={shade} className="space-y-1">
                 <div className="text-xs font-medium text-gray-600">{shade}</div>
-                {renderShadeInput(shade, "light")}
-                {renderShadeInput(shade, "dark")}
+                {renderShadeInput(shade)}
               </div>
             ))}
           </div>
@@ -107,11 +117,15 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
         {showPicker && (
           <div className="absolute z-50 top-full left-0 mt-2 p-3 bg-white rounded-lg shadow-xl border">
             <div className="mb-2 text-sm font-semibold flex items-center gap-2">
-              {editingMode === "light" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              Editing: Grey {editingShade} ({editingMode})
+              {currentMode === "light" ? (
+                <Sun className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-blue-500" />
+              )}
+              Editing: Grey {editingShade}
             </div>
             <HexColorPicker
-              color={greyPalette[editingShade][editingMode]}
+              color={greyPalette[editingShade][currentMode]}
               onChange={handlePickerChange}
             />
             <Button

@@ -53,28 +53,24 @@ export function DualColorPickerCard({
     setIsEditingName(false)
   }
 
-  const renderColorInput = (mode: PaletteMode, property: "main" | "light" | "lighter" | "dark" | "contrastText", label: string) => {
-    const color = colorData[property]?.[mode] || ""
-    const ModeIcon = mode === "light" ? Sun : Moon
+  const renderColorInput = (property: "main" | "light" | "lighter" | "dark" | "contrastText", label: string) => {
+    const color = colorData[property]?.[currentMode] || ""
 
     return (
       <div className="flex items-center gap-2">
-        <ModeIcon className="w-4 h-4 flex-shrink-0" />
-        <div className="flex-1 flex items-center gap-2">
-          <button
-            type="button"
-            className="w-10 h-10 rounded border-2 border-gray-300 cursor-pointer transition-transform hover:scale-110"
-            style={{ backgroundColor: color }}
-            onClick={() => handleColorClick(property, mode)}
-            title={`${label} (${mode})`}
-          />
-          <Input
-            value={color}
-            onChange={(e) => handleHexInputChange(mode, property, e.target.value)}
-            placeholder="#000000"
-            className="font-mono text-sm flex-1"
-          />
-        </div>
+        <button
+          type="button"
+          className="w-10 h-10 rounded border-2 border-gray-300 cursor-pointer transition-transform hover:scale-110 flex-shrink-0"
+          style={{ backgroundColor: color }}
+          onClick={() => handleColorClick(property, currentMode)}
+          title={`${label}`}
+        />
+        <Input
+          value={color}
+          onChange={(e) => handleHexInputChange(currentMode, property, e.target.value)}
+          placeholder="#000000"
+          className="font-mono text-sm flex-1"
+        />
       </div>
     )
   }
@@ -132,11 +128,25 @@ export function DualColorPickerCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
+        {/* Mode Indicator */}
+        <div className="flex items-center gap-2 pb-2 border-b">
+          {currentMode === "light" ? (
+            <>
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-semibold">Light Mode Colors</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-semibold">Dark Mode Colors</span>
+            </>
+          )}
+        </div>
+
         {/* Main Color */}
         <div className="space-y-2">
           <div className="text-sm font-semibold text-gray-700">Main</div>
-          {renderColorInput("light", "main", "Main Light")}
-          {renderColorInput("dark", "main", "Main Dark")}
+          {renderColorInput("main", "Main Color")}
         </div>
 
         {/* Additional variations for theme colors */}
@@ -145,24 +155,21 @@ export function DualColorPickerCard({
             {colorData.light && (
               <div className="space-y-2">
                 <div className="text-sm font-semibold text-gray-700">Light</div>
-                {renderColorInput("light", "light", "Light Light")}
-                {renderColorInput("dark", "light", "Light Dark")}
+                {renderColorInput("light", "Light Variant")}
               </div>
             )}
 
             {colorData.lighter && (
               <div className="space-y-2">
                 <div className="text-sm font-semibold text-gray-700">Lighter</div>
-                {renderColorInput("light", "lighter", "Lighter Light")}
-                {renderColorInput("dark", "lighter", "Lighter Dark")}
+                {renderColorInput("lighter", "Lighter Variant")}
               </div>
             )}
 
             {colorData.dark && (
               <div className="space-y-2">
                 <div className="text-sm font-semibold text-gray-700">Dark</div>
-                {renderColorInput("light", "dark", "Dark Light")}
-                {renderColorInput("dark", "dark", "Dark Dark")}
+                {renderColorInput("dark", "Dark Variant")}
               </div>
             )}
           </>
@@ -172,8 +179,7 @@ export function DualColorPickerCard({
         {colorData.contrastText && (
           <div className="space-y-2">
             <div className="text-sm font-semibold text-gray-700">Contrast Text</div>
-            {renderColorInput("light", "contrastText", "Contrast Light")}
-            {renderColorInput("dark", "contrastText", "Contrast Dark")}
+            {renderColorInput("contrastText", "Text Color")}
           </div>
         )}
 
@@ -181,11 +187,15 @@ export function DualColorPickerCard({
         {showPicker && (
           <div className="absolute z-50 top-full left-0 mt-2 p-3 bg-white rounded-lg shadow-xl border">
             <div className="mb-2 text-sm font-semibold flex items-center gap-2">
-              {editingMode === "light" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              Editing: {editingProperty} ({editingMode})
+              {currentMode === "light" ? (
+                <Sun className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-blue-500" />
+              )}
+              Editing: {editingProperty}
             </div>
             <HexColorPicker
-              color={colorData[editingProperty]?.[editingMode] || "#000000"}
+              color={colorData[editingProperty]?.[currentMode] || "#000000"}
               onChange={handlePickerChange}
             />
             <Button
