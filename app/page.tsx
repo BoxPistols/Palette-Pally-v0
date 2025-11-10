@@ -27,12 +27,14 @@ import {
 const STORAGE_KEY = "palette-pally-dual-data"
 
 export default function Home() {
+  const [isMounted, setIsMounted] = useState(false)
   const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorDataDual[]>(MUI_DEFAULT_COLORS_DUAL)
   const [greyPalette, setGreyPalette] = useState<GreyPaletteDual>(MUI_DEFAULT_GREY_DUAL)
 
   // Load data from localStorage on mount
   useEffect(() => {
+    setIsMounted(true)
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
@@ -163,10 +165,23 @@ export default function Home() {
   const backgroundColor = mode === "light" ? "#ffffff" : "#121212"
   const textColor = mode === "light" ? "#000000" : "#ffffff"
 
+  // Prevent hydration mismatch by only rendering after mount
+  if (!isMounted) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#ffffff" }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main
       className="min-h-screen transition-colors duration-300"
       style={{ backgroundColor, color: textColor }}
+      suppressHydrationWarning
     >
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
