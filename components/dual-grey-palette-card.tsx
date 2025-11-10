@@ -89,11 +89,11 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
       <CardContent className="space-y-3 max-h-[600px] overflow-y-auto">
         {/* Main Shades */}
         <div className="space-y-1">
-          <div className="text-sm font-semibold text-gray-700 sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Main Shades</div>
+          <div className="text-sm font-semibold text-foreground sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Main Shades</div>
           <div className="grid grid-cols-2 gap-x-2 gap-y-2">
             {mainShades.map((shade) => (
               <div key={shade} className="space-y-1">
-                <div className="text-xs font-medium text-gray-600">{shade}</div>
+                <div className="text-xs font-medium text-muted-foreground">{shade}</div>
                 {renderShadeInput(shade)}
               </div>
             ))}
@@ -102,11 +102,11 @@ export function DualGreyPaletteCard({ greyPalette, currentMode, onGreyChange }: 
 
         {/* Accent Shades */}
         <div className="space-y-1">
-          <div className="text-sm font-semibold text-gray-700 sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Accent Shades</div>
+          <div className="text-sm font-semibold text-foreground sticky top-0 py-1" style={{ backgroundColor: stickyBgColor }}>Accent Shades</div>
           <div className="grid grid-cols-2 gap-x-2 gap-y-2">
             {accentShades.map((shade) => (
               <div key={shade} className="space-y-1">
-                <div className="text-xs font-medium text-gray-600">{shade}</div>
+                <div className="text-xs font-medium text-muted-foreground">{shade}</div>
                 {renderShadeInput(shade)}
               </div>
             ))}

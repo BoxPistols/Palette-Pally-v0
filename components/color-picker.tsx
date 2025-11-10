@@ -166,12 +166,12 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
             // レベルに応じたバッジの色を設定
             const levelColor =
               level === "AAA"
-                ? "bg-green-100 text-green-800"
+                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
                 : level === "AA"
-                  ? "bg-blue-100 text-blue-800"
+                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
                   : level === "A"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
 
             return (
               <>
@@ -179,7 +179,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
                   {level}
                 </span>
                 <span
-                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800"
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
                   title="コントラスト比"
                 >
                   {contrast.toFixed(1)}:1
@@ -199,7 +199,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
           <TabsContent value="rgb" className="mt-2">
             <div className="grid grid-cols-3 gap-1">
               <div>
-                <label className="text-xs text-gray-500 block">R</label>
+                <label className="text-xs text-muted-foreground block">R</label>
                 <Input
                   type="number"
                   min="0"
@@ -210,7 +210,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">G</label>
+                <label className="text-xs text-muted-foreground block">G</label>
                 <Input
                   type="number"
                   min="0"
@@ -221,7 +221,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">B</label>
+                <label className="text-xs text-muted-foreground block">B</label>
                 <Input
                   type="number"
                   min="0"
@@ -237,7 +237,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
           <TabsContent value="hsl" className="mt-2">
             <div className="grid grid-cols-3 gap-1">
               <div>
-                <label className="text-xs text-gray-500 block">H</label>
+                <label className="text-xs text-muted-foreground block">H</label>
                 <Input
                   type="number"
                   min="0"
@@ -248,7 +248,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">S (%)</label>
+                <label className="text-xs text-muted-foreground block">S (%)</label>
                 <Input
                   type="number"
                   min="0"
@@ -259,7 +259,7 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">L (%)</label>
+                <label className="text-xs text-muted-foreground block">L (%)</label>
                 <Input
                   type="number"
                   min="0"
@@ -275,15 +275,15 @@ export function ColorPicker({ index, name, color, onColorChange, onNameChange }:
           <TabsContent value="oklab" className="mt-2">
             <div className="grid grid-cols-3 gap-1">
               <div>
-                <label className="text-xs text-gray-500 block">L</label>
+                <label className="text-xs text-muted-foreground block">L</label>
                 <Input type="text" value={oklabValues.l.toFixed(2)} readOnly className="text-xs h-7" />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">a</label>
+                <label className="text-xs text-muted-foreground block">a</label>
                 <Input type="text" value={oklabValues.a.toFixed(2)} readOnly className="text-xs h-7" />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block">b</label>
+                <label className="text-xs text-muted-foreground block">b</label>
                 <Input type="text" value={oklabValues.b.toFixed(2)} readOnly className="text-xs h-7" />
               </div>
             </div>

@@ -46,12 +46,12 @@ export function ColorDisplay({ colorKey, variations, textColorSettings }: ColorD
           // レベルに応じたバッジの色を設定
           const levelColor =
             wcagLevel.level === "AAA"
-              ? "bg-green-100 text-green-800"
+              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
               : wcagLevel.level === "AA"
-                ? "bg-blue-100 text-blue-800"
+                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
                 : wcagLevel.level === "A"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
 
           return (
             <div
@@ -75,7 +75,7 @@ export function ColorDisplay({ colorKey, variations, textColorSettings }: ColorD
                   {wcagLevel.level}
                 </span>
                 <span
-                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-800 opacity-80"
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground opacity-80"
                   title={`コントラスト比: ${contrast.toFixed(2)}:1`}
                 >
                   {contrast.toFixed(1)}:1

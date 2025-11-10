@@ -53,7 +53,7 @@ export function HelpModal() {
                 <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">6つのカラーロール</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     MUIの標準カラーシステムに基づく6つの役割：
                     <br />• <strong>Primary</strong>: 主要なUI要素
                     <br />• <strong>Secondary</strong>: 副次的なUI要素
@@ -69,7 +69,7 @@ export function HelpModal() {
                 <Sparkles className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">4つのカラートークン</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     各カラーロールには4つのバリエーションが自動生成されます：
                     <br />• <strong>main</strong>: メインの色調（あなたが選択）
                     <br />• <strong>light</strong>: mainより明るい色調（自動生成）
@@ -87,7 +87,7 @@ export function HelpModal() {
                 <Palette className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">カラーの選択</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     左側のパネルで各カラーロールのmain色を選択・編集できます。
                     カラーピッカーを使用するか、HEX、RGB、HSLの値を直接入力できます。
                     light、dark、contrastTextは自動的に生成されます。
@@ -99,7 +99,7 @@ export function HelpModal() {
                 <Contrast className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">アクセシビリティチェック</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     各カラーのコントラスト比とWCAGレベル（AAA、AA、A、Fail）が自動的に表示されます。
                     <br />• AAA（7.0:1以上）: 最高レベル
                     <br />• AA（4.5:1以上）: 標準要件
@@ -113,7 +113,7 @@ export function HelpModal() {
                 <Save className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">保存とリセット</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     「Save」ボタンでパレットをブラウザのLocalStorageに保存できます。 「Reset to MUI
                     Defaults」ボタンでMUIのデフォルトカラーに戻せます。
                   </p>
@@ -128,7 +128,7 @@ export function HelpModal() {
                 <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">MUIテーマとしてエクスポート</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     「Export」ボタンをクリックすると、2つの形式でエクスポートできます：
                     <br />• <strong>MUI Theme</strong>: createTheme()で使用できるJavaScript/TypeScriptファイル
                     <br />• <strong>JSON</strong>: 汎用的なJSON形式
@@ -136,7 +136,7 @@ export function HelpModal() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-3 rounded text-xs font-mono">
+              <div className="bg-muted p-3 rounded text-xs font-mono">
                 <pre>{`import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
@@ -156,7 +156,7 @@ const theme = createTheme({
                 <FileJson className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-semibold">インポート</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     「Import JSON」ボタンで以前エクスポートしたJSONファイルをインポートできます。
                     MUIの6つのカラーロールすべてを含むJSONファイルが必要です。
                   </p>

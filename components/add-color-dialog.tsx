@@ -66,7 +66,7 @@ export function AddColorDialog({ onAddColor }: AddColorDialogProps) {
                 <Label htmlFor="theme" className="font-normal cursor-pointer">
                   <div>
                     <div className="font-medium">Theme Color</div>
-                    <div className="text-xs text-gray-500">Includes light, lighter, main, dark, contrastText</div>
+                    <div className="text-xs text-muted-foreground">Includes light, lighter, main, dark, contrastText</div>
                   </div>
                 </Label>
               </div>
@@ -75,7 +75,7 @@ export function AddColorDialog({ onAddColor }: AddColorDialogProps) {
                 <Label htmlFor="simple" className="font-normal cursor-pointer">
                   <div>
                     <div className="font-medium">Simple Color</div>
-                    <div className="text-xs text-gray-500">Single color value only</div>
+                    <div className="text-xs text-muted-foreground">Single color value only</div>
                   </div>
                 </Label>
               </div>

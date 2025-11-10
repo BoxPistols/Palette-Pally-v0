@@ -30,7 +30,7 @@ export function AdditionalColorsEditor({
       <CardContent className="space-y-4">
         {/* Text Colors */}
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-gray-600">Text</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground">Text</h3>
           <div className="grid grid-cols-1 gap-2">
             <div>
               <Label htmlFor="text-primary" className="text-xs">
@@ -70,7 +70,7 @@ export function AdditionalColorsEditor({
 
         {/* Background Colors */}
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-gray-600">Background</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground">Background</h3>
           <div className="grid grid-cols-1 gap-2">
             <div>
               <Label htmlFor="bg-default" className="text-xs">
@@ -99,7 +99,7 @@ export function AdditionalColorsEditor({
 
         {/* Divider */}
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-gray-600">Divider</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground">Divider</h3>
           <Input
             value={divider}
             onChange={(e) => onDividerChange(e.target.value)}

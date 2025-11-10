@@ -113,7 +113,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
               <DialogTitle>Export JSON</DialogTitle>
               <DialogDescription>以下のJSONデータをエクスポートします。</DialogDescription>
             </DialogHeader>
-            <div className="max-h-[300px] overflow-auto bg-gray-50 p-2 rounded text-xs font-mono">
+            <div className="max-h-[300px] overflow-auto bg-muted p-2 rounded text-xs font-mono">
               <pre>{jsonPreview}</pre>
             </div>
             <DialogFooter>

@@ -42,7 +42,7 @@ export function TextColorSettings({ settings, onChange }: TextColorSettingsProps
         </DialogHeader>
 
         <div className="py-4">
-          <p className="text-sm text-gray-500 mb-4">各カラーバリエーションのテキストカラーを個別に設定できます。</p>
+          <p className="text-sm text-muted-foreground mb-4">各カラーバリエーションのテキストカラーを個別に設定できます。</p>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">

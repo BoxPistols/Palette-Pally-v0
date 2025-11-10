@@ -145,7 +145,7 @@ export function DualColorPickerCard({
 
         {/* Main Color */}
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-gray-700">Main</div>
+          <div className="text-sm font-semibold text-foreground">Main</div>
           {renderColorInput("main", "Main Color")}
         </div>
 
@@ -154,21 +154,21 @@ export function DualColorPickerCard({
           <>
             {colorData.light && (
               <div className="space-y-2">
-                <div className="text-sm font-semibold text-gray-700">Light</div>
+                <div className="text-sm font-semibold text-foreground">Light</div>
                 {renderColorInput("light", "Light Variant")}
               </div>
             )}
 
             {colorData.lighter && (
               <div className="space-y-2">
-                <div className="text-sm font-semibold text-gray-700">Lighter</div>
+                <div className="text-sm font-semibold text-foreground">Lighter</div>
                 {renderColorInput("lighter", "Lighter Variant")}
               </div>
             )}
 
             {colorData.dark && (
               <div className="space-y-2">
-                <div className="text-sm font-semibold text-gray-700">Dark</div>
+                <div className="text-sm font-semibold text-foreground">Dark</div>
                 {renderColorInput("dark", "Dark Variant")}
               </div>
             )}
@@ -178,7 +178,7 @@ export function DualColorPickerCard({
         {/* Contrast Text */}
         {colorData.contrastText && (
           <div className="space-y-2">
-            <div className="text-sm font-semibold text-gray-700">Contrast Text</div>
+            <div className="text-sm font-semibold text-foreground">Contrast Text</div>
             {renderColorInput("contrastText", "Text Color")}
           </div>
         )}
