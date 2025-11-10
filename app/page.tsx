@@ -1,10 +1,7 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
-import { DualColorPickerCard } from "@/components/dual-color-picker-card"
-import { DualGreyPaletteCard } from "@/components/dual-grey-palette-card"
-import { DualColorResultDisplay } from "@/components/dual-color-result-display"
-import { ThemeModeToggle } from "@/components/theme-mode-toggle"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Logo } from "@/components/logo"
@@ -24,17 +21,40 @@ import {
   MUI_DEFAULT_GREY_DUAL,
 } from "@/types/palette"
 
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-4">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+  </div>
+)
+
+// Dynamic imports to prevent SSR issues
+const DualColorPickerCard = dynamic(
+  () => import("@/components/dual-color-picker-card").then((mod) => ({ default: mod.DualColorPickerCard })),
+  { ssr: false, loading: LoadingSpinner }
+)
+const DualGreyPaletteCard = dynamic(
+  () => import("@/components/dual-grey-palette-card").then((mod) => ({ default: mod.DualGreyPaletteCard })),
+  { ssr: false, loading: LoadingSpinner }
+)
+const DualColorResultDisplay = dynamic(
+  () => import("@/components/dual-color-result-display").then((mod) => ({ default: mod.DualColorResultDisplay })),
+  { ssr: false, loading: LoadingSpinner }
+)
+const ThemeModeToggle = dynamic(
+  () => import("@/components/theme-mode-toggle").then((mod) => ({ default: mod.ThemeModeToggle })),
+  { ssr: false, loading: () => <div className="w-32 h-9 bg-gray-200 rounded animate-pulse"></div> }
+)
+
 const STORAGE_KEY = "palette-pally-dual-data"
 
 export default function Home() {
-  const [isMounted, setIsMounted] = useState(false)
   const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorDataDual[]>(MUI_DEFAULT_COLORS_DUAL)
   const [greyPalette, setGreyPalette] = useState<GreyPaletteDual>(MUI_DEFAULT_GREY_DUAL)
 
   // Load data from localStorage on mount
   useEffect(() => {
-    setIsMounted(true)
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
@@ -165,23 +185,10 @@ export default function Home() {
   const backgroundColor = mode === "light" ? "#ffffff" : "#121212"
   const textColor = mode === "light" ? "#000000" : "#ffffff"
 
-  // Prevent hydration mismatch by only rendering after mount
-  if (!isMounted) {
-    return (
-      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#ffffff" }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </main>
-    )
-  }
-
   return (
     <main
       className="min-h-screen transition-colors duration-300"
       style={{ backgroundColor, color: textColor }}
-      suppressHydrationWarning
     >
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
