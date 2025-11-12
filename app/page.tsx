@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Logo } from "@/components/logo"
 import { HelpModal } from "@/components/help-modal"
+import { UISettingsPanel } from "@/components/ui-settings-panel"
+import { useUIConfig } from "@/lib/ui-config-context"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { generateMUIColorVariations } from "@/lib/color-utils"
@@ -47,6 +49,7 @@ import {
 import { STORAGE_KEY } from "@/constants/app-constants"
 
 export default function Home() {
+  const { config } = useUIConfig()
   const [mode, setMode] = useState<PaletteMode>("light")
   const [colorData, setColorData] = useState<MUIColorData[]>(MUI_DEFAULT_COLORS)
   const [textColors, setTextColors] = useState<TextColors>(MUI_DEFAULT_TEXT_LIGHT)
@@ -287,7 +290,7 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-6">
+    <main className="custom-container container mx-auto py-6">
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="flex items-center gap-2">
@@ -295,6 +298,7 @@ export default function Home() {
             <HelpModal />
           </div>
           <div className="flex items-center gap-2">
+            <UISettingsPanel />
             <ThemeModeToggle mode={mode} onModeChange={handleModeChange} />
             <Button onClick={resetColors} variant="secondary" size="sm">
               Reset to MUI Defaults
@@ -323,10 +327,10 @@ export default function Home() {
             <AddColorDialog onAddColor={handleAddColor} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className={`grid ${config.layout.mode === 'list' ? 'grid-cols-1' : 'custom-grid-responsive'} gap-6`}>
             <div>
               <h2 className="text-lg font-semibold mb-3">MUI Color Roles</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`custom-grid-responsive custom-grid`}>
                 {colorData.map((color, index) => (
                   <MUIColorPicker
                     key={color.id}
@@ -341,7 +345,7 @@ export default function Home() {
 
             <div>
               <h2 className="text-lg font-semibold mb-3">MUI Color Palette</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`custom-grid-responsive custom-grid`}>
                 {colorData.map((color) => (
                   <MUIColorDisplay key={color.id} colorData={color} />
                 ))}
@@ -351,7 +355,7 @@ export default function Home() {
         </TabsContent>
 
         <TabsContent value="additional-colors">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className={`grid ${config.layout.mode === 'list' ? 'grid-cols-1' : 'custom-grid-responsive'} gap-6`}>
             <div className="space-y-4">
               <AdditionalColorsEditor
                 text={textColors}
@@ -369,7 +373,7 @@ export default function Home() {
         </TabsContent>
 
         <TabsContent value="system-colors">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className={`grid ${config.layout.mode === 'list' ? 'grid-cols-1' : 'custom-grid-responsive'} gap-6`}>
             <div className="space-y-4">
               <ActionColorsEditor action={actionColors} onActionChange={setActionColors} />
             </div>

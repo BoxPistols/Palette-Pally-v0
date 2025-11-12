@@ -90,3 +90,105 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* UI Customization Variables */
+:root {
+  /* Spacing */
+  --spacing-container: 16px;
+  --spacing-card: 12px;
+  --spacing-section: 24px;
+
+  /* Theme */
+  --theme-border-radius: 8px;
+  --theme-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --theme-animation-speed: 1;
+  --theme-font-base: 14px;
+  --theme-font-scale: 1;
+
+  /* Grid */
+  --grid-cols-sm: 1;
+  --grid-cols-md: 2;
+  --grid-cols-lg: 2;
+  --grid-cols-xl: 3;
+
+  /* Card */
+  --card-min-height: 250px;
+  --card-max-height: 400px;
+}
+
+/* Apply custom properties */
+.custom-container {
+  padding: var(--spacing-container);
+}
+
+.custom-card {
+  border-radius: var(--theme-border-radius);
+  box-shadow: var(--theme-card-shadow);
+  min-height: var(--card-min-height);
+}
+
+.custom-grid {
+  gap: var(--spacing-card);
+}
+
+.custom-grid-responsive {
+  display: grid;
+  gap: var(--spacing-card);
+}
+
+@media (min-width: 640px) {
+  .custom-grid-responsive {
+    grid-template-columns: repeat(var(--grid-cols-sm), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .custom-grid-responsive {
+    grid-template-columns: repeat(var(--grid-cols-md), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .custom-grid-responsive {
+    grid-template-columns: repeat(var(--grid-cols-lg), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .custom-grid-responsive {
+    grid-template-columns: repeat(var(--grid-cols-xl), minmax(0, 1fr));
+  }
+}
+
+/* Transitions with custom speed */
+* {
+  transition-duration: calc(150ms * var(--theme-animation-speed));
+}
+
+/* Layout modes */
+.layout-grid {
+  display: grid;
+}
+
+.layout-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-compact {
+  display: grid;
+  gap: calc(var(--spacing-card) * 0.5);
+}
+
+/* Density variations */
+.density-comfortable {
+  padding: calc(var(--spacing-card) * 1.5);
+}
+
+.density-standard {
+  padding: var(--spacing-card);
+}
+
+.density-compact {
+  padding: calc(var(--spacing-card) * 0.75);
+}

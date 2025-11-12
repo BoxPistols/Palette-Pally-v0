@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
+import { UIConfigProvider } from '@/lib/ui-config-context'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Palette Pally - MUI Color Palette Designer',
+  description: 'Create and customize Material-UI color palettes with flexible design architecture',
   generator: 'v0.app',
 }
 
@@ -27,7 +28,9 @@ html {
         `}</style>
       </head>
       <body>
-        {children}
+        <UIConfigProvider>
+          {children}
+        </UIConfigProvider>
         <Analytics />
       </body>
     </html>
