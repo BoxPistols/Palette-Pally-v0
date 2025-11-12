@@ -97,19 +97,19 @@ npm install
 
 # Start development server
 npm run dev
-```
+\`\`\`
 
 Open `http://localhost:3000` in your browser.
 
 ### Build
 
-```bash
+\`\`\`bash
 # Production build
 npm run build
 
 # Preview build locally
 npm run start
-```
+\`\`\`
 
 ## Usage Guide
 
@@ -241,7 +241,7 @@ npm run start
 
 #### For Large-Scale Projects (Recommended)
 
-```
+\`\`\`
 Layout Mode: Grid
 View Density: Comfortable
 Card Size: Large
@@ -249,11 +249,11 @@ Desktop Columns: 2
 Spacing: Loose
 Border Radius: 12px
 Card Shadow: 2
-```
+\`\`\`
 
 #### For High-Density Work
 
-```
+\`\`\`
 Layout Mode: Compact
 View Density: Compact
 Card Size: Small
@@ -261,11 +261,11 @@ Desktop Columns: 4-6
 Spacing: Tight
 Border Radius: 4px
 Card Shadow: 1
-```
+\`\`\`
 
 #### For Presentations
 
-```
+\`\`\`
 Layout Mode: Grid
 View Density: Comfortable
 Card Size: Large
@@ -273,7 +273,7 @@ Desktop Columns: 2-3
 Spacing: Loose
 Border Radius: 16px
 Card Shadow: 3
-```
+\`\`\`
 
 ### Performance Optimization
 
