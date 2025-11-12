@@ -87,7 +87,7 @@ Palette Pally is a powerful tool for creating and managing Material-UI color pal
 
 ### Installation
 
-\`\`\`bash
+```bash
 # Clone the repository
 git clone https://github.com/yourusername/Palette-Pally-v0.git
 cd Palette-Pally-v0
