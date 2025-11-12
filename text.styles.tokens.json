@@ -1,0 +1,407 @@
+{
+  "figma": {
+    "head-2": {
+      "$type": "typography",
+      "$description": "figma用の見出し",
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "32px",
+        "fontWeight": 700,
+        "letterSpacing": "0%",
+        "lineHeight": "normal",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "head-3": {
+      "$type": "typography",
+      "$description": "figma用の見出し",
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": 700,
+        "letterSpacing": "0%",
+        "lineHeight": "normal",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "head-4": {
+      "$type": "typography",
+      "$description": "figma用の見出し",
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": 700,
+        "letterSpacing": "0%",
+        "lineHeight": "normal",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "head-5": {
+      "$type": "typography",
+      "$description": "figma用の見出し",
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": 700,
+        "letterSpacing": "0%",
+        "lineHeight": "normal",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "header": {
+      "head-1": {
+        "$type": "typography",
+        "$description": "figma用の見出し",
+        "$value": {
+          "fontFamily": "Inter",
+          "fontSize": "48px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "normal",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      }
+    },
+    "body": {
+      "small": {
+        "$type": "typography",
+        "$description": "figma用の本文",
+        "$value": {
+          "fontFamily": "Inter",
+          "fontSize": "12px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "normal",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "normal": {
+        "$type": "typography",
+        "$description": "figma用の本文",
+        "$value": {
+          "fontFamily": "Inter",
+          "fontSize": "16px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "normal",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "large": {
+        "$type": "typography",
+        "$description": "figma用の本文",
+        "$value": {
+          "fontFamily": "Inter",
+          "fontSize": "20px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "normal",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      }
+    }
+  },
+  "typography": {
+    "body1": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "14px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "160%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "body2": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "13px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "160%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "subtitle1": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "13px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "140%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "subtitle2": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "12px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "140%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "12px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "140%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "overline": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "Noto Sans JP",
+        "fontSize": "11px",
+        "fontWeight": 400,
+        "letterSpacing": "0%",
+        "lineHeight": "140%",
+        "textTransform": "none",
+        "textDecoration": "none"
+      }
+    },
+    "heading": {
+      "h1": {
+        "$type": "typography",
+        "$description": "見出し / h1以外は variant='h(x)'で見出しデザインを持ったdivとなるため、マークアップ構造自体は気にしなくて良い仕組みです。\n見出しは全て太字になります",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "22px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "h2": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "20px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "h3": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "18px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "h4": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "16px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "h5": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "14px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "h6": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "13px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      }
+    },
+    "variant": {
+      "xxl": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "22px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "xl": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "20px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "lg": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "18px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "ml": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "16px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "md": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "14px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "sm": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "13px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "xs": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "12px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "xxs": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "11px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "xxxs": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "10px",
+          "fontWeight": 400,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "displayLarge": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "32px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "displayMedium": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "28px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      },
+      "displaySmall": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": "24px",
+          "fontWeight": 700,
+          "letterSpacing": "0%",
+          "lineHeight": "140%",
+          "textTransform": "none",
+          "textDecoration": "none"
+        }
+      }
+    }
+  }
+}

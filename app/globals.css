@@ -2,83 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
   :root {
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 222.2 84% 4.9%;
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222.2 84% 4.9%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 220 15% 16%; /* 彩度を落とした自然な暗さ */
+    --foreground: 210 40% 98%;
+
+    --card: 220 15% 16%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 15% 16%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 80% 59.8%; /* 彩度を少し落とした */
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 15% 25.5%; /* 彩度を落とした */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 15% 25.5%;
+    --muted-foreground: 215 20% 75.1%;
+
+    --accent: 217.2 15% 25.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 40.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 15% 25.5%;
+    --input: 217.2 15% 25.5%;
+    --ring: 224.3 76.3% 58%;
   }
 }
 
@@ -91,104 +75,88 @@
   }
 }
 
-/* UI Customization Variables */
-:root {
-  /* Spacing */
-  --spacing-container: 16px;
-  --spacing-card: 12px;
-  --spacing-section: 24px;
-
-  /* Theme */
-  --theme-border-radius: 8px;
-  --theme-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  --theme-animation-speed: 1;
-  --theme-font-base: 14px;
-  --theme-font-scale: 1;
-
-  /* Grid */
-  --grid-cols-sm: 1;
-  --grid-cols-md: 2;
-  --grid-cols-lg: 2;
-  --grid-cols-xl: 3;
-
-  /* Card */
-  --card-min-height: 250px;
-  --card-max-height: 400px;
+/* ダークモード用のスタイル追加 */
+.dark .bg-white {
+  @apply bg-gray-800;
 }
 
-/* Apply custom properties */
-.custom-container {
-  padding: var(--spacing-container);
+.dark .bg-gray-50 {
+  @apply bg-gray-800;
 }
 
-.custom-card {
-  border-radius: var(--theme-border-radius);
-  box-shadow: var(--theme-card-shadow);
-  min-height: var(--card-min-height);
+.dark .bg-gray-100 {
+  @apply bg-gray-800;
 }
 
-.custom-grid {
-  gap: var(--spacing-card);
+.dark .bg-blue-50 {
+  @apply bg-blue-900/30;
 }
 
-.custom-grid-responsive {
-  display: grid;
-  gap: var(--spacing-card);
+.dark .bg-amber-50 {
+  @apply bg-amber-900/30;
 }
 
-@media (min-width: 640px) {
-  .custom-grid-responsive {
-    grid-template-columns: repeat(var(--grid-cols-sm), minmax(0, 1fr));
-  }
+.dark .text-gray-500 {
+  @apply text-gray-400;
 }
 
-@media (min-width: 768px) {
-  .custom-grid-responsive {
-    grid-template-columns: repeat(var(--grid-cols-md), minmax(0, 1fr));
-  }
+.dark .text-gray-600 {
+  @apply text-gray-300;
 }
 
-@media (min-width: 1024px) {
-  .custom-grid-responsive {
-    grid-template-columns: repeat(var(--grid-cols-lg), minmax(0, 1fr));
-  }
+.dark .text-blue-700 {
+  @apply text-blue-300;
 }
 
-@media (min-width: 1280px) {
-  .custom-grid-responsive {
-    grid-template-columns: repeat(var(--grid-cols-xl), minmax(0, 1fr));
-  }
+.dark .text-amber-800 {
+  @apply text-amber-300;
 }
 
-/* Transitions with custom speed */
-* {
-  transition-duration: calc(150ms * var(--theme-animation-speed));
+.dark .border-gray-200 {
+  @apply border-gray-700;
 }
 
-/* Layout modes */
-.layout-grid {
-  display: grid;
+.dark .border-gray-300 {
+  @apply border-gray-600;
 }
 
-.layout-list {
-  display: flex;
-  flex-direction: column;
+.dark .border-amber-200 {
+  @apply border-amber-700;
 }
 
-.layout-compact {
-  display: grid;
-  gap: calc(var(--spacing-card) * 0.5);
+.dark .border-t {
+  @apply border-gray-700;
 }
 
-/* Density variations */
-.density-comfortable {
-  padding: calc(var(--spacing-card) * 1.5);
+.dark .border-b {
+  @apply border-gray-700;
 }
 
-.density-standard {
-  padding: var(--spacing-card);
+/* モーダル内の背景色を修正 */
+.dark [role="dialog"] {
+  @apply bg-gray-800 text-gray-100;
 }
 
-.density-compact {
-  padding: calc(var(--spacing-card) * 0.75);
+.dark [role="dialog"] .bg-white {
+  @apply bg-gray-800;
+}
+
+/* テキストエリアとプリタグの背景色を修正 */
+.dark textarea,
+.dark pre {
+  @apply bg-gray-900 text-gray-100;
+}
+
+/* ダイアログコンテンツの背景色を修正 */
+.dark .DialogContent {
+  @apply bg-gray-800;
+}
+
+/* タブコンテンツの背景色を修正 */
+.dark .TabsContent {
+  @apply bg-gray-800;
+}
+
+.grayscale * {
+  filter: grayscale(100%) !important;
 }

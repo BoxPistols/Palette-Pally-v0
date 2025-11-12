@@ -15,20 +15,65 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 import type { PaletteType } from "@/types/palette"
-import { downloadFile } from "@/lib/file-utils"
-import { FILE_NAMES, TOAST_MESSAGES } from "@/constants/app-constants"
+
+// Define the missing types
+type ColorMode = "light" | "dark" | "system" // Example ColorMode type
+type ColorData = {
+  name: string
+  value: string
+  role?: string
+}
 
 interface ExportImportPanelProps {
-  data: PaletteType
-  onImport: (data: PaletteType) => void
+  data: PaletteType & { primaryColorIndex?: number }
+  onImport: (
+    importedData: PaletteType & {
+      primaryColorIndex?: number
+      colorMode?: ColorMode
+      showTailwindClasses?: boolean
+      showMaterialNames?: boolean
+    },
+  ) => void
 }
 
 export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
+  const { language } = useLanguage()
   const [error, setError] = useState<string | null>(null)
   const [jsonPreview, setJsonPreview] = useState<string>("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // 翻訳テキスト - 言語コンテキストが機能するまでの一時的な対応
+  const texts = {
+    jp: {
+      exportButton: "JSONエクスポート",
+      importButton: "JSONインポート",
+      exportTitle: "JSONエクスポート",
+      exportDescription: "以下のJSONデータをエクスポートします。",
+      downloadButton: "ダウンロード",
+      exportSuccess: "エクスポート完了",
+      exportSuccessDesc: "JSONファイルのダウンロードを開始しました",
+      importError: "インポートエラー",
+      parseError: "JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。",
+      readError: "ファイルの読み込みに失敗しました。",
+    },
+    en: {
+      exportButton: "Export JSON",
+      importButton: "Import JSON",
+      exportTitle: "Export JSON",
+      exportDescription: "Export the following JSON data.",
+      downloadButton: "Download",
+      exportSuccess: "Export Complete",
+      exportSuccessDesc: "JSON file download started",
+      importError: "Import Error",
+      parseError: "Failed to parse JSON file. Please check the format.",
+      readError: "Failed to read file.",
+    },
+  }
+
+  const t = texts[language || "jp"]
 
   const prepareExport = () => {
     try {
@@ -37,25 +82,49 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
       setError(null)
       setIsDialogOpen(true)
     } catch (err) {
-      setError("エクスポート準備中にエラーが発生しました。")
+      setError(language === "jp" ? "エクスポート準備中にエラーが発生しました。" : "Error preparing export.")
       console.error("Export preparation error:", err)
     }
   }
 
-  const exportJSON = () => {
+  const handleExport = () => {
     try {
-      downloadFile(jsonPreview, FILE_NAMES.PALETTE_EXPORT)
+      // 現在の日本時間を取得（ローカル時間を使用）
+      const now = new Date()
+      const year = now.getFullYear().toString().slice(-2) // 年の下2桁
+      const month = String(now.getMonth() + 1).padStart(2, "0")
+      const day = String(now.getDate()).padStart(2, "0")
+      const hours = String(now.getHours()).padStart(2, "0")
+      const minutes = String(now.getMinutes()).padStart(2, "0")
+
+      const timestamp = `${year}${month}${day}-${hours}${minutes}`
+      const filename = `palette-pally-${timestamp}.json`
+
+      const blob = new Blob([jsonPreview], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+
+      const a = document.createElement("a")
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
       setError(null)
       setIsDialogOpen(false)
 
       toast({
-        title: TOAST_MESSAGES.EXPORT_COMPLETE.JA.title,
-        description: TOAST_MESSAGES.EXPORT_COMPLETE.JA.description,
+        title: t.exportSuccess,
+        description: t.exportSuccessDesc,
       })
     } catch (err) {
-      setError(TOAST_MESSAGES.EXPORT_ERROR.JA)
+      setError(language === "jp" ? "エクスポート中にエラーが発生しました。" : "Error during export.")
       console.error("Export error:", err)
     }
+  }
+
+  const exportJSON = () => {
+    handleExport()
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,11 +135,11 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
     reader.onload = (event) => {
       try {
         if (typeof event.target?.result !== "string") {
-          throw new Error("ファイルの読み込みに失敗しました")
+          throw new Error(language === "jp" ? "ファイルの読み込みに失敗しました" : "Failed to read file")
         }
 
-        const json = JSON.parse(event.target.result) as PaletteType
-        onImport(json)
+        const json = JSON.parse(event.target.result) as PaletteType & { primaryColorIndex?: number }
+        handleImport(json)
         setError(null)
 
         // Reset file input
@@ -78,25 +147,111 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
           fileInputRef.current.value = ""
         }
       } catch (err) {
-        setError("JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。")
+        setError(t.parseError)
         console.error("Error parsing JSON:", err)
 
         toast({
-          title: "インポートエラー",
-          description: "JSONファイルの解析に失敗しました。正しいフォーマットか確認してください。",
+          title: t.importError,
+          description: t.parseError,
           variant: "destructive",
         })
       }
     }
     reader.onerror = () => {
-      setError("ファイルの読み込みに失敗しました。")
+      setError(t.readError)
       toast({
-        title: "インポートエラー",
-        description: "ファイルの読み込みに失敗しました。",
+        title: t.importError,
+        description: t.readError,
         variant: "destructive",
       })
     }
     reader.readAsText(file)
+  }
+
+  const handleImport = (
+    importedData: PaletteType & {
+      primaryColorIndex?: number
+      colorMode?: ColorMode
+      showTailwindClasses?: boolean
+      showMaterialNames?: boolean
+    },
+  ) => {
+    try {
+      // Figmaトークン形式かどうかをチェック
+      if (importedData.global && importedData.global.colors) {
+        // Figmaトークン形式からカラーデータに変換
+        const figmaColors = importedData.global.colors
+        const extractedColors: ColorData[] = []
+
+        Object.entries(figmaColors).forEach(([category, tokens]) => {
+          if (category === "common") return // common.white/blackはスキップ
+
+          // カテゴリ内の基本色のみを抽出（バリエーションはスキップ）
+          Object.entries(tokens).forEach(([tokenName, token]: [string, any]) => {
+            // バリエーション（例：primary-light）はスキップ
+            if (tokenName.includes("-")) return
+
+            if (token.$type === "color" && token.$value) {
+              extractedColors.push({
+                name: tokenName,
+                value: token.$value,
+                role: tokenName === "primary" ? "primary" : undefined,
+              })
+            }
+          })
+        })
+
+        if (extractedColors.length > 0) {
+          onImport({
+            colors: extractedColors,
+          })
+          return
+        }
+      }
+
+      // 通常のパレットデータ形式の処理
+      if (importedData.colors && Array.isArray(importedData.colors)) {
+        // Validate each color entry
+        const validColors = importedData.colors.filter(
+          (color) =>
+            color &&
+            typeof color === "object" &&
+            "name" in color &&
+            "value" in color &&
+            typeof color.name === "string" &&
+            typeof color.value === "string" &&
+            /^#[0-9A-F]{6}$/i.test(color.value),
+        )
+
+        if (validColors.length > 0) {
+          onImport({ colors: validColors })
+
+          toast({
+            title: t.importComplete,
+            description:
+              language === "jp"
+                ? `${validColors.length}色のパレットをインポートしました`
+                : `Imported palette with ${validColors.length} colors`,
+          })
+        } else {
+          throw new Error(language === "jp" ? "有効なカラーデータが見つかりませんでした" : "No valid color data found")
+        }
+      } else {
+        throw new Error(language === "jp" ? "カラーデータが見つかりませんでした" : "No color data found")
+      }
+    } catch (error) {
+      console.error("Import error:", error)
+      toast({
+        title: t.importError,
+        description:
+          error instanceof Error
+            ? error.message
+            : language === "jp"
+              ? "不明なエラーが発生しました"
+              : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -105,20 +260,20 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={prepareExport} variant="default" size="sm">
-              Export JSON
+              {t.exportButton}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Export JSON</DialogTitle>
-              <DialogDescription>以下のJSONデータをエクスポートします。</DialogDescription>
+              <DialogTitle>{t.exportTitle}</DialogTitle>
+              <DialogDescription>{t.exportDescription}</DialogDescription>
             </DialogHeader>
             <div className="max-h-[300px] overflow-auto bg-gray-50 p-2 rounded text-xs font-mono">
               <pre>{jsonPreview}</pre>
             </div>
             <DialogFooter>
               <Button onClick={exportJSON} type="submit">
-                ダウンロード
+                {t.downloadButton}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -126,7 +281,7 @@ export function ExportImportPanel({ data, onImport }: ExportImportPanelProps) {
 
         <div className="relative">
           <Button variant="outline" size="sm" className="relative">
-            Import JSON
+            {t.importButton}
             <input
               ref={fileInputRef}
               type="file"

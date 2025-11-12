@@ -1,14 +1,18 @@
-import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
-import { Analytics } from '@vercel/analytics/next'
-import { UIConfigProvider } from '@/lib/ui-config-context'
-import './globals.css'
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/contexts/theme-context"
+import "./globals.css"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'Palette Pally - MUI Color Palette Designer',
-  description: 'Create and customize Material-UI color palettes with flexible design architecture',
-  generator: 'v0.app',
+  title: "Palette Pally - カラーパレット作成ツール",
+  description: "カラーパレットの作成・管理・アクセシビリティチェックを簡単に行えるツール",
+  icons: {
+    icon: "/favicon.png",
+  },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -17,21 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja" suppressHydrationWarning>
       <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
+        <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
-      <body>
-        <UIConfigProvider>
-          {children}
-        </UIConfigProvider>
-        <Analytics />
+      <body className={inter.className}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )
