@@ -10,7 +10,9 @@ export const metadata: Metadata = {
   title: "Palette Pally - カラーパレット作成ツール",
   description: "カラーパレットの作成・管理・アクセシビリティチェックを簡単に行えるツール",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
   },
     generator: 'v0.app'
 }
@@ -23,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className={inter.className}>
         <ThemeProvider>{children}</ThemeProvider>
