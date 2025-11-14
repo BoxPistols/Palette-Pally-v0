@@ -769,6 +769,9 @@ function PaletteApp() {
                   value={colorCount}
                   onChange={handleCountChange}
                   className="w-16"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </>
             )}
