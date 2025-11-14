@@ -1,6 +1,5 @@
 import type React from "react"
 import type { Metadata } from "next"
-import Script from "next/script"
 import { ThemeProvider } from "@/contexts/theme-context"
 import "./globals.css"
 
@@ -26,7 +25,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-sans antialiased">
-        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
