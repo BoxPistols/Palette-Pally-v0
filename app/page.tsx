@@ -40,6 +40,7 @@ import { GrayscaleToggle } from "@/components/grayscale-toggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Paintbrush, Type } from "lucide-react"
 import { TypographyPreview } from "@/components/typography-preview"
+import { validatePaletteData, isLegacyPaletteFormat } from "@/lib/palette-validation"
 // getContrastTextのインポートを削除
 
 const MAX_COLORS = 24
@@ -79,93 +80,126 @@ function PaletteApp() {
 
   // Load data from localStorage on initial render
   useEffect(() => {
-    // Check for old storage keys and clean them up
-    const oldKeys = ["palette-pally-data", "palette-pally-language", "palette-pally-theme"]
-    let foundOldData = false
+    // Clean up old/unused storage keys (but NOT the current STORAGE_KEY)
+    const oldKeys = ["palette-pally-language", "palette-pally-theme"]
     oldKeys.forEach((key) => {
       if (localStorage.getItem(key)) {
-        foundOldData = true
         localStorage.removeItem(key)
       }
     })
 
     const savedData = localStorage.getItem(STORAGE_KEY)
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData) as PaletteType & {
-          primaryColorIndex?: number
-          colorMode?: ColorMode
-          showTailwindClasses?: boolean
-          showMaterialNames?: boolean
-          typographyTokens?: Record<string, any>
-          isFigmaImportMode?: boolean
-          isTypographyOnly?: boolean
-          activeTab?: "colors" | "typography"
-        }
-        if (parsedData.colors && Array.isArray(parsedData.colors)) {
-          setColorData(parsedData.colors)
-          setColorCount(parsedData.colors.length)
-        }
 
-        // Load text color settings if available
-        if (parsedData.textColorSettings) {
-          setTextColorSettings(parsedData.textColorSettings)
-        }
-
-        // Load primary color index if available
-        if (
-          typeof parsedData.primaryColorIndex === "number" &&
-          parsedData.primaryColorIndex >= 0 &&
-          parsedData.primaryColorIndex < parsedData.colors.length
-        ) {
-          setPrimaryColorIndex(parsedData.primaryColorIndex)
-        }
-
-        // Load color mode settings if available
-        if (parsedData.colorMode) {
-          setColorMode(parsedData.colorMode)
-        }
-
-        if (typeof parsedData.showTailwindClasses === "boolean") {
-          setShowTailwindClasses(parsedData.showTailwindClasses)
-        }
-
-        if (typeof parsedData.showMaterialNames === "boolean") {
-          setShowMaterialNames(parsedData.showMaterialNames)
-        }
-
-        // Load typography tokens if available
-        if (parsedData.typographyTokens) {
-          setTypographyTokens(parsedData.typographyTokens)
-
-          // タイポグラフィトークンがあり、カラートークンがない場合はタイポグラフィモードをアクティブに
-          if (
-            Object.keys(parsedData.typographyTokens).length > 0 &&
-            (!parsedData.colors || parsedData.colors.length === 0)
-          ) {
-            setIsTypographyOnly(true)
-            setActiveTab("typography")
-          }
-        }
-
-        // Load Figma import mode if available
-        if (typeof parsedData.isFigmaImportMode === "boolean") {
-          setIsFigmaImportMode(parsedData.isFigmaImportMode)
-        }
-
-        // 新しい状態を読み込む
-        if (typeof parsedData.isTypographyOnly === "boolean") {
-          setIsTypographyOnly(parsedData.isTypographyOnly)
-        }
-
-        if (parsedData.activeTab) {
-          setActiveTab(parsedData.activeTab)
-        }
-      } catch (error) {
-        console.error("Error loading data from localStorage:", error)
-      }
+    if (!savedData) {
+      return
     }
-  }, [])
+
+    try {
+      const parsedData = JSON.parse(savedData)
+
+      // Check if this is legacy/incompatible data
+      if (isLegacyPaletteFormat(parsedData)) {
+        console.warn("Legacy data format detected, clearing localStorage")
+        localStorage.removeItem(STORAGE_KEY)
+        toast({
+          title: language === "jp" ? "データ形式が更新されました" : "Data Format Updated",
+          description:
+            language === "jp"
+              ? "アプリの更新により、パレットがリセットされました。デフォルト値を読み込みました。"
+              : "Your palette has been reset due to an app update. Default values loaded.",
+        })
+        return
+      }
+
+      // Validate the data structure
+      const validation = validatePaletteData(parsedData)
+
+      if (!validation.isValid || !validation.sanitizedData) {
+        console.error("Invalid localStorage data:", validation.errors)
+        localStorage.removeItem(STORAGE_KEY)
+        toast({
+          title: language === "jp" ? "データ読み込みエラー" : "Data Load Error",
+          description:
+            language === "jp"
+              ? "保存されたデータが破損していたため、デフォルトにリセットされました。"
+              : "Saved data was corrupted and has been reset to defaults.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // If there were validation warnings but data is salvageable
+      if (validation.errors.length > 0) {
+        console.warn("Data loaded with warnings:", validation.errors)
+      }
+
+      // Load the sanitized data
+      const data = validation.sanitizedData
+
+      if (data.colors && data.colors.length > 0) {
+        setColorData(data.colors)
+        setColorCount(data.colors.length)
+      }
+
+      if (data.textColorSettings) {
+        setTextColorSettings(data.textColorSettings)
+      }
+
+      if (typeof data.primaryColorIndex === "number" && data.primaryColorIndex >= 0) {
+        setPrimaryColorIndex(data.primaryColorIndex)
+      }
+
+      if (data.colorMode) {
+        setColorMode(data.colorMode)
+      }
+
+      if (typeof data.showTailwindClasses === "boolean") {
+        setShowTailwindClasses(data.showTailwindClasses)
+      }
+
+      if (typeof data.showMaterialNames === "boolean") {
+        setShowMaterialNames(data.showMaterialNames)
+      }
+
+      if (data.typographyTokens) {
+        setTypographyTokens(data.typographyTokens)
+
+        // タイポグラフィトークンがあり、カラートークンがない場合はタイポグラフィモードをアクティブに
+        if (Object.keys(data.typographyTokens).length > 0 && (!data.colors || data.colors.length === 0)) {
+          setIsTypographyOnly(true)
+          setActiveTab("typography")
+        }
+      }
+
+      if (typeof data.isFigmaImportMode === "boolean") {
+        setIsFigmaImportMode(data.isFigmaImportMode)
+      }
+
+      if (typeof data.isTypographyOnly === "boolean") {
+        setIsTypographyOnly(data.isTypographyOnly)
+      }
+
+      if (data.activeTab) {
+        setActiveTab(data.activeTab)
+      }
+
+      // Save the sanitized data back if there were any corrections
+      if (validation.errors.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      }
+    } catch (error) {
+      console.error("Error loading data from localStorage:", error)
+      localStorage.removeItem(STORAGE_KEY)
+      toast({
+        title: language === "jp" ? "データ読み込みエラー" : "Data Load Error",
+        description:
+          language === "jp"
+            ? "保存されたデータの読み込みに失敗しました。デフォルト値を使用します。"
+            : "Failed to load saved data. Using default values.",
+        variant: "destructive",
+      })
+    }
+  }, [language])
 
   // Generate color variations when colors change
   useEffect(() => {
