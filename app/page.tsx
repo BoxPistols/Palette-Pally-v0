@@ -79,6 +79,16 @@ function PaletteApp() {
 
   // Load data from localStorage on initial render
   useEffect(() => {
+    // Check for old storage keys and clean them up
+    const oldKeys = ["palette-pally-data", "palette-pally-language", "palette-pally-theme"]
+    let foundOldData = false
+    oldKeys.forEach((key) => {
+      if (localStorage.getItem(key)) {
+        foundOldData = true
+        localStorage.removeItem(key)
+      }
+    })
+
     const savedData = localStorage.getItem(STORAGE_KEY)
     if (savedData) {
       try {
