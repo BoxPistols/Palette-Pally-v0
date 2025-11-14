@@ -300,41 +300,84 @@ function PaletteApp() {
   }
 
   const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const count = Number.parseInt(e.target.value)
-    if (count > 0 && count <= MAX_COLORS) {
-      setColorCount(count)
+    const value = e.target.value
 
-      // Adjust colors array length
-      if (count > colorData.length) {
-        // Add more colors
-        const newColorData = [...colorData]
-        for (let i = colorData.length; i < count; i++) {
-          // Generate random color
-          const randomColor = `#${Math.floor(Math.random() * 16777215)
-            .toString(16)
-            .padStart(6, "0")}`
-          newColorData.push({ name: `color${i + 1}`, value: randomColor })
-        }
-        setColorData(newColorData)
-      } else if (count < colorData.length) {
-        // Remove excess colors
-        const newColorData = colorData.slice(0, count)
-        setColorData(newColorData)
+    // 空の入力を許可（入力中）
+    if (value === '') {
+      return
+    }
 
-        // Clean up colorVariations to remove references to deleted colors
-        const newVariations: Record<string, Record<string, string>> = {}
-        newColorData.forEach((color) => {
-          if (colorVariations[color.name]) {
-            newVariations[color.name] = colorVariations[color.name]
-          }
-        })
-        setColorVariations(newVariations)
+    const count = Number.parseInt(value)
 
-        // Adjust primaryColorIndex if needed
-        if (primaryColorIndex >= count) {
-          setPrimaryColorIndex(0)
-        }
+    // 無効な数値、0以下、MAX_COLORSを超える場合は無視
+    if (isNaN(count) || count < 1 || count > MAX_COLORS) {
+      return
+    }
+
+    setColorCount(count)
+
+    // Adjust colors array length
+    if (count > colorData.length) {
+      // Add more colors
+      const newColorData = [...colorData]
+      for (let i = colorData.length; i < count; i++) {
+        // Generate random color
+        const randomColor = `#${Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0")}`
+        newColorData.push({ name: `color${i + 1}`, value: randomColor })
       }
+      setColorData(newColorData)
+    } else if (count < colorData.length) {
+      // Remove excess colors
+      const newColorData = colorData.slice(0, count)
+      setColorData(newColorData)
+
+      // Clean up colorVariations to remove references to deleted colors
+      const newVariations: Record<string, Record<string, string>> = {}
+      newColorData.forEach((color) => {
+        if (colorVariations[color.name]) {
+          newVariations[color.name] = colorVariations[color.name]
+        }
+      })
+      setColorVariations(newVariations)
+
+      // Adjust primaryColorIndex if needed
+      if (primaryColorIndex >= count) {
+        setPrimaryColorIndex(0)
+      }
+    }
+  }
+
+  // 入力フィールドからフォーカスが外れた時の処理
+  const handleCountBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const count = Number.parseInt(value)
+
+    // 無効な値の場合は最小値1にリセット
+    if (value === '' || isNaN(count) || count < 1) {
+      setColorCount(1)
+      // 1色のみに調整
+      const newColorData = colorData.slice(0, 1)
+      if (newColorData.length === 0) {
+        // colorDataが空の場合は、デフォルトカラーを1つ追加
+        newColorData.push({ name: "primary", value: "#3b82f6", role: "primary" })
+      }
+      setColorData(newColorData)
+
+      // Clean up colorVariations
+      const newVariations: Record<string, Record<string, string>> = {}
+      newColorData.forEach((color) => {
+        if (colorVariations[color.name]) {
+          newVariations[color.name] = colorVariations[color.name]
+        }
+      })
+      setColorVariations(newVariations)
+
+      setPrimaryColorIndex(0)
+    } else if (count > MAX_COLORS) {
+      // 最大値を超える場合はMAX_COLORSにリセット
+      setColorCount(MAX_COLORS)
     }
   }
 
@@ -778,6 +821,7 @@ function PaletteApp() {
                   max={MAX_COLORS}
                   value={colorCount}
                   onChange={handleCountChange}
+                  onBlur={handleCountBlur}
                   className="w-16"
                   autoComplete="off"
                   data-lpignore="true"
