@@ -161,23 +161,17 @@ export function SimpleColorPicker({
       <CardContent className="p-3 space-y-2">
         <div className="flex gap-2 items-center">
           <div className="w-8 h-8 rounded-md" style={{ backgroundColor: localColor }}></div>
-          <Input
+          <NonIntrusiveInput
             value={localColor}
             onChange={handleColorChange}
             className="text-sm h-8"
             placeholder="カラーコード"
-            autoComplete="off"
-            data-lpignore="true"
-            data-1p-ignore="true"
           />
-          <Input
+          <NonIntrusiveInput
             type="color"
             value={localColor}
             onChange={handleColorChange}
             className="w-8 h-8 p-0 border-0"
-            autoComplete="off"
-            data-lpignore="true"
-            data-1p-ignore="true"
           />
         </div>
       </CardContent>
