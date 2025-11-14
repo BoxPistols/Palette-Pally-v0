@@ -300,31 +300,104 @@ function PaletteApp() {
   }
 
   const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const count = Number.parseInt(e.target.value)
-    if (count > 0 && count <= MAX_COLORS) {
-      setColorCount(count)
+    const value = e.target.value
 
-      // Adjust colors array length
-      if (count > colorData.length) {
-        // Add more colors
-        const newColorData = [...colorData]
-        for (let i = colorData.length; i < count; i++) {
-          // Generate random color
+    // 空の入力を許可（入力中）
+    if (value === '') {
+      return
+    }
+
+    const count = Number.parseInt(value)
+
+    // 無効な数値、3未満、MAX_COLORSを超える場合は無視
+    if (isNaN(count) || count < 3 || count > MAX_COLORS) {
+      return
+    }
+
+    setColorCount(count)
+
+    // Adjust colors array length
+    if (count > colorData.length) {
+      // Add more colors
+      const newColorData = [...colorData]
+      for (let i = colorData.length; i < count; i++) {
+        // Generate random color
+        const randomColor = `#${Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0")}`
+        newColorData.push({ name: `color${i + 1}`, value: randomColor })
+      }
+      setColorData(newColorData)
+    } else if (count < colorData.length) {
+      // Remove excess colors
+      const newColorData = colorData.slice(0, count)
+      setColorData(newColorData)
+
+      // Clean up colorVariations to remove references to deleted colors
+      const newVariations: Record<string, Record<string, string>> = {}
+      newColorData.forEach((color) => {
+        if (colorVariations[color.name]) {
+          newVariations[color.name] = colorVariations[color.name]
+        }
+      })
+      setColorVariations(newVariations)
+
+      // Adjust primaryColorIndex if needed
+      if (primaryColorIndex >= count) {
+        setPrimaryColorIndex(0)
+      }
+    }
+  }
+
+  // 入力フィールドからフォーカスが外れた時の処理
+  const handleCountBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const count = Number.parseInt(value)
+
+    // 無効な値の場合は最小値3にリセット
+    if (value === '' || isNaN(count) || count < 3) {
+      setColorCount(3)
+      // 3色に調整
+      const newColorData = colorData.slice(0, 3)
+
+      // colorDataが3色未満の場合は、デフォルトカラーで埋める
+      const defaultColors = [
+        { name: "primary", value: "#3b82f6", role: "primary" },
+        { name: "secondary", value: "#8b5cf6", role: "secondary" },
+        { name: "success", value: "#22c55e", role: "success" },
+      ]
+
+      while (newColorData.length < 3) {
+        const index = newColorData.length
+        if (defaultColors[index]) {
+          newColorData.push(defaultColors[index])
+        } else {
+          // デフォルトカラーが足りない場合はランダムカラーを生成
           const randomColor = `#${Math.floor(Math.random() * 16777215)
             .toString(16)
             .padStart(6, "0")}`
-          newColorData.push({ name: `color${i + 1}`, value: randomColor })
-        }
-        setColorData(newColorData)
-      } else if (count < colorData.length) {
-        // Remove excess colors
-        setColorData(colorData.slice(0, count))
-
-        // Adjust primaryColorIndex if needed
-        if (primaryColorIndex >= count) {
-          setPrimaryColorIndex(0)
+          newColorData.push({ name: `color${index + 1}`, value: randomColor })
         }
       }
+
+      setColorData(newColorData)
+
+      // Clean up colorVariations
+      const newVariations: Record<string, Record<string, string>> = {}
+      newColorData.forEach((color) => {
+        if (colorVariations[color.name]) {
+          newVariations[color.name] = colorVariations[color.name]
+        }
+      })
+      setColorVariations(newVariations)
+
+      // Adjust primaryColorIndex if needed
+      if (primaryColorIndex >= 3) {
+        setPrimaryColorIndex(0)
+      }
+    } else if (count > MAX_COLORS) {
+      // 最大値を超える場合はMAX_COLORSにリセット
+      setColorCount(MAX_COLORS)
     }
   }
 
@@ -764,11 +837,15 @@ function PaletteApp() {
                 <Input
                   id="colorCount"
                   type="number"
-                  min="1"
+                  min="3"
                   max={MAX_COLORS}
                   value={colorCount}
                   onChange={handleCountChange}
+                  onBlur={handleCountBlur}
                   className="w-16"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </>
             )}
@@ -1212,29 +1289,34 @@ function PaletteApp() {
                   ) : (
                     // 標準モード：通常のカラーパレット
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                      {sortedColorVariations.map(([key, variations]) => {
-                        // カラー名からcolorDataの中での位置を特定
-                        const colorIndex = colorData.findIndex((c) => c.name === key)
-                        const color = colorData[colorIndex]
+                      {sortedColorVariations
+                        .filter(([key]) => colorData.some((c) => c.name === key))
+                        .map(([key, variations]) => {
+                          // カラー名からcolorDataの中での位置を特定
+                          const colorIndex = colorData.findIndex((c) => c.name === key)
+                          const color = colorData[colorIndex]
 
-                        // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                        const disableVariationGeneration = !hasStandardVariations(color)
+                          // colorが存在しない場合はスキップ
+                          if (!color) return null
 
-                        return (
-                          <ColorDisplay
-                            key={key}
-                            colorKey={key}
-                            variations={variations}
-                            textColorSettings={textColorSettings}
-                            isPrimary={colorIndex === primaryColorIndex}
-                            colorMode={colorMode}
-                            showTailwindClasses={showTailwindClasses}
-                            showMaterialNames={showMaterialNames}
-                            colorRole={color?.role}
-                            disableVariationGeneration={disableVariationGeneration}
-                          />
-                        )
-                      })}
+                          // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                          const disableVariationGeneration = !hasStandardVariations(color)
+
+                          return (
+                            <ColorDisplay
+                              key={key}
+                              colorKey={key}
+                              variations={variations}
+                              textColorSettings={textColorSettings}
+                              isPrimary={colorIndex === primaryColorIndex}
+                              colorMode={colorMode}
+                              showTailwindClasses={showTailwindClasses}
+                              showMaterialNames={showMaterialNames}
+                              colorRole={color.role}
+                              disableVariationGeneration={disableVariationGeneration}
+                            />
+                          )
+                        })}
                     </div>
                   )}
                 </div>
@@ -1515,29 +1597,34 @@ function PaletteApp() {
               ) : (
                 // 標準モード：通常のカラーパレット
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                  {sortedColorVariations.map(([key, variations]) => {
-                    // カラー名からcolorDataの中での位置を特定
-                    const colorIndex = colorData.findIndex((c) => c.name === key)
-                    const color = colorData[colorIndex]
+                  {sortedColorVariations
+                    .filter(([key]) => colorData.some((c) => c.name === key))
+                    .map(([key, variations]) => {
+                      // カラー名からcolorDataの中での位置を特定
+                      const colorIndex = colorData.findIndex((c) => c.name === key)
+                      const color = colorData[colorIndex]
 
-                    // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                    const disableVariationGeneration = !hasStandardVariations(color)
+                      // colorが存在しない場合はスキップ
+                      if (!color) return null
 
-                    return (
-                      <ColorDisplay
-                        key={key}
-                        colorKey={key}
-                        variations={variations}
-                        textColorSettings={textColorSettings}
-                        isPrimary={colorIndex === primaryColorIndex}
-                        colorMode={colorMode}
-                        showTailwindClasses={showTailwindClasses}
-                        showMaterialNames={showMaterialNames}
-                        colorRole={color?.role}
-                        disableVariationGeneration={disableVariationGeneration}
-                      />
-                    )
-                  })}
+                      // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                      const disableVariationGeneration = !hasStandardVariations(color)
+
+                      return (
+                        <ColorDisplay
+                          key={key}
+                          colorKey={key}
+                          variations={variations}
+                          textColorSettings={textColorSettings}
+                          isPrimary={colorIndex === primaryColorIndex}
+                          colorMode={colorMode}
+                          showTailwindClasses={showTailwindClasses}
+                          showMaterialNames={showMaterialNames}
+                          colorRole={color.role}
+                          disableVariationGeneration={disableVariationGeneration}
+                        />
+                      )
+                    })}
                 </div>
               )}
             </div>

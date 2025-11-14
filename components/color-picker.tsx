@@ -350,6 +350,9 @@ export function ColorPicker({
             onChange={handleNameChange}
             className="font-medium text-sm h-8"
             placeholder={`color${index + 1}`}
+            autoComplete="off"
+            data-lpignore="true"
+            data-1p-ignore="true"
           />
         </div>
         <div className="flex gap-1">
@@ -377,6 +380,9 @@ export function ColorPicker({
             onBlur={handleBlur}
             className="text-sm h-8"
             placeholder="カラーコード"
+            autoComplete="off"
+            data-lpignore="true"
+            data-1p-ignore="true"
           />
         </div>
 
@@ -441,6 +447,9 @@ export function ColorPicker({
                   value={rgbValues.r}
                   onChange={(e) => handleRgbChange("r", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -452,6 +461,9 @@ export function ColorPicker({
                   value={rgbValues.g}
                   onChange={(e) => handleRgbChange("g", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -463,6 +475,9 @@ export function ColorPicker({
                   value={rgbValues.b}
                   onChange={(e) => handleRgbChange("b", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
             </div>
@@ -479,6 +494,9 @@ export function ColorPicker({
                   value={Math.round(hslValues.h)}
                   onChange={(e) => handleHslChange("h", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -490,6 +508,9 @@ export function ColorPicker({
                   value={Math.round(hslValues.s)}
                   onChange={(e) => handleHslChange("s", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -501,6 +522,9 @@ export function ColorPicker({
                   value={Math.round(hslValues.l)}
                   onChange={(e) => handleHslChange("l", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
             </div>
@@ -518,6 +542,9 @@ export function ColorPicker({
                   value={oklabValues.l.toFixed(2)}
                   onChange={(e) => handleOklabChange("l", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -530,6 +557,9 @@ export function ColorPicker({
                   value={oklabValues.a.toFixed(2)}
                   onChange={(e) => handleOklabChange("a", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
               <div>
@@ -542,6 +572,9 @@ export function ColorPicker({
                   value={oklabValues.b.toFixed(2)}
                   onChange={(e) => handleOklabChange("b", e.target.value)}
                   className="text-xs h-7"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
               </div>
             </div>
