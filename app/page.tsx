@@ -318,7 +318,17 @@ function PaletteApp() {
         setColorData(newColorData)
       } else if (count < colorData.length) {
         // Remove excess colors
-        setColorData(colorData.slice(0, count))
+        const newColorData = colorData.slice(0, count)
+        setColorData(newColorData)
+
+        // Clean up colorVariations to remove references to deleted colors
+        const newVariations: Record<string, Record<string, string>> = {}
+        newColorData.forEach((color) => {
+          if (colorVariations[color.name]) {
+            newVariations[color.name] = colorVariations[color.name]
+          }
+        })
+        setColorVariations(newVariations)
 
         // Adjust primaryColorIndex if needed
         if (primaryColorIndex >= count) {
@@ -1215,29 +1225,34 @@ function PaletteApp() {
                   ) : (
                     // 標準モード：通常のカラーパレット
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                      {sortedColorVariations.map(([key, variations]) => {
-                        // カラー名からcolorDataの中での位置を特定
-                        const colorIndex = colorData.findIndex((c) => c.name === key)
-                        const color = colorData[colorIndex]
+                      {sortedColorVariations
+                        .filter(([key]) => colorData.some((c) => c.name === key))
+                        .map(([key, variations]) => {
+                          // カラー名からcolorDataの中での位置を特定
+                          const colorIndex = colorData.findIndex((c) => c.name === key)
+                          const color = colorData[colorIndex]
 
-                        // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                        const disableVariationGeneration = !hasStandardVariations(color)
+                          // colorが存在しない場合はスキップ
+                          if (!color) return null
 
-                        return (
-                          <ColorDisplay
-                            key={key}
-                            colorKey={key}
-                            variations={variations}
-                            textColorSettings={textColorSettings}
-                            isPrimary={colorIndex === primaryColorIndex}
-                            colorMode={colorMode}
-                            showTailwindClasses={showTailwindClasses}
-                            showMaterialNames={showMaterialNames}
-                            colorRole={color?.role}
-                            disableVariationGeneration={disableVariationGeneration}
-                          />
-                        )
-                      })}
+                          // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                          const disableVariationGeneration = !hasStandardVariations(color)
+
+                          return (
+                            <ColorDisplay
+                              key={key}
+                              colorKey={key}
+                              variations={variations}
+                              textColorSettings={textColorSettings}
+                              isPrimary={colorIndex === primaryColorIndex}
+                              colorMode={colorMode}
+                              showTailwindClasses={showTailwindClasses}
+                              showMaterialNames={showMaterialNames}
+                              colorRole={color.role}
+                              disableVariationGeneration={disableVariationGeneration}
+                            />
+                          )
+                        })}
                     </div>
                   )}
                 </div>
@@ -1518,29 +1533,34 @@ function PaletteApp() {
               ) : (
                 // 標準モード：通常のカラーパレット
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                  {sortedColorVariations.map(([key, variations]) => {
-                    // カラー名からcolorDataの中での位置を特定
-                    const colorIndex = colorData.findIndex((c) => c.name === key)
-                    const color = colorData[colorIndex]
+                  {sortedColorVariations
+                    .filter(([key]) => colorData.some((c) => c.name === key))
+                    .map(([key, variations]) => {
+                      // カラー名からcolorDataの中での位置を特定
+                      const colorIndex = colorData.findIndex((c) => c.name === key)
+                      const color = colorData[colorIndex]
 
-                    // main/dark/light/lighterの展開を持たないカラーは自動展開しない
-                    const disableVariationGeneration = !hasStandardVariations(color)
+                      // colorが存在しない場合はスキップ
+                      if (!color) return null
 
-                    return (
-                      <ColorDisplay
-                        key={key}
-                        colorKey={key}
-                        variations={variations}
-                        textColorSettings={textColorSettings}
-                        isPrimary={colorIndex === primaryColorIndex}
-                        colorMode={colorMode}
-                        showTailwindClasses={showTailwindClasses}
-                        showMaterialNames={showMaterialNames}
-                        colorRole={color?.role}
-                        disableVariationGeneration={disableVariationGeneration}
-                      />
-                    )
-                  })}
+                      // main/dark/light/lighterの展開を持たないカラーは自動展開しない
+                      const disableVariationGeneration = !hasStandardVariations(color)
+
+                      return (
+                        <ColorDisplay
+                          key={key}
+                          colorKey={key}
+                          variations={variations}
+                          textColorSettings={textColorSettings}
+                          isPrimary={colorIndex === primaryColorIndex}
+                          colorMode={colorMode}
+                          showTailwindClasses={showTailwindClasses}
+                          showMaterialNames={showMaterialNames}
+                          colorRole={color.role}
+                          disableVariationGeneration={disableVariationGeneration}
+                        />
+                      )
+                    })}
                 </div>
               )}
             </div>
