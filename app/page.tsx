@@ -309,8 +309,8 @@ function PaletteApp() {
 
     const count = Number.parseInt(value)
 
-    // 無効な数値、0以下、MAX_COLORSを超える場合は無視
-    if (isNaN(count) || count < 1 || count > MAX_COLORS) {
+    // 無効な数値、3未満、MAX_COLORSを超える場合は無視
+    if (isNaN(count) || count < 3 || count > MAX_COLORS) {
       return
     }
 
@@ -354,15 +354,32 @@ function PaletteApp() {
     const value = e.target.value
     const count = Number.parseInt(value)
 
-    // 無効な値の場合は最小値1にリセット
-    if (value === '' || isNaN(count) || count < 1) {
-      setColorCount(1)
-      // 1色のみに調整
-      const newColorData = colorData.slice(0, 1)
-      if (newColorData.length === 0) {
-        // colorDataが空の場合は、デフォルトカラーを1つ追加
-        newColorData.push({ name: "primary", value: "#3b82f6", role: "primary" })
+    // 無効な値の場合は最小値3にリセット
+    if (value === '' || isNaN(count) || count < 3) {
+      setColorCount(3)
+      // 3色に調整
+      const newColorData = colorData.slice(0, 3)
+
+      // colorDataが3色未満の場合は、デフォルトカラーで埋める
+      const defaultColors = [
+        { name: "primary", value: "#3b82f6", role: "primary" },
+        { name: "secondary", value: "#8b5cf6", role: "secondary" },
+        { name: "success", value: "#22c55e", role: "success" },
+      ]
+
+      while (newColorData.length < 3) {
+        const index = newColorData.length
+        if (defaultColors[index]) {
+          newColorData.push(defaultColors[index])
+        } else {
+          // デフォルトカラーが足りない場合はランダムカラーを生成
+          const randomColor = `#${Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, "0")}`
+          newColorData.push({ name: `color${index + 1}`, value: randomColor })
+        }
       }
+
       setColorData(newColorData)
 
       // Clean up colorVariations
@@ -374,7 +391,10 @@ function PaletteApp() {
       })
       setColorVariations(newVariations)
 
-      setPrimaryColorIndex(0)
+      // Adjust primaryColorIndex if needed
+      if (primaryColorIndex >= 3) {
+        setPrimaryColorIndex(0)
+      }
     } else if (count > MAX_COLORS) {
       // 最大値を超える場合はMAX_COLORSにリセット
       setColorCount(MAX_COLORS)
@@ -817,7 +837,7 @@ function PaletteApp() {
                 <Input
                   id="colorCount"
                   type="number"
-                  min="1"
+                  min="3"
                   max={MAX_COLORS}
                   value={colorCount}
                   onChange={handleCountChange}
