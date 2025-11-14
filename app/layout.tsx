@@ -23,6 +23,43 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suppress browser extension errors
+              (function() {
+                const originalError = console.error;
+                console.error = function(...args) {
+                  // Filter out browser extension errors (content_script.js)
+                  const errorString = args.join(' ');
+                  if (errorString.includes('content_script.js') ||
+                      errorString.includes('reading \\'control\\'')) {
+                    return; // Suppress the error
+                  }
+                  originalError.apply(console, args);
+                };
+
+                // Global error handler to prevent extension errors from showing
+                window.addEventListener('error', function(event) {
+                  if (event.filename && event.filename.includes('content_script.js')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return false;
+                  }
+                }, true);
+
+                // Unhandled promise rejection handler
+                window.addEventListener('unhandledrejection', function(event) {
+                  if (event.reason && event.reason.stack &&
+                      event.reason.stack.includes('content_script.js')) {
+                    event.preventDefault();
+                    return false;
+                  }
+                });
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>{children}</ThemeProvider>

@@ -3,7 +3,10 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, autoComplete, ...props }, ref) => {
+    // Prevent browser extensions from interfering by default
+    const preventExtensions = autoComplete !== undefined ? autoComplete : 'off'
+
     return (
       <input
         type={type}
@@ -12,6 +15,10 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
           className,
         )}
         ref={ref}
+        autoComplete={preventExtensions}
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
         {...props}
       />
     )
