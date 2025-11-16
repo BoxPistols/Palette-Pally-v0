@@ -863,6 +863,7 @@ function PaletteApp() {
               <ExportImportPanel data={exportData} onImport={handleImport} />
               <FigmaTokensPanel
                 colors={colorData}
+                variations={colorVariations}
                 onImport={handleUpdateColors}
                 onTypographyImport={handleUpdateTypography}
               />

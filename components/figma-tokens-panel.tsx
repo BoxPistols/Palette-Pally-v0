@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Figma, X, Upload, Maximize, Minimize } from "lucide-react"
+import { Figma, X, Upload, Maximize, Minimize, Copy } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/hooks/use-language"
@@ -16,6 +16,7 @@ import {
   extractColorsFromFigmaTokens,
   extractTypographyFromFigmaTokens,
   flattenTypographyData,
+  convertColorsToFigmaTokens,
 } from "@/lib/figma-token-parser"
 import { TypographyPreview } from "@/components/typography-preview"
 import {
@@ -31,13 +32,14 @@ import { Label } from "@/components/ui/label"
 
 interface FigmaTokensPanelProps {
   colors: ColorData[]
+  variations?: Record<string, Record<string, string>>
   onImport: (colors: ColorData[]) => void
   onTypographyImport?: (typography: Record<string, any>) => void
 }
 
 export type ColorRole = "primary" | "secondary" | "success" | "danger" | "warning" | "info"
 
-export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: FigmaTokensPanelProps) {
+export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
   const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
@@ -345,44 +347,74 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
     }
   }
 
-  const handleExport = () => {
-    // 現在の日本時間を取得（ローカル時間を使用）
-    const now = new Date()
-    const year = now.getFullYear().toString().slice(-2) // 年の下2桁
-    const month = String(now.getMonth() + 1).padStart(2, "0")
-    const day = String(now.getDate()).padStart(2, "0")
-    const hours = String(now.getHours()).padStart(2, "0")
-    const minutes = String(now.getMinutes()).padStart(2, "0")
+  // カラーデータにバリエーションをマージする関数
+  const getColorsWithVariations = () => {
+    return colors.map((color) => {
+      const colorVariations = variations?.[color.name]
+      if (colorVariations) {
+        return {
+          ...color,
+          variations: colorVariations,
+        }
+      }
+      return color
+    })
+  }
 
-    const timestamp = `${year}${month}${day}-${hours}${minutes}`
+  // JSONプレビューをクリップボードにコピー
+  const handleCopyJson = async () => {
+    try {
+      const colorsWithVariations = getColorsWithVariations()
+      const figmaTokens = convertColorsToFigmaTokens(colorsWithVariations)
+      const jsonString = JSON.stringify(figmaTokens, null, 2)
+
+      await navigator.clipboard.writeText(jsonString)
+
+      toast({
+        title: language === "jp" ? "コピー完了" : "Copied",
+        description: language === "jp" ? "JSONをクリップボードにコピーしました" : "JSON copied to clipboard",
+      })
+    } catch (error) {
+      console.error("Failed to copy JSON:", error)
+      toast({
+        title: language === "jp" ? "コピー失敗" : "Copy failed",
+        description: language === "jp" ? "JSONのコピーに失敗しました" : "Failed to copy JSON",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleExport = () => {
+    // カラーデータにバリエーションをマージ
+    const colorsWithVariations = getColorsWithVariations()
+
+    // 現在のカラーデータをFigmaトークン形式に変換
+    const figmaTokens = convertColorsToFigmaTokens(colorsWithVariations)
+
+    // タイムスタンプの生成
+    const now = new Date()
+    const timestamp = now.toISOString().slice(0, 10)
 
     // ファイル名の生成
-    let filename = `palette-pally-${timestamp}.json`
+    const filename = `figma-tokens-export-${timestamp}.json`
 
-    // インポートされたファイル名に基づいてファイル名を生成
-    if (parsedData && parsedData.$metadata && parsedData.$metadata.fileName) {
-      const originalName = parsedData.$metadata.fileName
-      if (originalName.includes("text.styles")) {
-        filename = `palette-pally-text.styles.tokens-${timestamp}.json`
-      } else if (originalName.includes("variableCollection.dark")) {
-        filename = `palette-pally-variableCollection.dark.tokens-${timestamp}.json`
-      } else if (originalName.includes("variableCollection.light")) {
-        filename = `palette-pally-variableCollection.light.tokens-${timestamp}.json`
-      }
-    }
-
-    const jsonString = JSON.stringify(exportData, null, 2)
+    const jsonString = JSON.stringify(figmaTokens, null, 2)
     const blob = new Blob([jsonString], { type: "application/json" })
     const url = URL.createObjectURL(blob)
 
     const a = document.createElement("a")
     a.href = url
-    // ファイル名にfigma-prefixを追加
-    a.download = `figma-tokens-export-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = filename
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+
+    // エクスポート成功メッセージ
+    toast({
+      title: language === "jp" ? "エクスポート完了" : "Export completed",
+      description: language === "jp" ? `${filename}をダウンロードしました` : `Downloaded ${filename}`,
+    })
   }
 
   const renderModalContent = () => {
@@ -711,9 +743,13 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
             </DialogHeader>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Figma Tokens Preview</h2>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleCopyJson} className="flex items-center gap-1">
+                  <Copy className="h-4 w-4" />
+                  {language === "jp" ? "コピー" : "Copy"}
+                </Button>
                 <Switch id="fullscreen-toggle" checked={isFullscreen} onCheckedChange={setIsFullscreen} />
-                <Label htmlFor="fullscreen-toggle">フルスクリーン</Label>
+                <Label htmlFor="fullscreen-toggle">{language === "jp" ? "全画面" : "Fullscreen"}</Label>
               </div>
             </div>
             <div
@@ -721,7 +757,9 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
                 isFullscreen ? "fixed inset-0 z-50 bg-background p-6 overflow-auto" : "max-h-[80vh] overflow-auto"
               }`}
             >
-              <pre className="text-xs font-mono whitespace-pre">{JSON.stringify(exportData, null, 2)}</pre>
+              <pre className="text-xs font-mono whitespace-pre">
+                {JSON.stringify(convertColorsToFigmaTokens(getColorsWithVariations()), null, 2)}
+              </pre>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowPreview(false)}>
