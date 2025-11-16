@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Figma, X, Upload, Maximize, Minimize } from "lucide-react"
+import { Figma, X, Upload, Maximize, Minimize, Copy } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/hooks/use-language"
@@ -347,9 +347,9 @@ export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImp
     }
   }
 
-  const handleExport = () => {
-    // カラーデータにバリエーションをマージ
-    const colorsWithVariations = colors.map((color) => {
+  // カラーデータにバリエーションをマージする関数
+  const getColorsWithVariations = () => {
+    return colors.map((color) => {
       const colorVariations = variations?.[color.name]
       if (colorVariations) {
         return {
@@ -359,6 +359,34 @@ export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImp
       }
       return color
     })
+  }
+
+  // JSONプレビューをクリップボードにコピー
+  const handleCopyJson = async () => {
+    try {
+      const colorsWithVariations = getColorsWithVariations()
+      const figmaTokens = convertColorsToFigmaTokens(colorsWithVariations)
+      const jsonString = JSON.stringify(figmaTokens, null, 2)
+
+      await navigator.clipboard.writeText(jsonString)
+
+      toast({
+        title: language === "jp" ? "コピー完了" : "Copied",
+        description: language === "jp" ? "JSONをクリップボードにコピーしました" : "JSON copied to clipboard",
+      })
+    } catch (error) {
+      console.error("Failed to copy JSON:", error)
+      toast({
+        title: language === "jp" ? "コピー失敗" : "Copy failed",
+        description: language === "jp" ? "JSONのコピーに失敗しました" : "Failed to copy JSON",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleExport = () => {
+    // カラーデータにバリエーションをマージ
+    const colorsWithVariations = getColorsWithVariations()
 
     // 現在のカラーデータをFigmaトークン形式に変換
     const figmaTokens = convertColorsToFigmaTokens(colorsWithVariations)
@@ -715,9 +743,13 @@ export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImp
             </DialogHeader>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Figma Tokens Preview</h2>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleCopyJson} className="flex items-center gap-1">
+                  <Copy className="h-4 w-4" />
+                  {language === "jp" ? "コピー" : "Copy"}
+                </Button>
                 <Switch id="fullscreen-toggle" checked={isFullscreen} onCheckedChange={setIsFullscreen} />
-                <Label htmlFor="fullscreen-toggle">フルスクリーン</Label>
+                <Label htmlFor="fullscreen-toggle">{language === "jp" ? "全画面" : "Fullscreen"}</Label>
               </div>
             </div>
             <div
@@ -726,19 +758,7 @@ export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImp
               }`}
             >
               <pre className="text-xs font-mono whitespace-pre">
-                {JSON.stringify(
-                  convertColorsToFigmaTokens(
-                    colors.map((color) => {
-                      const colorVariations = variations?.[color.name]
-                      if (colorVariations) {
-                        return { ...color, variations: colorVariations }
-                      }
-                      return color
-                    })
-                  ),
-                  null,
-                  2
-                )}
+                {JSON.stringify(convertColorsToFigmaTokens(getColorsWithVariations()), null, 2)}
               </pre>
             </div>
             <DialogFooter>
