@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -25,8 +24,8 @@ import {
   Eye,
   Code,
 } from "lucide-react"
-// 1. useLanguageフックを正しくインポート
 import { useLanguage } from "@/contexts/language-context"
+import { useModalState } from "@/hooks/use-modal-state"
 
 // 2. 言語に応じたテキストを選択する処理を追加
 // const { language } = useLanguage() // Moved inside component
@@ -289,25 +288,21 @@ const texts = {
 }
 
 export function HelpModal() {
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, open, close } = useModalState(false)
   const { language } = useLanguage()
 
   // 4. 言語に応じたテキストを使用
   const t = language === "jp" ? texts.jp : texts.en
 
-  const handleClose = () => {
-    setIsOpen(false)
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={close}>
       {/* 5. ボタンのテキストを言語に応じて変更 */}
       <Button
         variant="outline"
         size="sm"
         className="flex items-center gap-1 rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100"
         title={language === "jp" ? "ヘルプ" : "Help"}
-        onClick={() => setIsOpen(true)}
+        onClick={open}
       >
         <HelpCircle className="h-4 w-4 text-blue-500" />
         <span className="text-blue-600">{language === "jp" ? "ヘルプ" : "Help"}</span>
@@ -503,7 +498,7 @@ export function HelpModal() {
 
         <DialogFooter>
           {/* 7. 閉じるボタンのテキストを言語に応じて変更 */}
-          <Button onClick={handleClose}>{t.close}</Button>
+          <Button onClick={close}>{t.close}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/language-context"
 import type { TextColorSettings, ColorRole } from "@/types/palette"
 import type { ColorMode } from "@/lib/color-systems"
 import { RoleColorSettings } from "./role-color-settings"
+import { getRoleBadgeClass, getRoleDisplayName, getGroupBadgeClass } from "@/lib/color-role-styles"
 
 interface ColorDisplayProps {
   colorKey: string
@@ -45,67 +46,9 @@ export function ColorDisplay({
 }: ColorDisplayProps) {
   const { language } = useLanguage()
 
-  // カラーロールに基づいたバッジの色を設定
-  const getRoleBadgeClass = (role?: ColorRole): string => {
-    if (!role) return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-
-    switch (role) {
-      case "primary":
-        return "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-      case "secondary":
-        return "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-      case "success":
-        return "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-      case "danger":
-        return "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-      case "warning":
-        return "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-      case "info":
-        return "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
-      case "text":
-        return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-      case "background":
-        return "bg-slate-50 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300"
-      case "border":
-        return "bg-zinc-50 text-zinc-700 dark:bg-zinc-900/30 dark:text-zinc-300"
-      case "accent":
-        return "bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300"
-      case "neutral":
-        return "bg-stone-50 text-stone-700 dark:bg-stone-900/30 dark:text-stone-300"
-      default:
-        return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-    }
-  }
-
-  // グループに基づいたバッジの色を設定
-  const getGroupBadgeClass = (groupName?: string): string => {
-    if (!groupName) return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-
-    switch (groupName) {
-      case "text":
-        return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-      case "background":
-        return "bg-slate-50 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300"
-      case "common":
-        return "bg-zinc-50 text-zinc-700 dark:bg-zinc-900/30 dark:text-zinc-300"
-      case "grey":
-        return "bg-stone-50 text-stone-700 dark:bg-stone-900/30 dark:text-stone-300"
-      case "figma":
-        return "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-      default:
-        if (groupName.startsWith("figma-")) {
-          return "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-        }
-        return "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-    }
-  }
-
   // カラーロールの表示名を取得
-  const getRoleDisplayName = (role?: ColorRole): string => {
-    if (!role) return ""
-
-    // 常に英語名をそのまま返す（日本語変換なし）
-    return role.charAt(0).toUpperCase() + role.slice(1)
+  const getLocalizedRoleDisplayName = (role?: ColorRole): string => {
+    return getRoleDisplayName(role)
   }
 
   // グループの表示名を取得

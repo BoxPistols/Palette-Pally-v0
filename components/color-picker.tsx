@@ -26,6 +26,7 @@ import { colorRoleDescriptions } from "@/types/palette"
 import { useLanguage } from "@/contexts/language-context"
 import { useTheme } from "@/contexts/theme-context"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getRoleBadgeClass, getRoleDisplayName, getGroupBadgeClass } from "@/lib/color-role-styles"
 
 // サジェストボタンの翻訳対応
 // const SuggestButton = ({ baseColor, onSelectColor }: { baseColor: string; onSelectColor: (color: string) => void }) => {
@@ -296,44 +297,6 @@ export function ColorPicker({
     if (!/^#[0-9A-F]{6}$/i.test(inputValue)) {
       setInputValue(color)
     }
-  }
-
-  // カラーロールに基づいたバッジの色を設定
-  const getRoleBadgeClass = (role?: ColorRole): string => {
-    if (!role) return "bg-gray-50 text-gray-500"
-
-    switch (role) {
-      case "primary":
-        return "bg-blue-50 text-blue-700"
-      case "secondary":
-        return "bg-purple-50 text-purple-700"
-      case "success":
-        return "bg-green-50 text-green-700"
-      case "danger":
-        return "bg-red-50 text-red-700"
-      case "warning":
-        return "bg-amber-50 text-amber-700"
-      case "info":
-        return "bg-sky-50 text-sky-700"
-      case "text":
-        return "bg-gray-50 text-gray-700"
-      case "background":
-        return "bg-slate-50 text-slate-700"
-      case "border":
-        return "bg-zinc-50 text-zinc-700"
-      case "accent":
-        return "bg-pink-50 text-pink-700"
-      case "neutral":
-        return "bg-stone-50 text-stone-700"
-      default:
-        return "bg-gray-50 text-gray-500"
-    }
-  }
-
-  // カラーロールの表示名を取得
-  const getRoleDisplayName = (role?: ColorRole): string => {
-    if (!role) return ""
-    return role.charAt(0).toUpperCase() + role.slice(1)
   }
 
   return (

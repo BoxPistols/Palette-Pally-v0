@@ -14,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
+import { useModalState } from "@/hooks/use-modal-state"
 import type { ColorData } from "@/types/palette"
 import {
   generateCSSVariables,
@@ -33,7 +34,7 @@ interface CodeExportPanelProps {
 
 export function CodeExportPanel({ colors, variations, primaryColorIndex }: CodeExportPanelProps) {
   const { language } = useLanguage()
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, open, close } = useModalState(false)
   const [activeTab, setActiveTab] = useState("css")
 
   // 翻訳テキスト
@@ -107,14 +108,14 @@ export function CodeExportPanel({ colors, variations, primaryColorIndex }: CodeE
         variant="outline"
         size="sm"
         className="flex items-center gap-1"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
         title={t.button}
       >
         <Code className="h-4 w-4" />
         <span>{t.button}</span>
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={close}>
         <DialogContent className="max-w-[800px] w-[90vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="sticky top-0 z-10 pb-4 border-b">
             <DialogTitle>{t.title}</DialogTitle>
@@ -213,7 +214,7 @@ export function CodeExportPanel({ colors, variations, primaryColorIndex }: CodeE
           </Tabs>
 
           <DialogFooter className="sticky bottom-0 z-10 pt-4 border-t mt-4">
-            <Button onClick={() => setIsOpen(false)}>{t.close}</Button>
+            <Button onClick={close}>{t.close}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
