@@ -32,13 +32,14 @@ import { Label } from "@/components/ui/label"
 
 interface FigmaTokensPanelProps {
   colors: ColorData[]
+  variations?: Record<string, Record<string, string>>
   onImport: (colors: ColorData[]) => void
   onTypographyImport?: (typography: Record<string, any>) => void
 }
 
 export type ColorRole = "primary" | "secondary" | "success" | "danger" | "warning" | "info"
 
-export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: FigmaTokensPanelProps) {
+export function FigmaTokensPanel({ colors, variations, onImport, onTypographyImport }: FigmaTokensPanelProps) {
   const { language } = useLanguage()
   const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
@@ -347,8 +348,20 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
   }
 
   const handleExport = () => {
+    // カラーデータにバリエーションをマージ
+    const colorsWithVariations = colors.map((color) => {
+      const colorVariations = variations?.[color.name]
+      if (colorVariations) {
+        return {
+          ...color,
+          variations: colorVariations,
+        }
+      }
+      return color
+    })
+
     // 現在のカラーデータをFigmaトークン形式に変換
-    const figmaTokens = convertColorsToFigmaTokens(colors)
+    const figmaTokens = convertColorsToFigmaTokens(colorsWithVariations)
 
     // タイムスタンプの生成
     const now = new Date()
@@ -713,7 +726,19 @@ export function FigmaTokensPanel({ colors, onImport, onTypographyImport }: Figma
               }`}
             >
               <pre className="text-xs font-mono whitespace-pre">
-                {JSON.stringify(convertColorsToFigmaTokens(colors), null, 2)}
+                {JSON.stringify(
+                  convertColorsToFigmaTokens(
+                    colors.map((color) => {
+                      const colorVariations = variations?.[color.name]
+                      if (colorVariations) {
+                        return { ...color, variations: colorVariations }
+                      }
+                      return color
+                    })
+                  ),
+                  null,
+                  2
+                )}
               </pre>
             </div>
             <DialogFooter>
